@@ -1,0 +1,11 @@
+{
+  "name": "lirios-agencia-de-vida",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "python3 -m http.server 5173",
+    "build": "rm -rf public && tsc src/main.js --jsx react --jsxFactory React.createElement --target ES2020 --module ES2020 --moduleResolution node --outDir public --allowJs --checkJs false --skipLibCheck --ignoreDeprecations 6.0 && cp src/styles.css public/styles.css",
+    "preview": "python3 -m http.server 4173"
+  }
+}
