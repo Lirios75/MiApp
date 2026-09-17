@@ -1,16 +1,41 @@
-# VEREDICTO revisor-visual — onboarding
+# VEREDICTO revisor-visual — onboarding (ronda 11)
 Fecha: 2026-09-17 00:00
 Screenshot: docs/revisiones/onboarding-375.png (+ onboarding-paso2-375.png, onboarding-paso6-375.png, onboarding-celebracion-375.png)
-Usabilidad: 28/40
+Usabilidad: 34/40
 Craft: 14/20
 Copy (si vende): N-A
 Fidelidad (si hubo referencia): N-A
 Veredicto: NO LISTA
 Top defectos:
-1. Estado "celebración" (app/onboarding/page.tsx líneas 207-226, comprometido=true) queda con el peor vacío de las 4 capturas — checkmark + 1 línea de texto y luego más de la mitad de la pantalla en crema plano hasta el anillo decorativo (ver onboarding-celebracion-375.png). Esta ronda no tocó este sub-estado: el defecto de espacio vacío que ronda 9 marcó como crítico sigue vivo aquí, sin resolver. Fix: centrar verticalmente este estado (justify-center en vez de top-aligned) o sumarle un elemento real (p.ej. mini-preview de "así arranca tu semana").
-2. `<VistaSemaforo>` (components/funnel/ui.tsx líneas 189-218) se inserta IDÉNTICA (mismo título, mismos 2 círculos, misma leyenda) en los pasos 0, 2, 3 y 5 — confirmado comparando onboarding-375.png contra onboarding-paso2-375.png: card pixel-idéntica. Para la 3ª/4ª pregunta deja de leerse como "contenido funcional que enseña el mecanismo" y vuelve a ser filler, solo que ahora más pesado visualmente que el vacío que reemplazó. Fix: variar la leyenda/contexto según la respuesta recién dada, o mostrarla una sola vez y usar otro elemento real en las repeticiones.
-3. Los 2 círculos de `<VistaSemaforo>` ("Día tranquilo"/"Día de alerta", ui.tsx líneas 193-212) son `<span>` sin `onClick`, pero están estilizados como chips tocables (aro de color, relleno, label) y la leyenda debajo dice literalmente "Un toque al día — tú eliges cuál te describe hoy" — invita a tocar AHORA y no pasa nada. Viola la regla UX #11 (todo elemento con apariencia interactiva hace algo). Fix: leyenda en futuro/descriptiva ("Así lo marcarás cada día en la app") o marcar visualmente la card como vista previa no interactiva.
-4. Incluso donde se aplicó el fix (paso 0 y paso 2), queda un tercio de pantalla en crema plano debajo de la card antes del anillo decorativo (onboarding-375.png, onboarding-paso2-375.png) — el vacío se redujo pero no se cerró. Fix: dejar que el bloque de contenido crezca hasta el fold (flex-1 + justify-center en el wrapper de FunnelScreen) en vez de top-alinear y dejar sobrante fijo.
-5. Las 4 preguntas de opción única (OPCIONES_DOLOR/MOMENTO/INTENTO/META en lib/onboarding.ts) no ofrecen "otra/ninguna de las anteriores" — si la respuesta real de la usuaria no calza en las 4 opciones, queda forzada a elegir una que no la describe, contaminando la personalización que el propio copy promete ("Así armamos tu Semáforo a tu medida"). Fix: agregar quinta opción de escape en cada set.
+1. Celebración (app/onboarding/page.tsx L206-227, SemanaPreview en components/funnel/ui.tsx L232-265) — sigue siendo el vacío más grande del funnel (menos contenido que el paso 6 previo al compromiso) → sumar 1 frase de refuerzo/próximo paso bajo el tracker.
+2. Checkmarks con spring bounce 0.4-0.5 (ui.tsx L174/L246, page.tsx L218) — viola la propia FICHA-ARTE ("spring casi sin rebote 0-0.1") y el umbral del SO (41-CRAFT-DE-ANIMACION.md: ">0.3 se ve de juguete") → bajar a bounce 0.1-0.2.
+3. VistaSemaforo (ui.tsx L200-219) usa íconos en círculo completo mientras OptionChip (ui.tsx L161-168) usa el mismo patrón en squircle — mismo componente conceptual, dos formas distintas en la misma pantalla → unificar a rounded-[var(--radius-button)].
+4. guardarRespuestas (lib/onboarding.ts L87-93) traga en silencio el fallo de localStorage (privado/bloqueado) sin avisar ni degradar visiblemente → agregar aviso o guardar fallback en memoria con indicación mínima.
+5. Transición de celebración → /paywall (page.tsx L44, router.push tras 700ms) es un corte seco sin fade de salida → animar exit con AnimatePresence antes de navegar.
 
-Notas de proceso (10ª ronda): el diagnóstico de ronda 9 (causa raíz = falta de contenido, no de posición) era correcto, y la dirección tomada esta ronda (contenido funcional en vez de decoración) es cualitativamente distinta y en principio la correcta. Pero la ejecución es parcial: cubre 4 de las ~8 sub-pantallas del flujo y deja sin tocar exactamente el sub-estado con el vacío más grande (la celebración). Además, al repetir el mismo bloque sin variación, introduce un defecto nuevo (sensación de filler repetido + affordance de "tocable" sin función) que antes no existía. Recomendación: antes de otra ronda de "agregar más contenido", decidir con el usuario si (a) se completa la cobertura (celebración + variación por paso) o (b) se cambia de táctica — por ejemplo, dejar que el layout se adapte al contenido real disponible (altura variable, sin fondo min-h-dvh forzando relleno) en vez de seguir empujando bloques nuevos a rellenar un contenedor de altura fija.
+## Detalle usabilidad (Nielsen, /4 c/u)
+h1 Visibilidad del estado: 3 — feedback fuerte en cada tap (chip, hold-button con anillo real, aria-live throttled); el corte final a /paywall es abrupto.
+h2 Lenguaje del usuario: 4 — cero jerga, copy conversacional y en el idioma de Camila.
+h3 Control y libertad: 4 — ConfirmSalir con Escape=quedarse, back por paso, se puede re-elegir una respuesta yendo atrás (verificado en código: guardarYAvanzar sobreescribe el campo).
+h4 Consistencia: 3 — mismo OptionChip/FunnelButton en las 4 preguntas; pero icono-en-contenedor cambia de forma entre OptionChip y VistaSemaforo (defecto 3).
+h5 Prevención de errores: 4 — bloqueado en doble-tap (OptionChip), guardas contra key-repeat en HoldButton, disabled con opacity clara.
+h6 Reconocer vs recordar: 4 — opciones siempre visibles, tracker de semana visual, nada que memorizar entre pasos.
+h7 Flexibilidad: 3 — soporte de teclado real en HoldButton (Enter/Espacio) y botones nativos, pero sin atajos adicionales para usuario experto.
+h8 Estético y minimalista: 2 — 1 acción primaria por pantalla y VistaSemaforo se gana su lugar (ya no es filler), pero el vacío de la celebración y el bounce fuera de tono rompen "movimiento consistente consigo mismo" — un usuario cualquiera nota el vacío al ver la captura.
+h9 Errores con solución: 3 — no hay estados de error visibles en el flujo normal, pero el fallo silencioso de localStorage (defecto 4) es un hueco real, aunque de baja incidencia.
+h10 Ayuda contextual: 4 — VistaSemaforo ahora enseña el mecanismo con texto distinto por paso (contexto: dolor/momento/intento/meta verificado en CONTEXTO_SEMAFORO), ya no se siente repetido.
+
+## Detalle craft (/4 c/u)
+Jerarquía: 3 — título > subtítulo > opción > label se lee claro al entrecerrar los ojos; VistaSemaforo compite un poco de peso visual con el bloque principal.
+Profundidad: 3 — mesh + anillo fijo + shadow-1 en cards da 2 planos claros; sin plano "hundido" pero no hace falta en esta pantalla (no hay inputs).
+Identidad ownable: 3 — Nunito + semáforo + anillo de respiración + paleta crema/azul-lila no coincide con los clones vetados (Capítulo/Umbral) — pasa el test anti-clon.
+Movimiento: 2 — stagger de entrada, dibujado del anillo del hold-button, transición de pasos y modal suave están todos presentes y correctos; pero el bounce 0.4-0.5 en las 4 celebraciones (defecto 2) es una desviación medida y documentada contra la propia ficha y contra el criterio del SO.
+Encaje óptico: 3 — radios idénticos (22px card / 16px botón, verificado en tokens.css), padding simétrico, círculos de días centrados; sin desencajes evidentes en las 4 capturas.
+
+## Verificación de los 3 defectos puntuales de la ronda 10
+1. VistaSemaforo repetida idéntica → RESUELTO. `CONTEXTO_SEMAFORO` (ui.tsx L189-194) da texto distinto por paso, confirmado en código y en las capturas del paso 0 ("Así funciona: cada día, marcas cuál de los dos te describe") vs paso 2 ("Justo en ese momento del día, un solo toque basta").
+2. Copy que invitaba a tocar algo inerte → RESUELTO. El copy pasó de imperativo/interactivo a descriptivo en las 4 variantes; los círculos no tienen `<button>`, `cursor-pointer` ni `whileTap`, y viven bajo el encabezado explícito "Así se ve tu Semáforo del Gasto" que los enmarca como ejemplo, no como control. (Queda un matiz menor no bloqueante: el anillo + punto relleno sigue usando el mismo lenguaje visual de un selector, lo cual un ojo entrenado podría seguir asociando con algo tocable — no amerita defecto propio, es refinamiento fino).
+3. Celebración con el vacío más grande sin contenido → PARCIALMENTE RESUELTO. `SemanaPreview` con `diaCompletado` (ui.tsx L232-265) sí agrega contenido real (check verde animado en el día de hoy), pero comparado con el paso 6 previo al compromiso (que tiene más bloques: headline+subtítulo+hold-button+label+tracker), la celebración termina su contenido notablemente antes, dejando el tramo de cream vacío más largo de las 4 capturas antes de que aparezca el anillo decorativo fijo. Ver defecto TOP #1.
+
+## Nota sobre el resto de hallazgos
+Los defectos 1 y 2 son concretos y medibles (asimetría de contenido visible en captura; valor numérico de bounce documentado contra la propia FICHA-ARTE y contra 41-CRAFT-DE-ANIMACION.md) — no son gusto personal. Los defectos 3, 4 y 5 sí son ya refinamiento fino: dos revisores podrían discrepar en si ameritan bajar puntaje o solo anotarse para la próxima pasada. El gate de carga cognitiva (≤4-5 ítems, ≤4 opciones, 1 acción primaria, nada que recordar entre pantallas, texto en 3-4 líneas, "qué sigue" obvio, cero elementos fantasma) pasa completo — no hay sobrecarga cognitiva en esta pantalla.

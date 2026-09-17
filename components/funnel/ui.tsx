@@ -171,7 +171,7 @@ export function OptionChip({
         aria-hidden="true"
         initial={false}
         animate={{ scale: activo ? 1 : 0.5, opacity: activo ? 1 : 0 }}
-        transition={{ duration: 0.2, type: 'spring', bounce: 0.4 }}
+        transition={{ duration: 0.2, type: 'spring', bounce: 0.15 }}
         className="inline-flex size-5 shrink-0 items-center justify-center rounded-full bg-[var(--accent)]"
       >
         <Check size={13} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
@@ -243,7 +243,7 @@ export function SemanaPreview({ diaCompletado }: { diaCompletado?: number }) {
               key={i}
               initial={{ scale: 0.6 }}
               animate={{ scale: 1 }}
-              transition={{ type: 'spring', bounce: 0.5, duration: 0.4, delay: 0.3 }}
+              transition={{ type: 'spring', bounce: 0.15, duration: 0.4, delay: 0.3 }}
               aria-hidden="true"
               className="flex size-8 items-center justify-center rounded-full bg-[var(--accent-2)]"
             >

@@ -215,7 +215,7 @@ export default function Onboarding() {
                 aria-hidden="true"
                 initial={{ scale: reduce ? 1 : 0.6 }}
                 animate={{ scale: 1 }}
-                transition={{ duration: reduce ? 0.1 : 0.4, type: 'spring', bounce: 0.5 }}
+                transition={{ duration: reduce ? 0.1 : 0.4, type: 'spring', bounce: 0.15 }}
                 className="inline-flex size-16 items-center justify-center rounded-full bg-[var(--accent)]"
               >
                 <Check size={30} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
@@ -224,6 +224,9 @@ export default function Onboarding() {
                 ¡Listo, quedó registrado!
               </h2>
               <SemanaPreview diaCompletado={(new Date().getDay() + 6) % 7} />
+              <p className="max-w-[30ch] text-[13px] text-[var(--text-tertiary)]">
+                Repite esto 6 días más y tendrás tu primera semana completa.
+              </p>
             </motion.div>
           ) : (
             <>
