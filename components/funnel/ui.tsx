@@ -119,7 +119,7 @@ export function OptionChip({
       transition={{ duration: reduce ? 0.15 : 0.3, delay: reduce ? 0 : indice * 0.07, ease: [0.16, 1, 0.3, 1] }}
       whileTap={bloqueado ? undefined : { scale: 0.98 }}
       onClick={handleTap}
-      className={`flex h-16 w-full items-center gap-3 rounded-[var(--radius-button)] border px-4 text-left shadow-[var(--shadow-1)] transition-colors duration-150 [touch-action:manipulation] ${
+      className={`flex h-16 w-full items-center gap-3 rounded-[var(--radius-button)] border px-4 text-left shadow-[var(--shadow-1)] transition-colors duration-150 [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] ${
         activo
           ? 'border-[1.5px] border-[var(--accent)] bg-[var(--chip-bg)]'
           : 'border-[color-mix(in_oklab,var(--text-tertiary)_22%,transparent)] bg-[var(--surface)]'

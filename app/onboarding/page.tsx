@@ -121,6 +121,7 @@ export default function Onboarding() {
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Ya intentaste controlar tus gastos antes?
         </h1>
+        <p className="mt-2 text-[14px] text-[var(--text-secondary)]">Así sabemos qué ya no funcionó, para no repetirlo.</p>
         <div className="mt-8 flex flex-col gap-3">
           {OPCIONES_INTENTO.map((o, i) => (
             <OptionChip
@@ -174,6 +175,7 @@ export default function Onboarding() {
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Cuál es tu meta principal?
         </h1>
+        <p className="mt-2 text-[14px] text-[var(--text-secondary)]">Tu Semáforo se enfoca en esto primero.</p>
         <div className="mt-8 flex flex-col gap-3">
           {OPCIONES_META.map((o, i) => (
             <OptionChip

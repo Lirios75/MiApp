@@ -86,18 +86,33 @@ export default function Paywall() {
   }
 
   return (
-    <div className="min-h-dvh bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
+    <div className="relative min-h-dvh overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
+      {/* Mismo fondo con profundidad que el resto del funnel (FunnelScreen) —
+          onboarding y paywall son el mismo flujo, no dos sistemas distintos. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 7%, transparent) 0%, transparent 60%), ' +
+            'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 6%, transparent) 0%, transparent 55%)',
+        }}
+      />
+      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.08]">
+        <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" />
+      </svg>
       <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-10 pt-4">
         <div className="flex h-11 items-center justify-between">
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.9 }}
             onClick={() => router.push('/')}
             aria-label="Cerrar"
             className="flex size-11 items-center justify-center rounded-full text-[var(--text-secondary)] [touch-action:manipulation]"
           >
             <X size={20} strokeWidth={2} aria-hidden="true" />
-          </button>
-          <RespiraMark duracionS={0.35} />
+          </motion.button>
+          <RespiraMark estatico />
           <span className="size-11" aria-hidden="true" />
         </div>
 
@@ -214,13 +229,14 @@ export default function Paywall() {
               Cancela cuando quieras · te avisamos antes del cobro
             </p>
 
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
               onClick={() => router.push('/')}
               className="text-center text-[14px] font-medium text-[var(--text-tertiary)] [touch-action:manipulation]"
             >
               Ahora no
-            </button>
+            </motion.button>
 
             <p className="flex items-center justify-center gap-4 text-[12px] text-[var(--text-tertiary)]">
               <span className="inline-flex items-center gap-1">

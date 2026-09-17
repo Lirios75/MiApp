@@ -2,13 +2,15 @@
 Fecha: 2026-09-17 00:00
 Screenshot: docs/revisiones/paywall-375.png
 Usabilidad: 32/40
-Craft: 16/20
+Craft: 17/20
 Copy (si vende): 19/20
 Fidelidad (si hubo referencia): N-A
 Veredicto: NO LISTA
 Top defectos:
-1. [Cards "Anual"/"Mensual" — selector de plan, app/paywall/page.tsx L138-177] Son <button> planos sin motion.whileTap (a diferencia de OptionChip/FunnelButton del mismo kit) → envolver en motion.button con whileTap={{ scale: 0.98 }} para feedback táctil consistente en toda la pantalla.
-2. [Value-stack, plan cards, timeline — toda la pantalla] --shadow-1 (opacidad 0.06) es casi imperceptible a 375px; las 3 superficies elevadas se sienten casi al mismo plano que el fondo → usar --shadow-2 al menos en la card de plan seleccionada (Anual) para un 2º nivel de elevación real, no solo el borde de color.
-3. [Gobernanza de copy, no visible en la captura pero bloqueante] FICHA-AVATAR.md sigue "Estado: BORRADOR" / "Aprobada por el usuario: NO", y la nueva línea de dolor ("Para que no vuelvas a decir «...»") ya se muestra en esta pantalla derivada de esa ficha sin aprobar → aprobar FICHA-AVATAR.md (o al menos las frases de dolor/deseo usadas) antes de declarar esta pantalla vendible.
-4. [CTA "Empezar mis 7 días gratis" → onClick] No hay ningún patrón de error/reintento definido en el código para cuando falle la navegación o, a futuro, el checkout real (el comentario del archivo dice que se conecta en Sesión 6) → dejar al menos el patrón de error documentado en ESTADO.md antes de conectar Hotmart, para no llegar a ese momento sin diseño de error.
-5. [X arriba-izquierda y "Ahora no" abajo] Ambos ejecutan exactamente router.push('/') — no hay forma de volver a editar las respuestas del quiz (dolor/meta) si el usuario duda antes de decidir → diferenciar los dos caminos o eliminar la redundancia.
+1. [RespiraMark, header superior — app/paywall/page.tsx L100] Se usa la variante animada (anillo abierto al 75%, gap visible arriba-derecha) justo después de la pantalla de carga real; visualmente es indistinguible de un spinner de carga a simple vista, y el propio componente ya tiene una variante `estatico` (anillo cerrado y quieto) pensada para "headers junto a una barra de progreso real" para evitar leerse como loader duplicado (components/RespiraMark.tsx L18-21) → usar `<RespiraMark estatico />` aquí, igual que en FunnelHeader.
+2. [Fondo de toda la pantalla — app/paywall/page.tsx L89] El paywall usa un `bg-[var(--bg)]` plano sin el mesh gradient + anillo-marca de fondo que sí tiene `FunnelScreen` (components/funnel/ui.tsx L166-181), el contenedor que onboarding sí usa (app/onboarding/page.tsx L47 `<FunnelScreen>`). Al pasar de onboarding → paywall el fondo pierde su textura y se siente un escalón más plano en el mismo flujo → envolver el contenido en `FunnelScreen` (o replicar su fondo) para que las 3 pantallas del funnel compartan la misma profundidad base.
+3. [Botón X "cerrar" y enlace "Ahora no" — app/paywall/page.tsx L92-99 y L217-223] A diferencia del CTA y las 2 cards de plan (que ya tienen `whileTap`), estos 2 controles siguen siendo `<button>` planos sin ningún feedback visual al tap → agregar `whileTap={{ scale: 0.97 }}` para que TODo elemento tapeable de la pantalla responda igual.
+4. [CTA "Empezar mis 7 días gratis" → onClick, sin backend aún] Sigue sin existir ningún patrón de error/reintento en código para cuando se conecte el checkout real (Sesión 6) — aceptado como pendiente de proceso, no de esta pantalla; igual limita el techo de la heurística 9 hasta que se documente el patrón en ESTADO.md antes de conectar Hotmart.
+5. [X arriba-izquierda y "Ahora no" abajo] Ambos siguen ejecutando `router.push('/')` — aceptado por ahora (no existe todavía una app-lite a la que mandar a quien duda), pero sigue sin ofrecer un camino distinto para quien solo quiere revisar/editar sus respuestas del quiz antes de decidir.
+
+Nota de proceso (no cuenta como defecto de esta pantalla): FICHA-AVATAR.md sigue en BORRADOR/no aprobada; el copy de esta pantalla ya se deriva de ella (p. ej. la línea "no sé en qué se me fue"). No bloquea el puntaje de craft/copy de esta revisión, pero sigue pendiente aprobarla antes de vender de verdad.
