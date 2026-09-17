@@ -1,7 +1,7 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Última acción completada: usuario aprobó el tour final (Nunito + verde/naranja) — FICHA-ARTE.md cerrada (aprobada: SÍ, 2026-09-17). Sesión 2 completa. / Siguiente acción exacta: arrancar Sesión 3 — página de ventas (19-PAGINA-DE-VENTAS.md + 52 + 55 + 02C + 47 + FICHA-AVATAR.md), esperando el OK del usuario.
+⏸️ CHECKPOINT — Última acción completada: Sesión 3 (página de ventas) construida — scaffold Next.js 16 + kit canónico de landing tematizado + 10 secciones con copy derivado de FICHA-AVATAR.md + páginas legales borrador (privacidad/terminos/reembolsos) + tsc/build limpios + screenshot 375px verificado. Se lanzó el subagente revisor-visual (obligatorio, landing = pantalla del dinero) — veredicto pendiente. / Siguiente acción exacta: leer docs/revisiones/landing-veredicto.md cuando el revisor termine; si aprueba (≥36/40 y ≥16/20), cerrar Sesión 3 y proponer Sesión 4 (onboarding+paywall+login); si no, corregir lo que señale y re-renderizar.
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -26,7 +26,8 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 ## Avatar y venta (Sesión 1 — ficha creada, pendiente de completar con VoC real)
 - FICHA-AVATAR.md: creada a partir del RESUMEN FINAL del usuario — estado BORRADOR (faltan ≥10 frases VoC con fuente verificable; las 5 dadas por el usuario cuentan como base pero sin fuente citable todavía).
 - Resumen: Camila, 29 años, Bogotá/CDMX, ingreso $800-1800 USD/mes · dolor #1: "otra vez gasté sin darme cuenta y no sé en qué se me fue" · deseo #1: "ver mi cuenta sin que me dé ansiedad" · nivel de consciencia: consciente-del-problema, no de la solución.
-- Landing: pendiente (Sesión 3) — sigue estructura canónica de 10 secciones (19).
+- Landing: CONSTRUIDA (Sesión 3) — las 10 secciones canónicas, copy trazado a esta ficha. Ver docs/copy/landing.md.
+- Mecanismo bautizado: "el Semáforo del Gasto" (check-in de 1 toque que marca el día tranquilo/alerta antes de que el gasto se repita). Big Idea en docs/copy/landing.md.
 
 ## Estrategia de monetización (Sesión 1 — decidido, informado al usuario)
 - Modelo: Freemium con suscripción (onboarding-first) — coherente con la matriz A-F del 02C para bienestar/hábitos B2C: la frecuencia diaria pide construir inversión emocional antes del paywall duro.
@@ -43,9 +44,9 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Primera victoria (<5 min): primer check-in + primera meta con progreso visible.
 
 ## Secuencia maestra de construcción (NO saltar)
-- Estado de la secuencia: aún no arrancó ninguna etapa de construcción.
+- Estado de la secuencia: Landing construida, verificando (Sesión 3). Resto pendiente.
 - Ruta aprobada: `/` → `/onboarding` → `/paywall` → `/login` → `/app`
-- Landing: pendiente
+- Landing: construida — verificada (tsc+build+dev limpios, screenshot 375px) — protagonista: el Semáforo del Gasto — CTA primario: "Quiero mi primer check-in" → `/onboarding` (ruta aún no existe, se construye en Sesión 4)
 - Onboarding: pendiente
 - Paywall: pendiente
 - Login/Auth: pendiente
@@ -53,7 +54,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Servicios externos: pendiente
 
 ## Puertas de etapa (aprobacion antes de avanzar)
-- Landing: no iniciada
+- Landing: construida, no aprobada — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto del revisor-visual: PENDIENTE (subagente lanzado)
 - Onboarding: no iniciada
 - Paywall: no iniciada
 - Login/Auth: no iniciada
@@ -61,11 +62,13 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Servicios externos: bloqueados
 
 ## Decisiones técnicas (NO re-discutir sin pedirlo el usuario)
-- Framework: Next.js App Router — landing con SEO/contenido orgánico + API routes para webhook de Hotmart, y duda entre Vite/Next resuelta por la regla del stack a favor de Next.
-- Auth: Supabase Auth, passwordless (magic link) — sin fricción para audiencia no técnica y escéptica.
+- Framework: Next.js 16 App Router (React 19, Turbopack) — landing con SEO/contenido orgánico + API routes para webhook de Hotmart, y duda entre Vite/Next resuelta por la regla del stack a favor de Next. Scaffold hecho el 2026-09-17 según 51-STACK-PINEADO.md.
+- `next.config.ts`: `agentRules: false` — Next 16 auto-genera un bloque de reglas dentro de AGENTS.md al correr `next dev`/`build`; como AGENTS.md de este proyecto es el archivo de reglas del SO, se desactivó esa función para que no lo modifique.
+- Auth: Supabase Auth, passwordless (magic link) — sin fricción para audiencia no técnica y escéptica. (Aún no instalado — se conecta en Sesión 6.)
 - Modelo de datos (borrador): `usuarios`, `checkins_diarios` (emoción + nota corta + fecha), `metas` (tipo ahorro/deuda, monto objetivo, monto actual), `rachas` (contador + última fecha activa) — todas con RLS por `(select auth.uid())`.
 - Features del MVP (del usuario): (1) check-in diario emoción/dinero, (2) 1-2 metas de ahorro/deuda con registro manual, (3) racha/progreso visual, (4) tip/reflexión corta diaria. Fuera del MVP: conexión bancaria, metas múltiples simultáneas, comunidad/social, gamificación compleja.
 - Idioma UI: español LATAM neutro, mono-idioma.
+- Kit de landing: `plantillas-codigo/landing/` copiado a `components/landing/` sin modificar los `.tsx` — solo se tematizó `tokens.css` (Nunito, azul-lila `#5468D4`, verde `#2E9E6B`, crema `#FAF6EF`, radios 22/16). Copy marcado en `docs/copy/landing.md`.
 
 ## Nombre — CONFIRMADO
 - Nombre definitivo: **Respira**. Confirmado por el usuario el 2026-09-17.
@@ -76,18 +79,21 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 2 — Identidad visual (FICHA-ARTE.md aprobada, dirección B "Respira en calma") — cerrada 2026-09-17.
 
 ## Sesión en progreso 🔧
-(ninguna — esperando OK del usuario para arrancar Sesión 3)
+- Sesión 3 — Página de ventas: construida, verificando con el revisor-visual (obligatorio, es pantalla del dinero).
 
 ## Próximas sesiones 📋
-- Sesión 3: página de ventas.
 - Sesión 4: onboarding, paywall y login.
+- Sesión 5: app interna simplificada (ahí se toman los screenshots reales para el carrusel de la landing).
 
 ## Problemas conocidos ⚠️
-- vista-previa-app.html: pospuesto a propósito — el TOUR DE LA APP (54) se construye DESPUÉS de que el usuario elija entre las opciones A/B/C de `direcciones-abc.html` (elección aún pendiente, ver checkpoint). Generarlo ahora sería tematizar un frame con una dirección que el usuario todavía no aprobó. En cuanto elija, se construye vista-previa-app.html con esa dirección y se presenta la pregunta del tour (me encanta / ajustar / repensar) antes de cerrar FICHA-ARTE.md.
+- carrusel "La app por dentro": usa 4 placeholders honestos rotulados (Check-in diario / Metas / Pantalla principal / Reporte semanal) porque la app interna todavía no existe — se reemplazan por screenshots reales al cerrar la Sesión 5 (regla dura de 19 §5). No declarar la landing "100% terminada" hasta ese reemplazo.
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
+- Garantía (footer/reembolsos): el piso legal dice "política de reembolso de Hotmart" SIN número de días porque Hotmart aún no está configurado (Sesión 6) — no prometer un plazo exacto hasta configurarlo.
+- Páginas legales (privacidad/términos/reembolsos): son borrador funcional, les falta el nombre/razón social del responsable, el país de operación y confirmar el email de soporte real (hoy usan el provisional `hola@respira.app`) — ver "Pendientes del usuario".
 
 ## Pendientes del usuario (acciones que el usuario debe hacer)
 - [ ] (no bloqueante) Verificar "Respira" en el registro oficial de marcas (SIC/IMPI) antes de comprar dominio.
+- [ ] Dar 3 datos para las páginas legales: tu nombre o razón social, el país desde el que operas, y si quieres usar `hola@respira.app` como correo de soporte o prefieres otro (esto no bloquea seguir construyendo — se completa antes de vender).
 
 ## Notas para la próxima sesión
 - El usuario ya trae el RESUMEN FINAL validado — no se debe re-investigar mercado desde cero, solo completar los huecos de fuente+fecha en FICHA-MERCADO.md cuando se fije el precio definitivo.
