@@ -9,9 +9,9 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, useReducedMotion } from 'motion/react';
 import { X, ShieldCheck, Lock } from 'lucide-react';
-import { CheckCustom } from '@/components/landing/ui';
+import { CheckCustom, Hairline } from '@/components/landing/ui';
 import { LoadingPlan } from '@/components/funnel/LoadingPlan';
-import { ConfirmSalir, FunnelButton } from '@/components/funnel/ui';
+import { ConfirmSalir, FunnelButton, FunnelFondo } from '@/components/funnel/ui';
 import { RespiraMark } from '@/components/RespiraMark';
 import { LABEL_DOLOR, LABEL_META, LABEL_META_HEADLINE, LABEL_MOMENTO, leerRespuestas, type RespuestasOnboarding } from '@/lib/onboarding';
 import { GARANTIA_DIAS, PLAN_ANUAL, PLAN_MENSUAL, TRIAL_DIAS } from '@/lib/pricing';
@@ -51,6 +51,7 @@ export default function Paywall() {
   const [respuestas, setRespuestas] = useState<RespuestasOnboarding>({});
   const [plan, setPlan] = useState<'anual' | 'mensual'>('anual');
   const [avanzando, setAvanzando] = useState(false);
+  const [errorAvance, setErrorAvance] = useState(false);
   const [confirmandoSalida, setConfirmandoSalida] = useState(false);
   const reduce = useReducedMotion();
 
@@ -65,10 +66,20 @@ export default function Paywall() {
   function empezarPrueba() {
     if (avanzando) return;
     setAvanzando(true);
+    setErrorAvance(false);
+    try {
+      window.localStorage.setItem('respira_plan', plan);
+    } catch {
+      // no bloquea el avance — /entrar simplemente no tendrá el plan preseleccionado.
+    }
     router.push('/entrar');
     // Salvaguarda: si la navegación no ocurre (falla o queda pendiente),
-    // el CTA no se queda congelado en "Un momento…" para siempre (h9).
-    setTimeout(() => setAvanzando(false), 7000);
+    // el CTA no se queda congelado en "Un momento…" para siempre (h9) — y esta
+    // vez con un mensaje visible + forma de reintentar, no solo el botón mudo.
+    setTimeout(() => {
+      setAvanzando(false);
+      setErrorAvance(true);
+    }, 7000);
   }
 
   useEffect(() => {
@@ -106,26 +117,11 @@ export default function Paywall() {
 
   return (
     <div className="relative isolate min-h-dvh overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
-      {/* Mismo fondo con profundidad que el resto del funnel (FunnelScreen) —
-          onboarding y paywall son el mismo flujo, no dos sistemas distintos.
-          fixed (no absolute): esta pantalla también puede crecer más que el
-          viewport (2 planes + timeline + trust row) — fixed la ancla siempre
-          a la esquina real de la pantalla, no al fondo del contenedor.
-          isolate: sin esto, "relative" con z-index:auto no crea contexto de
-          apilamiento propio y el bg-[var(--bg)] de ESTE div tapaba el fondo
-          decorativo (mismo bug que FunnelScreen — ver su comentario). */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10"
-        style={{
-          background:
-            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 14%, transparent) 0%, transparent 60%), ' +
-            'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 12%, transparent) 0%, transparent 55%)',
-        }}
-      />
-      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none fixed -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.15]">
-        <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" />
-      </svg>
+      {/* Mismo fondo que el resto del funnel — un solo componente compartido
+          (FunnelFondo) en vez de dos copias divergiendo con cada fix. El
+          `isolate` del contenedor padre sigue siendo necesario (ver su
+          definición en components/funnel/ui.tsx). */}
+      <FunnelFondo />
       <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-10 pt-4">
         <div className="flex h-11 items-center justify-between">
           <motion.button
@@ -175,29 +171,33 @@ export default function Paywall() {
           {/* Cards de plan */}
           <Bloque indice={2} reduce={reduce}>
             <div className="flex flex-col gap-3">
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setPlan('anual')}
-                className={`relative rounded-[var(--radius-card)] border p-5 text-left transition-colors [touch-action:manipulation] ${
-                  plan === 'anual'
-                    ? 'border-2 border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] shadow-[var(--shadow-2)]'
-                    : 'border-[color-mix(in_oklab,var(--text-tertiary)_25%,transparent)] bg-[var(--surface)] shadow-[var(--shadow-1)]'
-                }`}
-              >
-                <span className="absolute -top-[10px] left-5 rounded-full bg-[var(--accent)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--bg)]">
-                  {PLAN_ANUAL.badge}
-                </span>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[14px] font-semibold text-[var(--text-secondary)]">{PLAN_ANUAL.nombre}</span>
-                  <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
-                    {PLAN_ANUAL.precioMes}
-                    <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
+              {/* Hairline degradé (gate binario de conversión, 55): el plan
+                  recomendado es EL elemento de la vista que "esto importa". */}
+              <Hairline emphasis={plan === 'anual'} className="relative">
+                <motion.button
+                  type="button"
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setPlan('anual')}
+                  className={`w-full rounded-[var(--radius-card)] p-5 text-left transition-colors [touch-action:manipulation] ${
+                    plan === 'anual'
+                      ? 'bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] shadow-[var(--shadow-2)]'
+                      : 'bg-[var(--surface)] shadow-[var(--shadow-1)]'
+                  }`}
+                >
+                  <span className="absolute -top-[10px] left-5 rounded-full bg-[var(--accent)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--bg)]">
+                    {PLAN_ANUAL.badge}
                   </span>
-                </div>
-                <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{PLAN_ANUAL.totalAnual}</p>
-                <p className="mt-1 text-[13px] font-semibold text-[var(--accent)]">{PLAN_ANUAL.ahorro}</p>
-              </motion.button>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[14px] font-semibold text-[var(--text-secondary)]">{PLAN_ANUAL.nombre}</span>
+                    <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
+                      {PLAN_ANUAL.precioMes}
+                      <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{PLAN_ANUAL.totalAnual}</p>
+                  <p className="mt-1 text-[13px] font-semibold text-[var(--accent)]">{PLAN_ANUAL.ahorro}</p>
+                </motion.button>
+              </Hairline>
 
               <motion.button
                 type="button"
@@ -249,6 +249,11 @@ export default function Paywall() {
             <FunnelButton onClick={empezarPrueba} disabled={avanzando}>
               {avanzando ? 'Un momento…' : `Empezar mis ${TRIAL_DIAS} días gratis`}
             </FunnelButton>
+            {errorAvance && (
+              <p className="mt-2 text-center text-[13px] text-[var(--text-secondary)]">
+                Esto está tardando más de lo normal. Vuelve a intentarlo — si sigue sin avanzar, revisa tu conexión.
+              </p>
+            )}
           </Bloque>
 
           <Bloque indice={5} reduce={reduce} className="flex flex-col items-center gap-4">
@@ -270,7 +275,7 @@ export default function Paywall() {
                 <Lock size={14} strokeWidth={2} aria-hidden="true" /> Pago seguro
               </span>
               <span className="inline-flex items-center gap-1">
-                <ShieldCheck size={14} strokeWidth={2} aria-hidden="true" /> Garantía de {GARANTIA_DIAS} días
+                <ShieldCheck size={14} strokeWidth={2} aria-hidden="true" /> Garantía de {GARANTIA_DIAS} días sin culpa
               </span>
             </p>
           </Bloque>

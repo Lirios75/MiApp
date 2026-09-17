@@ -16,5 +16,5 @@ export const PLAN_ANUAL = {
 export const PLAN_MENSUAL = {
   nombre: 'Mensual',
   precioMes: '$6.99',
-  montoCobro: '$6.99/mes',
+  montoCobro: '$6.99',
 };

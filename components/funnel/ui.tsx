@@ -29,14 +29,15 @@ export function FunnelHeader({
     <div className="mx-auto w-full max-w-[500px] px-4 pt-4">
       <div className="flex h-11 items-center gap-3">
         {onBack ? (
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.9 }}
             onClick={onBack}
             aria-label="Atrás"
             className="flex size-11 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] [touch-action:manipulation]"
           >
             <ChevronLeft size={22} strokeWidth={2.5} aria-hidden="true" />
-          </button>
+          </motion.button>
         ) : (
           <a href="/" className="flex size-11 shrink-0 items-center justify-center [touch-action:manipulation]">
             <RespiraMark estatico />
@@ -51,14 +52,15 @@ export function FunnelHeader({
           />
         </div>
         {onClose && (
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.9 }}
             onClick={onClose}
             aria-label="Salir"
             className="flex size-11 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] [touch-action:manipulation]"
           >
             <X size={18} strokeWidth={2.25} aria-hidden="true" />
-          </button>
+          </motion.button>
         )}
       </div>
     </div>
@@ -161,6 +163,62 @@ export function OptionChip({
   );
 }
 
+/* ── <FunnelFondo> — mesh + anillo decorativo compartido por TODAS las pantallas
+   del funnel (onboarding vía FunnelScreen, y paywall directo — antes duplicado
+   en los dos archivos, con el mismo bug arreglándose dos veces). Un solo lugar
+   de verdad de aquí en adelante. ── */
+export function FunnelFondo() {
+  const reduce = useReducedMotion();
+  return (
+    <>
+      {/* Fondo con profundidad (FICHA-ARTE: "sombras suaves tintadas") — mesh sutil
+          + eco del anillo de marca a baja opacidad, para que ningún paso corto
+          quede en un plano vacío.
+          FIXED (no absolute): el contenedor padre es min-h-dvh y crece con el
+          contenido, así que "absolute -bottom-24" quedaba anclado al fondo del
+          contenedor completo, no del viewport — en pasos altos el anillo caía
+          fuera de lo visible sin scroll. fixed lo ancla siempre a la esquina
+          real de la pantalla.
+          El padre necesita además `relative isolate`: sin `isolate`, un
+          `position:relative` con `z-index:auto` NO crea contexto de apilamiento
+          propio — los hijos con -z-10 escapan al contexto raíz y el propio
+          bg-[var(--bg)] del contenedor padre (que pinta dentro del contexto
+          raíz, en el nivel de "contenido en flujo") termina tapando este fondo
+          por completo. isolate los mantiene anidados, así se pintan encima del
+          fondo del contenedor y debajo de su contenido. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10"
+        style={{
+          background:
+            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 14%, transparent) 0%, transparent 60%), ' +
+            /* Mesh inferior agrandado (560x420 -> 900x700): en pasos cortos (una sola
+               pregunta corta o el paso de compromiso) el tercio inferior del viewport
+               quedaba en cream plano — este alcance mayor lo cubre con textura real
+               en vez de solo mover el contenido. */
+            'radial-gradient(900px 700px at 100% 100%, color-mix(in oklab, var(--accent-2) 13%, transparent) 0%, transparent 65%)',
+        }}
+      />
+      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none fixed -bottom-16 -right-12 -z-10 size-[420px]">
+        {/* Pulso sutil (FICHA-ARTE: "anillo que se expande" — la firma de movimiento
+            de la marca, no solo un círculo estático). */}
+        <motion.circle
+          cx="100"
+          cy="100"
+          r="86"
+          fill="none"
+          stroke="var(--accent)"
+          strokeWidth="14"
+          initial={{ scale: 1, opacity: 0.14 }}
+          animate={reduce ? { scale: 1, opacity: 0.16 } : { scale: [1, 1.03, 1], opacity: [0.13, 0.18, 0.13] }}
+          transition={reduce ? undefined : { duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '100px 100px' }}
+        />
+      </svg>
+    </>
+  );
+}
+
 /* ── <FunnelScreen> — contenedor de una pantalla del funnel: header + contenido
    con transición horizontal de paso a paso (50 §A4). ── */
 export function FunnelScreen({
@@ -181,39 +239,14 @@ export function FunnelScreen({
   const reduce = useReducedMotion();
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
-      {/* Fondo con profundidad (FICHA-ARTE: "sombras suaves tintadas") — mesh sutil
-          + eco del anillo de marca a baja opacidad, para que ningún paso corto
-          quede en un plano vacío.
-          FIXED (no absolute): el contenedor es min-h-dvh y crece con el contenido
-          (p.ej. paso 0 con la lista de chips), así que "absolute -bottom-24" quedaba
-          anclado al fondo del contenedor completo, no del viewport — en pasos altos
-          el anillo caía fuera de lo visible sin scroll. fixed lo ancla siempre a la
-          esquina real de la pantalla.
-          ISOLATE es la pieza que faltaba: sin esto, "relative" con z-index:auto NO
-          crea contexto de apilamiento propio — los hijos con -z-10 escapan al
-          contexto raíz y el bg-[var(--bg)] de ESTE MISMO div (que sí pinta dentro
-          del contexto raíz, en el nivel de "contenido en flujo") termina tapando el
-          fondo decorativo por completo. isolate los mantiene anidados, así se
-          pintan encima del propio fondo del contenedor y debajo de su contenido. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10"
-        style={{
-          background:
-            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 14%, transparent) 0%, transparent 60%), ' +
-            'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 12%, transparent) 0%, transparent 55%)',
-        }}
-      />
-      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none fixed -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.15]">
-        <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" />
-      </svg>
+      <FunnelFondo />
       <FunnelHeader progreso={progreso} onBack={onBack} onClose={onClose} />
       <motion.div
         key={stepKey}
         initial={{ opacity: 0, x: reduce ? 0 : 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: reduce ? 0.2 : 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto flex w-full max-w-[500px] flex-1 flex-col px-4 pb-8 pt-8"
+        className="mx-auto flex w-full max-w-[500px] flex-1 flex-col justify-center px-4 pb-8 pt-8"
       >
         {children}
       </motion.div>
@@ -274,17 +307,22 @@ export function HoldButton({ onCommit, label }: { onCommit: () => void; label: s
   const reduce = useReducedMotion();
   const [progreso, setProgreso] = useState(0);
   const rafRef = useRef<number | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inicioRef = useRef(0);
   const DURACION = 900;
 
   function limpiar() {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
+    if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
+    timeoutRef.current = null;
   }
 
   function empezar() {
     if (reduce) {
-      onCommit();
+      // Sin animación, pero el ritual de "sostener" se mantiene: un solo tap
+      // ya no dispara el compromiso, hay que sostenerlo la misma duración.
+      timeoutRef.current = setTimeout(onCommit, DURACION);
       return;
     }
     inicioRef.current = performance.now();

@@ -59,7 +59,7 @@ export default function Onboarding() {
   // ── Paso 0: pregunta del dolor (eco de la landing) ──
   if (paso === 0) {
     pantalla = (
-      <FunnelScreen progreso={progreso} stepKey={paso}>
+      <FunnelScreen progreso={progreso} onClose={salir} stepKey={paso}>
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Qué te pasa más seguido?
         </h1>
