@@ -6,7 +6,7 @@
 // cero valores nuevos de marca aquí, solo estructura y comportamiento.
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { motion, useReducedMotion } from 'motion/react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ChevronLeft, Check, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { RespiraMark } from '@/components/RespiraMark';
@@ -180,20 +180,31 @@ export function FunnelScreen({
 }) {
   const reduce = useReducedMotion();
   return (
-    <div className="relative flex min-h-dvh flex-col overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
+    <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
       {/* Fondo con profundidad (FICHA-ARTE: "sombras suaves tintadas") — mesh sutil
           + eco del anillo de marca a baja opacidad, para que ningún paso corto
-          quede en un plano vacío. */}
+          quede en un plano vacío.
+          FIXED (no absolute): el contenedor es min-h-dvh y crece con el contenido
+          (p.ej. paso 0 con la lista de chips), así que "absolute -bottom-24" quedaba
+          anclado al fondo del contenedor completo, no del viewport — en pasos altos
+          el anillo caía fuera de lo visible sin scroll. fixed lo ancla siempre a la
+          esquina real de la pantalla.
+          ISOLATE es la pieza que faltaba: sin esto, "relative" con z-index:auto NO
+          crea contexto de apilamiento propio — los hijos con -z-10 escapan al
+          contexto raíz y el bg-[var(--bg)] de ESTE MISMO div (que sí pinta dentro
+          del contexto raíz, en el nivel de "contenido en flujo") termina tapando el
+          fondo decorativo por completo. isolate los mantiene anidados, así se
+          pintan encima del propio fondo del contenedor y debajo de su contenido. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
+        className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
             'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 14%, transparent) 0%, transparent 60%), ' +
             'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 12%, transparent) 0%, transparent 55%)',
         }}
       />
-      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.15]">
+      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none fixed -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.15]">
         <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" />
       </svg>
       <FunnelHeader progreso={progreso} onBack={onBack} onClose={onClose} />
@@ -207,6 +218,53 @@ export function FunnelScreen({
         {children}
       </motion.div>
     </div>
+  );
+}
+
+/* ── <ConfirmSalir> — modal propio para confirmar la salida del funnel cuando
+   ya hay respuestas invertidas (nunca window.confirm: rompe la identidad y no
+   anima — 14/49). Overlay + card centrada, mismos tokens del kit. ── */
+export function ConfirmSalir({
+  abierto,
+  onSeguir,
+  onSalir,
+}: {
+  abierto: boolean;
+  onSeguir: () => void;
+  onSalir: () => void;
+}) {
+  const reduce = useReducedMotion();
+  return (
+    <AnimatePresence>
+      {abierto && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: reduce ? 0.1 : 0.2 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_oklab,var(--text-primary)_45%,transparent)] px-6"
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: reduce ? 1 : 0.94, y: reduce ? 0 : 8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: reduce ? 1 : 0.94, y: reduce ? 0 : 8 }}
+            transition={{ duration: reduce ? 0.1 : 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-[340px] rounded-[var(--radius-card)] bg-[var(--surface)] p-6 shadow-[var(--shadow-2)]"
+          >
+            <h2 className="text-[18px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">¿Salir?</h2>
+            <p className="mt-2 text-[14px] leading-snug text-[var(--text-secondary)]">
+              Perderás las respuestas de tu quiz.
+            </p>
+            <div className="mt-5 flex flex-col gap-2">
+              <FunnelButton onClick={onSeguir}>Seguir aquí</FunnelButton>
+              <FunnelButton onClick={onSalir} variant="outline">
+                Salir sin guardar
+              </FunnelButton>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

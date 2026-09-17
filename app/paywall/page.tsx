@@ -11,7 +11,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { X, ShieldCheck, Lock } from 'lucide-react';
 import { CheckCustom } from '@/components/landing/ui';
 import { LoadingPlan } from '@/components/funnel/LoadingPlan';
-import { FunnelButton } from '@/components/funnel/ui';
+import { ConfirmSalir, FunnelButton } from '@/components/funnel/ui';
 import { RespiraMark } from '@/components/RespiraMark';
 import { LABEL_DOLOR, LABEL_META, LABEL_META_HEADLINE, LABEL_MOMENTO, leerRespuestas, type RespuestasOnboarding } from '@/lib/onboarding';
 import { GARANTIA_DIAS, PLAN_ANUAL, PLAN_MENSUAL, TRIAL_DIAS } from '@/lib/pricing';
@@ -51,17 +51,24 @@ export default function Paywall() {
   const [respuestas, setRespuestas] = useState<RespuestasOnboarding>({});
   const [plan, setPlan] = useState<'anual' | 'mensual'>('anual');
   const [avanzando, setAvanzando] = useState(false);
+  const [confirmandoSalida, setConfirmandoSalida] = useState(false);
   const reduce = useReducedMotion();
 
   const hayRespuestas = Object.keys(respuestas).length > 0;
   function salirConfirmando() {
-    if (hayRespuestas && !window.confirm('¿Salir? Perderás las respuestas de tu quiz.')) return;
+    if (hayRespuestas) {
+      setConfirmandoSalida(true);
+      return;
+    }
     router.push('/');
   }
   function empezarPrueba() {
     if (avanzando) return;
     setAvanzando(true);
     router.push('/entrar');
+    // Salvaguarda: si la navegación no ocurre (falla o queda pendiente),
+    // el CTA no se queda congelado en "Un momento…" para siempre (h9).
+    setTimeout(() => setAvanzando(false), 7000);
   }
 
   useEffect(() => {
@@ -98,19 +105,25 @@ export default function Paywall() {
   }
 
   return (
-    <div className="relative min-h-dvh overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
+    <div className="relative isolate min-h-dvh overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
       {/* Mismo fondo con profundidad que el resto del funnel (FunnelScreen) —
-          onboarding y paywall son el mismo flujo, no dos sistemas distintos. */}
+          onboarding y paywall son el mismo flujo, no dos sistemas distintos.
+          fixed (no absolute): esta pantalla también puede crecer más que el
+          viewport (2 planes + timeline + trust row) — fixed la ancla siempre
+          a la esquina real de la pantalla, no al fondo del contenedor.
+          isolate: sin esto, "relative" con z-index:auto no crea contexto de
+          apilamiento propio y el bg-[var(--bg)] de ESTE div tapaba el fondo
+          decorativo (mismo bug que FunnelScreen — ver su comentario). */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10"
+        className="pointer-events-none fixed inset-0 -z-10"
         style={{
           background:
             'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 14%, transparent) 0%, transparent 60%), ' +
             'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 12%, transparent) 0%, transparent 55%)',
         }}
       />
-      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.15]">
+      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none fixed -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.15]">
         <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" />
       </svg>
       <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-10 pt-4">
@@ -176,7 +189,7 @@ export default function Paywall() {
                   {PLAN_ANUAL.badge}
                 </span>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[16px] font-semibold text-[var(--text-primary)]">{PLAN_ANUAL.nombre}</span>
+                  <span className="text-[14px] font-semibold text-[var(--text-secondary)]">{PLAN_ANUAL.nombre}</span>
                   <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
                     {PLAN_ANUAL.precioMes}
                     <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
@@ -197,7 +210,7 @@ export default function Paywall() {
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[16px] font-semibold text-[var(--text-primary)]">{PLAN_MENSUAL.nombre}</span>
+                  <span className="text-[14px] font-semibold text-[var(--text-secondary)]">{PLAN_MENSUAL.nombre}</span>
                   <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
                     {PLAN_MENSUAL.precioMes}
                     <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
@@ -263,6 +276,11 @@ export default function Paywall() {
           </Bloque>
         </div>
       </div>
+      <ConfirmSalir
+        abierto={confirmandoSalida}
+        onSeguir={() => setConfirmandoSalida(false)}
+        onSalir={() => router.push('/')}
+      />
     </div>
   );
 }

@@ -6,9 +6,10 @@
 // todavía — Sesión 6 conecta Supabase) y se leen en /paywall para personalizar.
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Lightbulb, HeartHandshake, Sprout } from 'lucide-react';
-import { FunnelButton, FunnelScreen, HoldButton, OptionChip } from '@/components/funnel/ui';
+import { useState, type ReactNode } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
+import { Check, Lightbulb, HeartHandshake, Sprout } from 'lucide-react';
+import { ConfirmSalir, FunnelButton, FunnelScreen, HoldButton, OptionChip } from '@/components/funnel/ui';
 import { OPCIONES_DOLOR, OPCIONES_INTENTO, OPCIONES_META, OPCIONES_MOMENTO, guardarRespuestas, type RespuestasOnboarding } from '@/lib/onboarding';
 
 const TOTAL_PASOS = 6; // 0-indexado: 6 pasos entre el inicio (8%) y el compromiso (100%)
@@ -22,6 +23,9 @@ export default function Onboarding() {
   const router = useRouter();
   const [paso, setPaso] = useState(0);
   const [respuestas, setRespuestas] = useState<RespuestasOnboarding>({});
+  const [comprometido, setComprometido] = useState(false);
+  const [confirmandoSalida, setConfirmandoSalida] = useState(false);
+  const reduce = useReducedMotion();
 
   function avanzar() {
     setPaso((p) => p + 1);
@@ -36,20 +40,25 @@ export default function Onboarding() {
 
   function comprometerse() {
     guardarRespuestas({ ...respuestas, comprometido: true });
-    router.push('/paywall');
+    setComprometido(true);
+    setTimeout(() => router.push('/paywall'), 700);
   }
 
   function salir() {
     const hayRespuestas = Object.keys(respuestas).length > 0;
-    if (hayRespuestas && !window.confirm('¿Salir? Perderás lo que llevas respondido.')) return;
+    if (hayRespuestas) {
+      setConfirmandoSalida(true);
+      return;
+    }
     router.push('/');
   }
 
   const progreso = progresoDePaso(paso);
+  let pantalla: ReactNode;
 
   // ── Paso 0: pregunta del dolor (eco de la landing) ──
   if (paso === 0) {
-    return (
+    pantalla = (
       <FunnelScreen progreso={progreso} stepKey={paso}>
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Qué te pasa más seguido?
@@ -69,11 +78,9 @@ export default function Onboarding() {
         </div>
       </FunnelScreen>
     );
-  }
-
-  // ── Paso 1: reconocimiento — nombra el mecanismo (regla b, escalera 02B) ──
-  if (paso === 1) {
-    return (
+  } else if (paso === 1) {
+    // ── Paso 1: reconocimiento — nombra el mecanismo (regla b, escalera 02B) ──
+    pantalla = (
       <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <span
@@ -94,11 +101,9 @@ export default function Onboarding() {
         <FunnelButton onClick={avanzar}>Continuar</FunnelButton>
       </FunnelScreen>
     );
-  }
-
-  // ── Paso 2: momento del día (ancla contextual, 02B) ──
-  if (paso === 2) {
-    return (
+  } else if (paso === 2) {
+    // ── Paso 2: momento del día (ancla contextual, 02B) ──
+    pantalla = (
       <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿En qué momento te pasa más?
@@ -118,11 +123,9 @@ export default function Onboarding() {
         </div>
       </FunnelScreen>
     );
-  }
-
-  // ── Paso 3: ¿ya lo intentaste? (objeción #1 de FICHA-AVATAR) ──
-  if (paso === 3) {
-    return (
+  } else if (paso === 3) {
+    // ── Paso 3: ¿ya lo intentaste? (objeción #1 de FICHA-AVATAR) ──
+    pantalla = (
       <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Ya intentaste controlar tus gastos antes?
@@ -142,12 +145,10 @@ export default function Onboarding() {
         </div>
       </FunnelScreen>
     );
-  }
-
-  // ── Paso 4: reconocimiento — quita la culpa con la causa real (fórmula 50 §A5) ──
-  if (paso === 4) {
+  } else if (paso === 4) {
+    // ── Paso 4: reconocimiento — quita la culpa con la causa real (fórmula 50 §A5) ──
     const yaIntento = respuestas.intento !== 'primera_vez';
-    return (
+    pantalla = (
       <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <span
@@ -172,11 +173,9 @@ export default function Onboarding() {
         <FunnelButton onClick={avanzar}>Continuar</FunnelButton>
       </FunnelScreen>
     );
-  }
-
-  // ── Paso 5: meta principal (personaliza el paywall) ──
-  if (paso === 5) {
-    return (
+  } else if (paso === 5) {
+    // ── Paso 5: meta principal (personaliza el paywall) ──
+    pantalla = (
       <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Cuál es tu meta principal?
@@ -196,22 +195,53 @@ export default function Onboarding() {
         </div>
       </FunnelScreen>
     );
+  } else {
+    // ── Paso 6: compromiso (ritual pre-loading, 50 §C3bis) ──
+    pantalla = (
+      <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
+        <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
+          {comprometido ? (
+            <motion.div
+              initial={{ opacity: 0, scale: reduce ? 1 : 0.85 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: reduce ? 0.15 : 0.45, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col items-center gap-4"
+            >
+              <motion.span
+                aria-hidden="true"
+                initial={{ scale: reduce ? 1 : 0.6 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: reduce ? 0.1 : 0.4, type: 'spring', bounce: 0.5 }}
+                className="inline-flex size-16 items-center justify-center rounded-full bg-[var(--accent)]"
+              >
+                <Check size={30} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
+              </motion.span>
+              <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
+                ¡Listo, quedó registrado!
+              </h2>
+            </motion.div>
+          ) : (
+            <>
+              <div>
+                <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
+                  ¿Lista para tu primer Semáforo?
+                </h2>
+                <p className="mt-2 max-w-[34ch] text-[15px] text-[var(--text-secondary)]">
+                  Mantén presionado para comprometerte a marcarlo todos los días esta semana.
+                </p>
+              </div>
+              <HoldButton onCommit={comprometerse} label="Me comprometo esta semana" />
+            </>
+          )}
+        </div>
+      </FunnelScreen>
+    );
   }
 
-  // ── Paso 6: compromiso (ritual pre-loading, 50 §C3bis) ──
   return (
-    <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
-      <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
-        <div>
-          <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
-            ¿Lista para tu primer Semáforo?
-          </h2>
-          <p className="mt-2 max-w-[34ch] text-[15px] text-[var(--text-secondary)]">
-            Mantén presionado para comprometerte a marcarlo todos los días esta semana.
-          </p>
-        </div>
-        <HoldButton onCommit={comprometerse} label="Me comprometo esta semana" />
-      </div>
-    </FunnelScreen>
+    <>
+      {pantalla}
+      <ConfirmSalir abierto={confirmandoSalida} onSeguir={() => setConfirmandoSalida(false)} onSalir={() => router.push('/')} />
+    </>
   );
 }
