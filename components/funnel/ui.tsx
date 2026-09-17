@@ -7,7 +7,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { ChevronLeft, Check } from 'lucide-react';
+import { ChevronLeft, Check, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { RespiraMark } from '@/components/RespiraMark';
 
@@ -16,10 +16,14 @@ import { RespiraMark } from '@/components/RespiraMark';
 export function FunnelHeader({
   progreso,
   onBack,
+  onClose,
 }: {
   /** 0-100. */
   progreso: number;
   onBack?: () => void;
+  /** Salida explícita del funnel — SIEMPRE visible, no solo en el primer paso
+   * (sin esto, salir a mitad del quiz exige retroceder paso a paso). */
+  onClose?: () => void;
 }) {
   return (
     <div className="mx-auto w-full max-w-[500px] px-4 pt-4">
@@ -46,6 +50,16 @@ export function FunnelHeader({
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
           />
         </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Salir"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full text-[var(--text-secondary)] [touch-action:manipulation]"
+          >
+            <X size={18} strokeWidth={2.25} aria-hidden="true" />
+          </button>
+        )}
       </div>
     </div>
   );
@@ -152,11 +166,14 @@ export function OptionChip({
 export function FunnelScreen({
   progreso,
   onBack,
+  onClose,
   children,
   stepKey,
 }: {
   progreso: number;
   onBack?: () => void;
+  /** Salida explícita del funnel, visible en todos los pasos (no solo el primero). */
+  onClose?: () => void;
   children: ReactNode;
   /** Cambia con cada pantalla para disparar la transición de entrada. */
   stepKey: string | number;
@@ -172,14 +189,14 @@ export function FunnelScreen({
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 7%, transparent) 0%, transparent 60%), ' +
-            'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 6%, transparent) 0%, transparent 55%)',
+            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 14%, transparent) 0%, transparent 60%), ' +
+            'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 12%, transparent) 0%, transparent 55%)',
         }}
       />
-      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.08]">
+      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.15]">
         <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" />
       </svg>
-      <FunnelHeader progreso={progreso} onBack={onBack} />
+      <FunnelHeader progreso={progreso} onBack={onBack} onClose={onClose} />
       <motion.div
         key={stepKey}
         initial={{ opacity: 0, x: reduce ? 0 : 40 }}

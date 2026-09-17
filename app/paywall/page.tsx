@@ -50,7 +50,19 @@ export default function Paywall() {
   const [fase, setFase] = useState<'cargando' | 'listo'>('cargando');
   const [respuestas, setRespuestas] = useState<RespuestasOnboarding>({});
   const [plan, setPlan] = useState<'anual' | 'mensual'>('anual');
+  const [avanzando, setAvanzando] = useState(false);
   const reduce = useReducedMotion();
+
+  const hayRespuestas = Object.keys(respuestas).length > 0;
+  function salirConfirmando() {
+    if (hayRespuestas && !window.confirm('¿Salir? Perderás las respuestas de tu quiz.')) return;
+    router.push('/');
+  }
+  function empezarPrueba() {
+    if (avanzando) return;
+    setAvanzando(true);
+    router.push('/entrar');
+  }
 
   useEffect(() => {
     setRespuestas(leerRespuestas());
@@ -94,11 +106,11 @@ export default function Paywall() {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background:
-            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 7%, transparent) 0%, transparent 60%), ' +
-            'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 6%, transparent) 0%, transparent 55%)',
+            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 14%, transparent) 0%, transparent 60%), ' +
+            'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 12%, transparent) 0%, transparent 55%)',
         }}
       />
-      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.08]">
+      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.15]">
         <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" />
       </svg>
       <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-10 pt-4">
@@ -106,7 +118,7 @@ export default function Paywall() {
           <motion.button
             type="button"
             whileTap={{ scale: 0.9 }}
-            onClick={() => router.push('/')}
+            onClick={salirConfirmando}
             aria-label="Cerrar"
             className="flex size-11 items-center justify-center rounded-full text-[var(--text-secondary)] [touch-action:manipulation]"
           >
@@ -165,7 +177,7 @@ export default function Paywall() {
                 </span>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[16px] font-semibold text-[var(--text-primary)]">{PLAN_ANUAL.nombre}</span>
-                  <span className="text-[22px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
+                  <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
                     {PLAN_ANUAL.precioMes}
                     <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
                   </span>
@@ -186,7 +198,7 @@ export default function Paywall() {
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-[16px] font-semibold text-[var(--text-primary)]">{PLAN_MENSUAL.nombre}</span>
-                  <span className="text-[22px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
+                  <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
                     {PLAN_MENSUAL.precioMes}
                     <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
                   </span>
@@ -221,7 +233,9 @@ export default function Paywall() {
           </Bloque>
 
           <Bloque indice={4} reduce={reduce}>
-            <FunnelButton onClick={() => router.push('/entrar')}>Empezar mis {TRIAL_DIAS} días gratis</FunnelButton>
+            <FunnelButton onClick={empezarPrueba} disabled={avanzando}>
+              {avanzando ? 'Un momento…' : `Empezar mis ${TRIAL_DIAS} días gratis`}
+            </FunnelButton>
           </Bloque>
 
           <Bloque indice={5} reduce={reduce} className="flex flex-col items-center gap-4">
@@ -232,7 +246,7 @@ export default function Paywall() {
             <motion.button
               type="button"
               whileTap={{ scale: 0.96 }}
-              onClick={() => router.push('/')}
+              onClick={salirConfirmando}
               className="text-center text-[14px] font-medium text-[var(--text-tertiary)] [touch-action:manipulation]"
             >
               Ahora no

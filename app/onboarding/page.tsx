@@ -39,6 +39,12 @@ export default function Onboarding() {
     router.push('/paywall');
   }
 
+  function salir() {
+    const hayRespuestas = Object.keys(respuestas).length > 0;
+    if (hayRespuestas && !window.confirm('¿Salir? Perderás lo que llevas respondido.')) return;
+    router.push('/');
+  }
+
   const progreso = progresoDePaso(paso);
 
   // ── Paso 0: pregunta del dolor (eco de la landing) ──
@@ -68,7 +74,7 @@ export default function Onboarding() {
   // ── Paso 1: reconocimiento — nombra el mecanismo (regla b, escalera 02B) ──
   if (paso === 1) {
     return (
-      <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
+      <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <span
             aria-hidden="true"
@@ -93,7 +99,7 @@ export default function Onboarding() {
   // ── Paso 2: momento del día (ancla contextual, 02B) ──
   if (paso === 2) {
     return (
-      <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
+      <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿En qué momento te pasa más?
         </h1>
@@ -117,7 +123,7 @@ export default function Onboarding() {
   // ── Paso 3: ¿ya lo intentaste? (objeción #1 de FICHA-AVATAR) ──
   if (paso === 3) {
     return (
-      <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
+      <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Ya intentaste controlar tus gastos antes?
         </h1>
@@ -142,7 +148,7 @@ export default function Onboarding() {
   if (paso === 4) {
     const yaIntento = respuestas.intento !== 'primera_vez';
     return (
-      <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
+      <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <div className="flex flex-1 flex-col items-center justify-center text-center">
           <span
             aria-hidden="true"
@@ -171,7 +177,7 @@ export default function Onboarding() {
   // ── Paso 5: meta principal (personaliza el paywall) ──
   if (paso === 5) {
     return (
-      <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
+      <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Cuál es tu meta principal?
         </h1>
@@ -194,7 +200,7 @@ export default function Onboarding() {
 
   // ── Paso 6: compromiso (ritual pre-loading, 50 §C3bis) ──
   return (
-    <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
+    <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
       <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
         <div>
           <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
