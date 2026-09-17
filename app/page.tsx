@@ -1,6 +1,5 @@
 'use client';
 
-import { AlertCircle, Frown, Repeat, Wallet } from "lucide-react";
 import { Hero } from "@/components/landing/Hero";
 import { Problema } from "@/components/landing/Problema";
 import { Agitacion } from "@/components/landing/Agitacion";
@@ -17,7 +16,7 @@ import { RespiraMark } from "@/components/RespiraMark";
 // Modelo onboarding-first (02C/ESTADO.md): el CTA lleva al onboarding gratis,
 // nunca directo al checkout — el pago se cierra en el paywall in-app (Sesión 4).
 const CTA_HREF = "/onboarding";
-const CTA_LABEL = "Quiero mi primer check-in";
+const CTA_LABEL = "Quiero mi primer registro";
 
 export default function LandingRespira() {
   return (
@@ -28,7 +27,7 @@ export default function LandingRespira() {
         logo={<RespiraMark />}
         loginHref="/entrar"
         h1Marked="Deja de [acento]gastar por ansiedad[/acento] sin darte cuenta"
-        subtitleMarked="Un check-in de 30 segundos para notar el patrón antes de repetirlo."
+        subtitleMarked="Un registro de 30 segundos para notar el patrón antes de repetirlo."
         ctaLabel={CTA_LABEL}
         ctaHref={CTA_HREF}
         socialProof={<span>Sin conectar tu banco · cancela cuando quieras</span>}
@@ -39,10 +38,10 @@ export default function LandingRespira() {
       <Problema
         titulo="¿Te suena?"
         preguntas={[
-          { icon: Wallet, textoMarked: "¿Gastas y después no sabes en qué se te fue la plata?" },
-          { icon: AlertCircle, textoMarked: "¿Revisar tu cuenta te da ansiedad, así que mejor no miras?" },
-          { icon: Repeat, textoMarked: "¿Ya empezaste un presupuesto y lo dejaste antes de la semana?" },
-          { icon: Frown, textoMarked: "¿Sientes que no tienes control sobre ti misma con el dinero?" },
+          { emoji: "💸", textoMarked: "¿Gastas y después no sabes en qué se te fue la plata?" },
+          { emoji: "😰", textoMarked: "¿Revisar tu cuenta te da ansiedad, así que mejor no miras?" },
+          { emoji: "🔁", textoMarked: "¿Ya empezaste un presupuesto y lo dejaste antes de la semana?" },
+          { emoji: "😔", textoMarked: "¿Sientes que no tienes control sobre ti misma con el dinero?" },
         ]}
       />
 
@@ -83,7 +82,7 @@ export default function LandingRespira() {
       <AppPorDentro
         tituloMarked="Tu semana, [acento]sin culpa[/acento]"
         frames={[
-          { label: "Tu check-in de 30 segundos", nombrePantalla: "Check-in diario" },
+          { label: "Tu registro de 30 segundos", nombrePantalla: "Registro diario" },
           { label: "Tu meta de ahorro creciendo", nombrePantalla: "Metas" },
           { label: "Tu racha de la semana", nombrePantalla: "Pantalla principal" },
           { label: "Tu semana, explicada", nombrePantalla: "Reporte semanal" },
@@ -153,7 +152,7 @@ export default function LandingRespira() {
           {
             pregunta: "Ya probé un curso, un journal y otra app, ¿por qué esta sí?",
             respuestaMarked:
-              "Porque no es otro presupuesto: es un check-in de 30 segundos que conecta tu emoción con tu gasto, [b]antes de que se repita[/b].",
+              "Porque no es otro presupuesto: es un registro de 30 segundos que conecta tu emoción con tu gasto, [b]antes de que se repita[/b].",
           },
           {
             pregunta: "¿Cuánto tiempo me toma cada día?",

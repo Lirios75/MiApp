@@ -13,7 +13,9 @@ import { CtaButton } from './ui';
 import { MarkedCopy, truncarMarcado, warnCopy } from './MarkedCopy';
 
 /* ── <EcoAnillo> — la misma firma de movimiento de RespiraMark.tsx, a escala de
-   fondo: se llena al entrar en vista, nunca compite con el copy (12% opacidad). ── */
+   fondo: se llena al entrar en vista, nunca compite con el copy (18% opacidad —
+   subido desde 12% por nota del revisor-visual: el dispositivo ownable de la
+   marca quedaba casi imperceptible). ── */
 function EcoAnillo() {
   const ref = useRef<SVGSVGElement>(null);
   const enVista = useInView(ref, { once: true, amount: 0.5 });
@@ -25,7 +27,7 @@ function EcoAnillo() {
       ref={ref}
       aria-hidden="true"
       viewBox="0 0 200 200"
-      className="pointer-events-none absolute -right-16 top-8 -z-10 size-[280px] opacity-[0.12] md:-right-10 md:top-0 md:size-[360px]"
+      className="pointer-events-none absolute -right-16 top-8 -z-10 size-[280px] opacity-[0.18] md:-right-10 md:top-0 md:size-[360px]"
     >
       <motion.circle
         cx="100"

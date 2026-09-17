@@ -11,7 +11,7 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "Respira — deja de gastar por ansiedad",
   description:
-    "Un check-in de 30 segundos al día que te ayuda a notar el patrón antes de repetirlo. Sin conectar tu banco, sin categorías complicadas.",
+    "Un registro de 30 segundos al día que te ayuda a notar el patrón antes de repetirlo. Sin conectar tu banco, sin categorías complicadas.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

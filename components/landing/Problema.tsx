@@ -2,18 +2,18 @@
 
 // KIT DE LANDING — §2 PROBLEMA (blueprint: 55 §2)
 // 3-5 PREGUNTAS que hacen asentir, apiladas — NUNCA párrafo corrido. Cada una con
-// su ícono de dolor SVG en IconChip tone="muted" (neutro apagado: los checks son
-// de la solución, no del problema). Máx 12 palabras por card (warn). Fondo
-// ELEVADO: abre el bloque problema+agitación (un solo movimiento visual, T1).
+// su emoji de dolor a color en un chip neutro (decisión deliberada del proyecto,
+// no el ícono SVG monocromático del resto del kit). Máx 12 palabras por card
+// (warn). Fondo ELEVADO: abre el bloque problema+agitación (un solo movimiento
+// visual, T1).
 
 import { motion } from 'motion/react';
-import type { LucideIcon } from 'lucide-react';
-import { IconChip, SectionShell, useReveal, VIEWPORT_ONCE } from './ui';
+import { SectionShell, useReveal, VIEWPORT_ONCE } from './ui';
 import { MarkedCopy, warnCopy, warnRango } from './MarkedCopy';
 
 export interface PreguntaProblema {
-  /** Ícono de dolor de Lucide (Inbox, AlarmClock, Repeat…) — jamás emoji. */
-  icon: LucideIcon;
+  /** Emoji a color que representa el dolor — elección deliberada del usuario para esta sección. */
+  emoji: string;
   /** Copy MARCADO — pregunta directa al lector, máx 12 palabras. */
   textoMarked: string;
 }
@@ -55,7 +55,12 @@ export function Problema({ titulo, preguntas, id }: ProblemaProps) {
               variants={item}
               className="flex items-start gap-4 rounded-[var(--radius-card)] bg-[var(--bg)] p-4 shadow-[var(--shadow-1)]"
             >
-              <IconChip icon={p.icon} tone="muted" />
+              <span
+                aria-hidden="true"
+                className="inline-flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_35%,transparent)] bg-[color-mix(in_oklab,var(--text-tertiary)_12%,transparent)] text-[22px] leading-none"
+              >
+                {p.emoji}
+              </span>
               <p className="pt-2 text-[17px] font-medium leading-snug text-[var(--text-primary)]">
                 <MarkedCopy text={p.textoMarked} />
               </p>

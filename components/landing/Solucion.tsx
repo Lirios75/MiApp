@@ -102,15 +102,14 @@ export function Solucion({
 
         {antesDespues && (
           <motion.div variants={item} className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-[var(--radius-card)] bg-[var(--surface-2)] p-5">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+            <div className="rounded-[var(--radius-card)] bg-[color-mix(in_oklab,var(--accent-3)_8%,var(--surface-2))] p-5">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-3-text)]">
                 {antesDespues.labelAntes}
               </p>
               <p className="mt-2 text-[15px] leading-snug text-[var(--text-secondary)]">{antesDespues.antes}</p>
             </div>
-            {/* El "después" con acento sutil de fondo (4-6%) */}
-            <div className="rounded-[var(--radius-card)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] p-5">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--accent)]">
+            <div className="rounded-[var(--radius-card)] bg-[color-mix(in_oklab,var(--accent-2)_8%,transparent)] p-5">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-2-text)]">
                 {antesDespues.labelDespues}
               </p>
               <p className="mt-2 text-[15px] font-medium leading-snug text-[var(--text-primary)]">

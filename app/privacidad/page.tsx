@@ -21,7 +21,7 @@ export default function Privacidad() {
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Qué datos recopilamos</h2>
           <ul className="mt-2 list-disc pl-5">
             <li>Datos de cuenta: correo electrónico.</li>
-            <li>Datos de uso del producto: tus check-ins diarios (estado de ánimo y notas cortas), tus metas de ahorro/deuda y tu racha.</li>
+            <li>Datos de uso del producto: tus registros diarios (estado de ánimo y notas cortas), tus metas de ahorro/deuda y tu racha.</li>
             <li>Datos de pago: procesados directamente por Hotmart — Respira no almacena tu tarjeta.</li>
           </ul>
           <p className="mt-2">

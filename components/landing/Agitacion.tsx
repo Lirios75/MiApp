@@ -52,15 +52,16 @@ export function Agitacion({ frases, contraste, id }: AgitacionProps) {
 
         {contraste && (
           <motion.div variants={item} className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-[var(--radius-card)] bg-[var(--bg)] p-5">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+            <div className="rounded-[var(--radius-card)] bg-[color-mix(in_oklab,var(--accent-3)_8%,var(--bg))] p-5">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-3-text)]">
                 {contraste.labelHoy}
               </p>
               <p className="mt-2 text-[15px] leading-snug text-[var(--text-primary)]">{contraste.hoy}</p>
             </div>
-            {/* "si nada cambia": más apagado/frío — el peso lo pone el copy, no el rojo */}
-            <div className="rounded-[var(--radius-card)] bg-[var(--surface-2)] p-5">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--text-tertiary)]">
+            {/* Mismo tono que "Hoy": el futuro "si nada cambia" sigue siendo el problema, no un
+                progreso — pintarlo verde (progreso positivo en FICHA-ARTE) lo contradiría. */}
+            <div className="rounded-[var(--radius-card)] bg-[color-mix(in_oklab,var(--accent-3)_14%,var(--surface-2))] p-5">
+              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--accent-3-text)]">
                 {contraste.labelFuturo}
               </p>
               <p className="mt-2 text-[15px] leading-snug text-[var(--text-secondary)]">{contraste.futuro}</p>

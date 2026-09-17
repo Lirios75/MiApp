@@ -30,6 +30,12 @@
   /* ── MARCA ── */
   --accent: #5468d4;          /* azul-lila calmo — marca, CTA, anillo */
   --accent-2: #2e9e6b;        /* verde — 2ª nota: progreso positivo */
+  --accent-3: #e08a3c;        /* naranja — 3ª nota (FICHA-ARTE): racha/hito, y aquí el estado que urge cambiar */
+  /* Variantes de TEXTO de accent-2/3: el hex crudo falla AA (≥4.5:1) como texto pequeño sobre
+     --bg/--surface-2 (revisor-visual: 3.13:1 y 2.48:1) — se oscurecen mezclando con --text-primary,
+     el color de fondo/chip sigue usando el hex crudo tal cual. */
+  --accent-2-text: color-mix(in oklab, var(--accent-2) 55%, var(--text-primary) 45%);
+  --accent-3-text: color-mix(in oklab, var(--accent-3) 55%, var(--text-primary) 45%);
 
   /* ── FORMA (radios del brand kit — UNO por rol, toda la página) ── */
   --radius-card: 22px;

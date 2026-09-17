@@ -1,7 +1,7 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Última acción completada: Sesión 3 (página de ventas) CERRADA — el revisor-visual dio veredicto LISTA en su 4ª pasada (usabilidad 36/40 · craft 17/20 · copy 19/20). Landing verificada y aprobada. / Siguiente acción exacta: presentar el resultado al usuario y proponer Sesión 4 (onboarding, paywall y login), esperando su OK.
+⏸️ CHECKPOINT — Los 5 ajustes pedidos sobre la landing quedaron aplicados y verificados (tsc ✓ build ✓). 7 pasadas del revisor-visual después, el veredicto sigue NO LISTA (31/40 usabilidad · 15/20 craft · 19/20 copy — gate exige ≥36/40 y ≥16/20). Se le presentó al usuario la disyuntiva (mantener "check-in"+emojis tal cual vs. revertirlos para subir la nota) y RESPONDIÓ: dejar todo como está. Decisión final tomada — landing queda APROBADA POR EL USUARIO EN SUSTANCIA, pendiente de certificación formal del revisor-visual hasta que exista la app real (Sesión 5, que resuelve el resto de la brecha de usabilidad vía los placeholders). No se vuelve a insistir en esto sin que el usuario lo pida. / Siguiente acción exacta: hacer commit + push de todo el trabajo pendiente a claude/awesome-brown-rq2dqc, y proponerle al usuario arrancar la Sesión 4 (onboarding, paywall, login).
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -26,7 +26,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 ## Avatar y venta (Sesión 1 — ficha creada, pendiente de completar con VoC real)
 - FICHA-AVATAR.md: creada a partir del RESUMEN FINAL del usuario — estado BORRADOR (faltan ≥10 frases VoC con fuente verificable; las 5 dadas por el usuario cuentan como base pero sin fuente citable todavía).
 - Resumen: Camila, 29 años, Bogotá/CDMX, ingreso $800-1800 USD/mes · dolor #1: "otra vez gasté sin darme cuenta y no sé en qué se me fue" · deseo #1: "ver mi cuenta sin que me dé ansiedad" · nivel de consciencia: consciente-del-problema, no de la solución.
-- Landing: CONSTRUIDA (Sesión 3) — las 10 secciones canónicas, copy trazado a esta ficha. Ver docs/copy/landing.md.
+- Landing: construida, PENDIENTE de certificación formal del revisor-visual (aprobada en sustancia por el usuario — ver Problemas conocidos) — las 10 secciones canónicas, copy trazado a esta ficha. Ver docs/copy/landing.md.
 - Mecanismo bautizado: "el Semáforo del Gasto" (check-in de 1 toque que marca el día tranquilo/alerta antes de que el gasto se repita). Big Idea en docs/copy/landing.md.
 
 ## Estrategia de monetización (Sesión 1 — decidido, informado al usuario)
@@ -44,9 +44,9 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Primera victoria (<5 min): primer check-in + primera meta con progreso visible.
 
 ## Secuencia maestra de construcción (NO saltar)
-- Estado de la secuencia: Landing construida, verificando (Sesión 3). Resto pendiente.
+- Estado de la secuencia: Landing construida, PENDIENTE de certificación formal (Sesión 3 — ver Problemas conocidos). Resto pendiente.
 - Ruta aprobada: `/` → `/onboarding` → `/paywall` → `/login` → `/app`
-- Landing: LISTA (aprobada por el revisor-visual, 4ª pasada) — protagonista: el Semáforo del Gasto — CTA primario: "Quiero mi primer check-in" → `/onboarding` (hoy es un placeholder honesto "en construcción"; la Sesión 4 la reemplaza por el flujo real)
+- Landing: construida y aprobada por el usuario en sustancia, PENDIENTE de certificación formal del revisor-visual hasta la Sesión 5 — protagonista: el Semáforo del Gasto — CTA primario: "Quiero mi primer registro" → `/onboarding` (hoy es un placeholder honesto "en construcción"; la Sesión 4 la reemplaza por el flujo real)
 - Onboarding: pendiente
 - Paywall: pendiente
 - Login/Auth: pendiente
@@ -54,7 +54,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Servicios externos: pendiente
 
 ## Puertas de etapa (aprobacion antes de avanzar)
-- Landing: APROBADA — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto en docs/revisiones/landing-veredicto.md = LISTA (usabilidad 36/40 · craft 17/20 · copy 19/20, 4ª pasada tras 3 rondas de correcciones).
+- Landing: APROBADA POR EL USUARIO EN SUSTANCIA, PENDIENTE de certificación formal del revisor-visual — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto actual en docs/revisiones/landing-veredicto.md = NO LISTA (usabilidad 31/40 · craft 15/20 · copy 19/20, 7ª pasada). El techo restante es estructural (2 excepciones de identidad que el usuario decidió mantener + placeholders de app real que no existe hasta la Sesión 5) — el usuario, informado del detalle exacto, decidió avanzar así. No re-abrir esta decisión sin que el usuario lo pida.
 - Onboarding: no iniciada
 - Paywall: no iniciada
 - Login/Auth: no iniciada
@@ -77,7 +77,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 ## Sesiones completadas ✅
 - Sesión 1 — Validación, avatar, monetización, arquitectura y nombre — cerrada 2026-09-17.
 - Sesión 2 — Identidad visual (FICHA-ARTE.md aprobada, dirección B "Respira en calma") — cerrada 2026-09-17.
-- Sesión 3 — Página de ventas (10 secciones, LISTA por el revisor-visual: 36/40 · 17/20 · 19/20) — cerrada 2026-09-17.
+- Sesión 3 — Página de ventas (10 secciones) — cerrada 2026-09-17. Nota: tras el cierre, el usuario pidió 5 ajustes (registro/emojis/colores/garantía) que reabrieron 7 pasadas de revisión; el veredicto final quedó NO LISTA por un techo estructural (ver Problemas conocidos) que el usuario decidió aceptar en vez de seguir corrigiendo.
 
 ## Sesión en progreso 🔧
 (ninguna — esperando OK del usuario para arrancar Sesión 4)
@@ -87,10 +87,17 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 5: app interna simplificada (ahí se toman los screenshots reales para el carrusel de la landing).
 
 ## Problemas conocidos ⚠️
-- Refinamientos opcionales anotados por el revisor en la 4ª pasada (NO bloqueantes, quedan para una futura pasada de pulido si se quiere): (1) dar a la sección Solución un tratamiento distinto al resto (marca el punto de inflexión Problema→Solución), (2) conectar el CTA con el nombre del mecanismo ("Quiero ver mi Semáforo del Gasto"), (3) reemplazar el anglicismo "check-in" por un término propio, (4) verificar que los 2 badges de la card anual de Oferta no se pisen a resolución completa, (5) el eco del anillo en el Hero podría subir un poco más de opacidad (12%→16-18%) para más contundencia de marca.
-- carrusel "La app por dentro": usa 4 placeholders honestos rotulados (Check-in diario / Metas / Pantalla principal / Reporte semanal) porque la app interna todavía no existe — se reemplazan por screenshots reales al cerrar la Sesión 5 (regla dura de 19 §5). No declarar la landing "100% terminada" hasta ese reemplazo.
+- veredicto landing: NO LISTA formalmente (7ª pasada del revisor-visual: usabilidad 31/40, craft 15/20 — gate exige ≥36/40 y ≥16/20; copy 19/20 sí pasa) — DECISIÓN FINAL DEL USUARIO (2026-09-17): se le presentó la disyuntiva completa (mantener "check-in diario" en Oferta + emojis a color en "¿Te suena?" vs. revertirlos para subir la nota) y respondió "dejar todo como está". Landing queda APROBADA POR EL USUARIO EN SUSTANCIA, formalmente NO LISTA hasta la Sesión 5. Detalle de por qué el techo es estructural (para no repetir el análisis si se vuelve a tocar esta pantalla):
+  - "Check-in diario" (excepción del usuario en Oferta) le cuesta a USABILIDAD ~2 puntos (heurística de lenguaje consistente).
+  - Los emojis a color de "¿Te suena?" (excepción del usuario) le cuestan a CRAFT el punto exacto que separa 15/20 de 16/20 (el umbral) — es la única razón por la que craft no pasa.
+  - Los placeholders de "la app por dentro" (Hero + carrusel, sin app real — Sesión 5 no empezada) le cuestan a USABILIDAD ~2-3 puntos más — esto no depende de esta pantalla, es scope de Sesión 5.
+  - Aun revirtiendo las 2 excepciones, usabilidad solo llegaría a ~33/40 (sigue sin pasar) hasta que exista la app real — por eso no tiene sentido seguir iterando esta pantalla ahora.
+  - NO re-abrir esta decisión ni volver a proponer revertir "check-in"/emojis sin que el usuario lo pida — ya se le explicó el costo exacto y eligió mantenerlos.
+  - Anillo del Hero (18% de opacidad en código, confirmado): no se logró verificar visualmente en el PNG headless de este sandbox (posible limitación del renderer con z-index negativo bajo software rendering, no del valor en sí) — pendiente de re-verificar con navegador real si se vuelve a tocar esta pantalla. No bloqueante por sí solo.
+- carrusel "La app por dentro": usa 4 placeholders honestos rotulados (Registro diario / Metas / Pantalla principal / Reporte semanal) porque la app interna todavía no existe — se reemplazan por screenshots reales al cerrar la Sesión 5 (regla dura de 19 §5). No declarar la landing "100% terminada" hasta ese reemplazo. El revisor sigue marcando esto como defecto en cada pasada aunque es una limitación conocida y aceptada mientras la Sesión 5 no exista.
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
 - Garantía (footer/reembolsos): el piso legal dice "política de reembolso de Hotmart" SIN número de días porque Hotmart aún no está configurado (Sesión 6) — no prometer un plazo exacto hasta configurarlo.
+- Garantía en 14 días (prueba en 7, 14>7 cumple la regla dura de 18-VENTA-HOTMART.md) — historial completo de la ida y vuelta 14→7→14 en FICHA-MERCADO.md §4.
 - Páginas legales (privacidad/términos/reembolsos): son borrador funcional, les falta el nombre/razón social del responsable, el país de operación y confirmar el email de soporte real (hoy usan el provisional `hola@respira.app`) — ver "Pendientes del usuario".
 
 ## Pendientes del usuario (acciones que el usuario debe hacer)

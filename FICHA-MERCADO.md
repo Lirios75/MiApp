@@ -24,6 +24,7 @@
 - Plazos que admite Hotmart: se verifica en Sesión 6 antes de publicar cualquier plazo en la landing — el número de abajo es la decisión del agente mientras tanto (DECIDE-INFORMA-AVANZA), no un dato de Hotmart verificado todavía.
 - Prueba elegida: 7 · Garantía elegida: 14 (días de suscripción PAGADA, contados desde el primer cobro — no se solapan con los 7 de prueba gratis).
 - Comprobación garantía > prueba: 14 > 7 → SÍ.
+- Historial de esta decisión (para no repetir la vuelta): el 2026-09-17 el usuario pidió bajar la garantía a 7 (igualándola con la prueba); se documentó el override y su efecto (cobertura real cero tras el cobro). El mismo día, tras ver la advertencia, el usuario decidió mantenerla en 14 para conservar el extra de confianza real después del cobro. Queda en 14 salvo que el usuario pida lo contrario otra vez.
 - ⚠️ Antes de vender de verdad (Sesión 6): confirmar que Hotmart admite configurar un reembolso de 14 días sobre el cobro pagado; si el máximo que permite es menor, bajar el número AQUÍ primero y luego en el copy (docs/copy/landing.md, app/page.tsx, app/reembolsos/page.tsx) — nunca al revés.
 
 ## 5. CONVERSIÓN ESPERABLE
