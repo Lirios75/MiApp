@@ -186,7 +186,14 @@ export function OptionChip({
    era falta de CONTENIDO, no de posición. Esta card enseña el check-in
    tranquilo/alerta que la app usa a diario, dándole a esa franja una función
    real (anticipar el mecanismo) en vez de solo llenar espacio. ── */
-export function VistaSemaforo() {
+const CONTEXTO_SEMAFORO: Record<string, string> = {
+  dolor: 'Así funciona: cada día, marcas cuál de los dos te describe.',
+  momento: 'Justo en ese momento del día, un solo toque basta.',
+  intento: 'A diferencia de un presupuesto o un journal, esto no lleva más de 2 segundos.',
+  meta: 'Cada día marcado te acerca a tu meta.',
+};
+
+export function VistaSemaforo({ contexto }: { contexto: 'dolor' | 'momento' | 'intento' | 'meta' }) {
   return (
     <div className="mt-10 flex flex-col items-center gap-4 rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-1)]">
       <p className="text-[13px] font-medium text-[var(--text-secondary)]">Así se ve tu Semáforo del Gasto</p>
@@ -210,9 +217,11 @@ export function VistaSemaforo() {
           <span className="text-[12px] text-[var(--text-tertiary)]">Día de alerta</span>
         </span>
       </div>
-      <p className="text-center text-[12px] leading-snug text-[var(--text-tertiary)]">
-        Un toque al día — tú eliges cuál te describe hoy.
-      </p>
+      {/* Copy descriptivo, no imperativo: "tú eliges cuál te describe HOY" invitaba
+          a tocar un elemento que no responde (regla UX #11) — ahora es solo
+          explicativo, y cambia según la pregunta para no sentirse repetido
+          idéntico 4 veces seguidas. */}
+      <p className="text-center text-[12px] leading-snug text-[var(--text-tertiary)]">{CONTEXTO_SEMAFORO[contexto]}</p>
     </div>
   );
 }
@@ -220,22 +229,36 @@ export function VistaSemaforo() {
 /* ── <SemanaPreview> — fila de 7 días (L-D) vacíos, previsualizando el
    compromiso ("marcarlo todos los días esta semana") con contenido real en
    vez de dejar el paso de compromiso con un vacío grande bajo el HoldButton. ── */
-export function SemanaPreview() {
+export function SemanaPreview({ diaCompletado }: { diaCompletado?: number }) {
   const dias = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
   return (
     <div className="flex flex-col items-center gap-3">
-      <p className="text-[12px] font-medium text-[var(--text-tertiary)]">Tu semana de compromiso</p>
+      <p className="text-[12px] font-medium text-[var(--text-tertiary)]">
+        {diaCompletado !== undefined ? '¡Día 1 listo!' : 'Tu semana de compromiso'}
+      </p>
       <div className="flex items-center gap-3">
-        {dias.map((dia, i) => (
-          <span key={i} className="flex flex-col items-center gap-1.5">
+        {dias.map((dia, i) =>
+          i === diaCompletado ? (
+            <motion.span
+              key={i}
+              initial={{ scale: 0.6 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', bounce: 0.5, duration: 0.4, delay: 0.3 }}
+              aria-hidden="true"
+              className="flex size-8 items-center justify-center rounded-full bg-[var(--accent-2)]"
+            >
+              <Check size={14} strokeWidth={3} color="var(--bg)" aria-hidden="true" />
+            </motion.span>
+          ) : (
             <span
+              key={i}
               aria-hidden="true"
               className="flex size-8 items-center justify-center rounded-full border-2 border-[color-mix(in_oklab,var(--accent)_30%,transparent)] text-[11px] font-semibold text-[var(--text-tertiary)]"
             >
               {dia}
             </span>
-          </span>
-        ))}
+          )
+        )}
       </div>
     </div>
   );
@@ -354,13 +377,25 @@ export function ConfirmSalir({
 }) {
   const reduce = useReducedMotion();
   const botonSeguirRef = useRef<HTMLButtonElement>(null);
+  const botonSalirRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (abierto) botonSeguirRef.current?.focus();
   }, [abierto]);
 
   function alPresionarTecla(e: KeyboardEvent<HTMLDivElement>) {
-    if (e.key === 'Escape') onSeguir(); // Escape = quedarse, no perder el progreso por accidente
+    if (e.key === 'Escape') {
+      onSeguir(); // Escape = quedarse, no perder el progreso por accidente
+      return;
+    }
+    // Trap de foco: solo 2 botones en el modal — Tab/Shift+Tab cicla entre
+    // ellos en vez de escapar al contenido de fondo (que sigue montado detrás
+    // del overlay).
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const siguiente = document.activeElement === botonSeguirRef.current ? botonSalirRef.current : botonSeguirRef.current;
+      siguiente?.focus();
+    }
   }
 
   return (
@@ -392,7 +427,7 @@ export function ConfirmSalir({
               <FunnelButton ref={botonSeguirRef} onClick={onSeguir}>
                 Seguir aquí
               </FunnelButton>
-              <FunnelButton onClick={onSalir} variant="outline">
+              <FunnelButton ref={botonSalirRef} onClick={onSalir} variant="outline">
                 {labelSalir}
               </FunnelButton>
             </div>

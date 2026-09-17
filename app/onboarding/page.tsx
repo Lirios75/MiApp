@@ -76,7 +76,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
-        <VistaSemaforo />
+        <VistaSemaforo contexto="dolor" />
       </FunnelScreen>
     );
   } else if (paso === 1) {
@@ -122,7 +122,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
-        <VistaSemaforo />
+        <VistaSemaforo contexto="momento" />
       </FunnelScreen>
     );
   } else if (paso === 3) {
@@ -145,7 +145,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
-        <VistaSemaforo />
+        <VistaSemaforo contexto="intento" />
       </FunnelScreen>
     );
   } else if (paso === 4) {
@@ -196,7 +196,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
-        <VistaSemaforo />
+        <VistaSemaforo contexto="meta" />
       </FunnelScreen>
     );
   } else {
@@ -223,6 +223,7 @@ export default function Onboarding() {
               <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
                 ¡Listo, quedó registrado!
               </h2>
+              <SemanaPreview diaCompletado={(new Date().getDay() + 6) % 7} />
             </motion.div>
           ) : (
             <>

@@ -134,7 +134,13 @@ export default function Paywall() {
           definición en components/funnel/ui.tsx). */}
       <FunnelFondo />
       <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-40 pt-4">
+        {/* X a la derecha (mismo lado que FunnelHeader y LoadingPlan) — antes
+            estaba a la izquierda en esta fase y saltaba de lado entre
+            "cargando" y "listo" dentro del mismo flujo, un salto reproducible
+            que cualquier usuario nota sin buscarlo. */}
         <div className="flex h-11 items-center justify-between">
+          <span className="size-11" aria-hidden="true" />
+          <RespiraMark estatico />
           <motion.button
             type="button"
             whileTap={{ scale: 0.9 }}
@@ -144,8 +150,6 @@ export default function Paywall() {
           >
             <X size={20} strokeWidth={2} aria-hidden="true" />
           </motion.button>
-          <RespiraMark estatico />
-          <span className="size-11" aria-hidden="true" />
         </div>
 
         <div className="mt-4 flex flex-col gap-6">
@@ -158,7 +162,7 @@ export default function Paywall() {
                 Para que no vuelvas a decir «{dolorLabel.toLowerCase()}».
               </p>
             )}
-            <p className="mt-2 text-[14px] text-[var(--text-secondary)]">
+            <p className="mt-2 text-[15px] text-[var(--text-secondary)]">
               {nRespuestas > 0 ? `Hecho con tus ${nRespuestas} respuestas.` : 'Hecho con tus respuestas del quiz.'}
             </p>
           </Bloque>
@@ -195,11 +199,11 @@ export default function Paywall() {
                       : 'bg-[var(--surface)] shadow-[var(--shadow-1)]'
                   }`}
                 >
-                  <span className="absolute -top-[10px] left-5 rounded-full bg-[var(--accent)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--bg)]">
+                  <span className="absolute -top-[10px] left-5 rounded-full bg-[var(--accent)] px-3 py-1 text-[12px] font-bold uppercase tracking-[0.06em] text-[var(--bg)]">
                     {PLAN_ANUAL.badge}
                   </span>
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-[14px] font-semibold text-[var(--text-secondary)]">{PLAN_ANUAL.nombre}</span>
+                    <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{PLAN_ANUAL.nombre}</span>
                     <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
                       {PLAN_ANUAL.precioMes}
                       <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
@@ -221,7 +225,7 @@ export default function Paywall() {
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-[14px] font-semibold text-[var(--text-secondary)]">{PLAN_MENSUAL.nombre}</span>
+                  <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{PLAN_MENSUAL.nombre}</span>
                   <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
                     {PLAN_MENSUAL.precioMes}
                     <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
@@ -261,7 +265,7 @@ export default function Paywall() {
               type="button"
               whileTap={{ scale: 0.96 }}
               onClick={salirConfirmando}
-              className="text-center text-[14px] font-medium text-[var(--text-tertiary)] [touch-action:manipulation]"
+              className="text-center text-[13px] font-medium text-[var(--text-tertiary)] [touch-action:manipulation]"
             >
               Ahora no
             </motion.button>
