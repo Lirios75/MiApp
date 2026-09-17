@@ -1,0 +1,344 @@
+<!doctype html>
+<html lang="es" data-kit="abc-v2">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tour de la app — Respira (estilo B · Respira en calma)</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  :root {
+    --bg: #faf6ef;
+    --surface: #fffdf8;
+    --text-1: #2a2620;
+    --text-2: #8c8172;
+    --accent: #5468d4;
+    --radius-card: 22px;
+    --radius-btn: 16px;
+    --font-display: 'DM Sans', monospace;
+    --font-body: 'DM Sans', monospace;
+    --shadow-tinta: 42 38 32;
+  }
+  body {
+    background:
+      radial-gradient(1100px 520px at 12% -6%, #f7f7f9, transparent 62%),
+      radial-gradient(900px 460px at 92% 4%, #e2e2e9, transparent 58%),
+      linear-gradient(180deg, #ededf0, #e4e4e9);
+    color: #1c1c1f;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 32px 20px 64px;
+  }
+  .cabecera { max-width: 1180px; margin: 0 auto 12px; }
+  .cabecera h1 { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; }
+  .cabecera p.sub { margin-top: 6px; font-size: 14px; color: #55555c; max-width: 70ch; }
+  .aviso-fuentes { max-width: 1180px; margin: 10px auto 28px; font-size: 12.5px; color: #6a6a72; }
+  .especimen-global { max-width: 1180px; margin: 0 auto 24px; background: #f7f7f8; border: 1px solid #d9d9de;
+    border-radius: 14px; padding: 14px 18px; font-size: 13px; color: #3a3a40; }
+  .especimen-global b { font-family: var(--font-display); font-size: 16px; }
+
+  .vistas { max-width: 1180px; margin: 0 auto; display: grid; gap: 32px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+  .vista { display: flex; flex-direction: column; gap: 12px; }
+  .rotulo {
+    text-align: center; font-size: 13px; font-weight: 700; color: #3a3a40;
+  }
+
+  .telefono {
+    width: 300px; margin: 0 auto;
+    aspect-ratio: 9 / 19.5;
+    border: 10px solid #101014;
+    border-radius: 46px;
+    box-shadow: 0 24px 60px rgb(20 18 24 / 0.28);
+    overflow: hidden;
+    position: relative;
+    display: flex; flex-direction: column;
+    background: var(--bg);
+  }
+  .statusbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 20px 6px; font-size: 13px; font-weight: 600;
+    font-variant-numeric: tabular-nums; color: var(--text-1);
+  }
+  .statusbar .der { display: flex; align-items: center; gap: 5px; }
+  .home-indicator {
+    position: absolute; bottom: 7px; left: 50%; transform: translateX(-50%);
+    width: 116px; height: 5px; border-radius: 999px; opacity: 0.85; background: var(--text-1);
+  }
+  .pantalla { flex: 1; display: flex; flex-direction: column; overflow: hidden;
+              font-family: var(--font-body); color: var(--text-1); padding: 0 18px 16px; }
+
+  .chip-icono { display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex-shrink: 0; }
+  .cta {
+    display: flex; align-items: center; justify-content: center;
+    height: 48px; font-size: 15px; font-weight: 600; letter-spacing: 0.01em;
+    margin-top: auto; margin-bottom: 0; border-radius: var(--radius-btn);
+    background: var(--accent); color: var(--bg);
+    box-shadow: 0 8px 24px color-mix(in oklab, var(--accent) 28%, transparent);
+  }
+  .cta.secundario { background: transparent; color: var(--accent); box-shadow: none;
+    border: 1.5px solid color-mix(in oklab, var(--accent) 35%, transparent); margin-top: 10px; }
+
+  .tabbar {
+    display: flex; align-items: stretch; justify-content: space-around;
+    margin: 12px -18px 0; padding: 8px 8px 16px;
+    border-top: 1px solid color-mix(in oklab, var(--text-2) 18%, transparent);
+    background: color-mix(in oklab, var(--surface) 88%, transparent);
+  }
+  .tabbar a { display: flex; flex-direction: column; align-items: center; gap: 3px;
+    font-size: 9.5px; font-weight: 600; color: var(--text-2); text-decoration: none; }
+  .tabbar .tab-chip { display: flex; align-items: center; justify-content: center; width: 36px; height: 26px; border-radius: 9px; }
+  .tabbar a.activa { color: var(--accent); }
+  .tabbar a.activa .tab-chip { background: color-mix(in oklab, var(--accent) 14%, transparent); }
+
+  /* ── Vista 1: M0 (anillo + grid2x2) ── */
+  .encabezado-b { margin-top: 12px; text-align: center; }
+  .encabezado-b .periodo { font-size: 11.5px; font-weight: 600; color: var(--text-2); font-variant-numeric: tabular-nums; }
+  h3.titulo-b { font-family: var(--font-display); font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin-top: 2px; }
+  .anillo-wrap { margin: 16px auto 0; position: relative; width: 130px; height: 130px; }
+  .anillo-wrap .centro { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .anillo-wrap .pct { font-family: var(--font-display); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .anillo-wrap .pct-label { font-size: 10px; color: var(--text-2); font-weight: 600; margin-top: 2px; }
+  .grid2x2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+  .tile { background: var(--surface); border-radius: var(--radius-card); border: 1px solid color-mix(in oklab, var(--text-2) 14%, transparent); padding: 11px; }
+  .tile.destacada { border: 1.5px solid transparent;
+    background: linear-gradient(var(--surface), var(--surface)) padding-box,
+      linear-gradient(135deg, color-mix(in oklab, var(--accent) 50%, transparent), transparent 60%) border-box; }
+  .tile .t-label { display: flex; align-items: center; gap: 6px; font-size: 10px; font-weight: 600; color: var(--text-2); }
+  .tile .t-dato { margin-top: 6px; font-family: var(--font-display); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .tile .t-dato small { font-size: 11px; color: var(--text-2); font-weight: 600; }
+
+  /* ── Vista 2: onboarding ── */
+  .dots { display: flex; gap: 5px; justify-content: center; margin-top: 14px; }
+  .dots span { width: 20px; height: 4px; border-radius: 999px; background: color-mix(in oklab, var(--text-2) 25%, transparent); }
+  .dots span.on { background: var(--accent); }
+  .pregunta-eyebrow { margin-top: 16px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-2); text-align: center; }
+  h3.titulo-onb { font-family: var(--font-display); font-size: 20px; font-weight: 600; text-align: center; margin-top: 6px; line-height: 1.25; }
+  .opciones-onb { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+  .opt-card { background: var(--surface); border-radius: var(--radius-card); border: 1.5px solid color-mix(in oklab, var(--text-2) 18%, transparent); padding: 13px 14px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .opt-card.sel { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 7%, var(--surface)); }
+  .opt-radio { width: 18px; height: 18px; border-radius: 999px; border: 2px solid color-mix(in oklab, var(--text-2) 45%, transparent); flex-shrink: 0; }
+  .opt-card.sel .opt-radio { border-color: var(--accent); background: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+
+  /* ── Vista 3: paywall ── */
+  .paywall-head { margin-top: 14px; text-align: center; }
+  .paywall-head .chip-icono { margin: 0 auto; width: 52px; height: 52px; border-radius: 18px; background: color-mix(in oklab, var(--accent) 12%, transparent); }
+  h3.titulo-pay { font-family: var(--font-display); font-size: 21px; font-weight: 600; text-align: center; margin-top: 10px; line-height: 1.2; }
+  .paywall-sub { text-align: center; font-size: 12.5px; color: var(--text-2); margin-top: 6px; line-height: 1.45; }
+  .planes { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .plan { border-radius: var(--radius-card); padding: 13px 14px; border: 1.5px solid color-mix(in oklab, var(--text-2) 18%, transparent); background: var(--surface); display: flex; justify-content: space-between; align-items: center; }
+  .plan.rec { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 7%, var(--surface)); position: relative; }
+  .plan.rec::before { content: '2 MESES GRATIS'; position: absolute; top: -9px; left: 14px; background: var(--accent); color: var(--bg); font-size: 9px; font-weight: 800; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 999px; }
+  .plan .nombre { font-size: 13.5px; font-weight: 700; }
+  .plan .detalle { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+  .plan .precio { font-family: var(--font-display); font-size: 16px; font-weight: 600; text-align: right; }
+  .plan .precio small { display: block; font-size: 10px; color: var(--text-2); font-weight: 500; }
+  .paywall-prueba { text-align: center; font-size: 10.5px; color: var(--text-2); margin-top: 10px; line-height: 1.4; }
+
+  /* ── Vista 4: check-in (mecanismo) ── */
+  .checkin-head { margin-top: 14px; }
+  .checkin-head .saludo { font-size: 12px; font-weight: 600; color: var(--text-2); }
+  h3.titulo-checkin { font-family: var(--font-display); font-size: 20px; font-weight: 600; margin-top: 2px; }
+  .moods { display: flex; gap: 8px; margin-top: 18px; flex-wrap: wrap; }
+  .mood-chip { flex: 1 1 auto; min-width: 70px; text-align: center; padding: 12px 8px; border-radius: var(--radius-card);
+    border: 1.5px solid color-mix(in oklab, var(--text-2) 18%, transparent); background: var(--surface); font-size: 11.5px; font-weight: 700; }
+  .mood-chip.sel { border-color: var(--accent); background: color-mix(in oklab, var(--accent) 10%, var(--surface)); color: var(--accent); }
+  .campo-monto { margin-top: 18px; }
+  .campo-monto label { font-size: 11.5px; font-weight: 600; color: var(--text-2); }
+  .campo-monto .input-fake { margin-top: 6px; background: var(--surface); border-radius: var(--radius-btn); border: 1.5px solid color-mix(in oklab, var(--text-2) 18%, transparent); padding: 12px 14px; font-family: var(--font-display); font-size: 17px; font-weight: 600; }
+
+  /* ── Vista 5: resultado / celebración ── */
+  .celebra { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 10px; padding-top: 6px; }
+  .celebra .aro {
+    width: 84px; height: 84px; border-radius: 999px; display: flex; align-items: center; justify-content: center;
+    background: color-mix(in oklab, var(--accent) 14%, transparent);
+    border: 1.5px solid color-mix(in oklab, var(--accent) 30%, transparent);
+  }
+  .celebra h3 { font-family: var(--font-display); font-size: 22px; font-weight: 600; margin-top: 4px; }
+  .celebra p { font-size: 13px; color: var(--text-2); line-height: 1.5; max-width: 230px; }
+  .celebra .racha-badge { margin-top: 4px; font-size: 12px; font-weight: 700; color: var(--accent); }
+
+  .pie {
+    max-width: 1180px; margin: 40px auto 0; font-size: 12.5px; color: #6a6a72;
+    border-top: 1px solid #d0d0d6; padding-top: 14px; line-height: 1.6;
+  }
+  .icono-svg { display: block; }
+</style>
+</head>
+<body>
+
+<header class="cabecera">
+  <h1>Tour de la app — Respira, con el estilo "Respira en calma" (B)</h1>
+  <p class="sub">5 vistas de tu app por dentro, ya con el estilo que elegiste. Nada de esto es la app final —
+    es para que la veas aplicada de punta a punta antes de que empecemos a construir de verdad.</p>
+</header>
+<p class="aviso-fuentes">
+  Verificación de fuentes: <span class="especimen-global" style="display:inline;border:none;background:none;padding:0;">
+  <b>DM Sans</b> (display y body, en distintos pesos)</span> — si ves letra de máquina de escribir, la fuente no cargó.
+</p>
+
+<div class="vistas">
+
+  <!-- VISTA 1 — Principal / M0 -->
+  <div class="vista">
+    <p class="rotulo">1 · Tu pantalla de cada día</p>
+    <div class="telefono">
+      <div class="statusbar">
+        <span>9:41</span>
+        <span class="der">
+          <svg class="icono-svg" width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="3" width="3" height="8" rx="0.8"/><rect x="13.5" y="0.5" width="3" height="10.5" rx="0.8"/></svg>
+          <svg class="icono-svg" width="25" height="12" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="3" fill="none" stroke="currentColor" opacity="0.4"/><rect x="2" y="2" width="15" height="8" rx="1.6" fill="currentColor"/></svg>
+        </span>
+      </div>
+      <div class="pantalla">
+        <div class="encabezado-b">
+          <p class="periodo">Lunes 6 de agosto</p>
+          <h3 class="titulo-b">Respira. Vamos paso a paso.</h3>
+        </div>
+        <div class="anillo-wrap">
+          <svg width="130" height="130" viewBox="0 0 130 130">
+            <circle cx="65" cy="65" r="55" fill="none" stroke-width="10" stroke="rgba(84,104,212,0.14)"/>
+            <circle cx="65" cy="65" r="55" fill="none" stroke-width="10" stroke="#5468d4" stroke-linecap="round"
+              stroke-dasharray="345.6" stroke-dashoffset="110.6" transform="rotate(-90 65 65)"/>
+          </svg>
+          <div class="centro"><span class="pct">68%</span><span class="pct-label">de tu meta</span></div>
+        </div>
+        <div class="grid2x2">
+          <div class="tile destacada"><p class="t-label">Racha</p><p class="t-dato">5<small> días</small></p></div>
+          <div class="tile"><p class="t-label">Check-ins</p><p class="t-dato">6<small>/7</small></p></div>
+          <div class="tile"><p class="t-label">Ahorrado</p><p class="t-dato">$180<small>mil</small></p></div>
+          <div class="tile"><p class="t-label">Ánimo</p><p class="t-dato" style="font-size:14px">Tranquila</p></div>
+        </div>
+        <div class="cta">Hacer mi check-in de hoy</div>
+        <nav class="tabbar">
+          <a class="activa" href="#"><span class="tab-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 10 9-7 9 7v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span>Hoy</a>
+          <a href="#"><span class="tab-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></span>Metas</a>
+          <a href="#"><span class="tab-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 9h18"/></svg></span>Diario</a>
+          <a href="#"><span class="tab-chip"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span>Perfil</a>
+        </nav>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- VISTA 2 — Onboarding -->
+  <div class="vista">
+    <p class="rotulo">2 · Así te pregunta al empezar</p>
+    <div class="telefono">
+      <div class="statusbar"><span>9:41</span><span class="der">
+        <svg class="icono-svg" width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="3" width="3" height="8" rx="0.8"/><rect x="13.5" y="0.5" width="3" height="10.5" rx="0.8"/></svg>
+      </span></div>
+      <div class="pantalla">
+        <div class="dots"><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span><span></span></div>
+        <p class="pregunta-eyebrow">Pregunta 3 de 6</p>
+        <h3 class="titulo-onb">¿Qué te describe mejor hoy?</h3>
+        <div class="opciones-onb">
+          <div class="opt-card sel"><span class="opt-radio"></span>Gasto sin darme cuenta y después me arrepiento</div>
+          <div class="opt-card"><span class="opt-radio"></span>Reviso mi cuenta y me da ansiedad</div>
+          <div class="opt-card"><span class="opt-radio"></span>Ya intenté presupuestos y los abandono</div>
+        </div>
+        <div class="cta">Continuar</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- VISTA 3 — Paywall -->
+  <div class="vista">
+    <p class="rotulo">3 · Aquí eliges tu plan</p>
+    <div class="telefono">
+      <div class="statusbar"><span>9:41</span><span class="der">
+        <svg class="icono-svg" width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="3" width="3" height="8" rx="0.8"/><rect x="13.5" y="0.5" width="3" height="10.5" rx="0.8"/></svg>
+      </span></div>
+      <div class="pantalla">
+        <div class="paywall-head">
+          <span class="chip-icono" style="width:52px;height:52px;border-radius:18px;background:color-mix(in oklab, var(--accent) 12%, transparent);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5468d4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 2v10l7 3"/></svg>
+          </span>
+          <h3 class="titulo-pay">Sigue respirando con calma</h3>
+          <p class="paywall-sub">7 días gratis. Sin conectar tu banco, sin categorías complicadas.</p>
+        </div>
+        <div class="planes">
+          <div class="plan rec">
+            <div><p class="nombre">Anual</p><p class="detalle">$49.99 al año</p></div>
+            <div class="precio">$4.16<small>/mes</small></div>
+          </div>
+          <div class="plan">
+            <div><p class="nombre">Mensual</p><p class="detalle">Cancela cuando quieras</p></div>
+            <div class="precio">$6.99<small>/mes</small></div>
+          </div>
+        </div>
+        <div class="cta">Empezar mi prueba gratis</div>
+        <p class="paywall-prueba">Sin cobro hasta el día 8 · cancela cuando quieras</p>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- VISTA 4 — Mecanismo: el check-in -->
+  <div class="vista">
+    <p class="rotulo">4 · Tu check-in de 30 segundos</p>
+    <div class="telefono">
+      <div class="statusbar"><span>9:41</span><span class="der">
+        <svg class="icono-svg" width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="3" width="3" height="8" rx="0.8"/><rect x="13.5" y="0.5" width="3" height="10.5" rx="0.8"/></svg>
+      </span></div>
+      <div class="pantalla">
+        <div class="checkin-head">
+          <p class="saludo">Hoy, 6:40 p.m.</p>
+          <h3 class="titulo-checkin">¿Cómo te sientes con tu plata hoy?</h3>
+        </div>
+        <div class="moods">
+          <div class="mood-chip sel">Tranquila</div>
+          <div class="mood-chip">Ansiosa</div>
+          <div class="mood-chip">Aliviada</div>
+          <div class="mood-chip">Culpable</div>
+        </div>
+        <div class="campo-monto">
+          <label>¿Gastaste algo hoy que no planeabas?</label>
+          <div class="input-fake">$0</div>
+        </div>
+        <div class="cta">Guardar mi check-in</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <!-- VISTA 5 — Mecanismo: el resultado / celebración -->
+  <div class="vista">
+    <p class="rotulo">5 · Así ves tu progreso</p>
+    <div class="telefono">
+      <div class="statusbar"><span>9:41</span><span class="der">
+        <svg class="icono-svg" width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="0.8"/><rect x="4.5" y="5" width="3" height="6" rx="0.8"/><rect x="9" y="3" width="3" height="8" rx="0.8"/><rect x="13.5" y="0.5" width="3" height="10.5" rx="0.8"/></svg>
+      </span></div>
+      <div class="pantalla">
+        <div class="celebra">
+          <div class="aro">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#5468d4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          </div>
+          <h3>¡Racha de 5 días!</h3>
+          <p>Vas identificando el patrón: los miércoles gastas menos ansiosa que los lunes.</p>
+          <p class="racha-badge">5 check-ins seguidos · sin culpa</p>
+        </div>
+        <div class="cta">Ver mi semana completa</div>
+        <div class="cta secundario">Seguir así mañana</div>
+      </div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer class="pie">
+  Tour construido a partir del frame de la Opción B ("Respira en calma") de <code>direcciones-abc.html</code> — mismo sistema:
+  tokens, fuente (DM Sans), radios (22/16) y el dispositivo ownable (anillo de respiración). El marcador
+  data-kit="abc-v2" del &lt;html&gt; se conserva. Gates: fuentes verificadas, cero emojis (íconos SVG), mockups
+  llenos con datos del dominio real, tab bar visible en la vista principal. Aprobado por el usuario → se fija en
+  FICHA-ARTE.md y queda como COSA JUZGADA.
+</footer>
+
+</body>
+</html>

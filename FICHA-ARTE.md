@@ -28,10 +28,10 @@
 - Display **Archivo** · Body **Instrument Sans**
 - Composición: héroe-dato (meta de ahorro grande) + cards apiladas (check-in, racha)
 
-### Opción B — "Respira en calma" (recomendada por el agente)
+### Opción B — "Respira en calma" (elegida por el usuario — ver Trazabilidad)
 - Fondo `#FAF6EF` · Superficie `#FFFDF8` · Texto 1º/2º `#2A2620` / `#8C8172`
 - Acento `#5468D4` (azul-lila calmo, SOLO en el anillo/CTA) · Radio 22/16 · Sombra tintada 42·38·32
-- Display **Sentient** · Body **Switzer**
+- Display **DM Sans** (700) · Body **DM Sans** (400/500) — combinación probada "Bienestar/meditación" de `29-REFERENCIA-VISUAL.md` (Sentient/Switzer se descartó: requiere Fontshare, bloqueado en el entorno de construcción; DM Sans es la misma familia de mood cálido/geométrico, embebible por Google Fonts sin riesgo)
 - Composición: anillo de respiración centrado + grid 2×2 de señales (racha, check-ins, ahorro, ánimo)
 - Dispositivo ownable: el anillo que "respira" — mismo gesto que el nombre de la app
 
@@ -43,9 +43,10 @@
 
 ## Trazabilidad y vetos
 - Ruta de diseño (PREGUNTA DE REFERENCIA del 54): propuesta propia (el usuario eligió opción 1).
-- Protocolo A/B/C: página comparativa en `direcciones-abc.html` (raíz del proyecto) · screenshot en `docs/revisiones/direcciones-abc-full.png` · opción elegida: PENDIENTE (esperando respuesta del usuario).
-- Paleta derivada de: líder "Finanzas personales" + matriz "Fintech femenina" de `29-REFERENCIA-VISUAL.md` (A y B) · líder "Hábitos/bienestar" de `29` (C) — todas tomadas tal cual, traducidas a modo claro sin desafinar el hue.
-- Registro anti-repetición: pendiente de anotar en ESTADO.md una vez el usuario elija.
-- Modo: CLARO en las 3 opciones — derivado porque el nicho (hábitos/bienestar + finanzas personales) gana en claro (confianza cotidiana, "victoria visible", ritual diurno) y rompe con el fintech oscuro institucional que el avatar asocia a "el banco de mis papás".
+- Protocolo A/B/C: página comparativa en `direcciones-abc.html` (raíz del proyecto) · screenshot en `docs/revisiones/direcciones-abc-full.png` · opción elegida: **B "Respira en calma"** · descartadas: A "Claridad templada" (dato-héroe estilo Fintonic, más frío/numérico) y C "Diario del dinero" (formato bitácora, más narrativo/lento para el check-in diario).
+- Tour de la app: `vista-previa-app.html` (raíz del proyecto) · screenshot en `docs/revisiones/vista-previa-app-full.png` · 5 vistas: principal (M0/anillo), onboarding, paywall, check-in (mecanismo), celebración de racha (resultado) · aprobado por el usuario: PENDIENTE (mostrado en este mismo turno).
+- Paleta derivada de: matriz "Fintech — femenina, control de gastos" de `29-REFERENCIA-VISUAL.md`, traducida a modo claro sin desafinar el hue.
+- Registro anti-repetición: paleta (azul-lila #5468D4 sobre crema cálida) y par tipográfico (DM Sans, una sola familia) — vetados para el próximo proyecto del SO.
+- Modo: CLARO — derivado porque el nicho (hábitos/bienestar + finanzas personales) gana en claro (confianza cotidiana, "victoria visible", ritual diurno) y rompe con el fintech oscuro institucional que el avatar asocia a "el banco de mis papás".
 
-## Idioma UI: Español LATAM neutro · Fecha de cierre de la ficha: PENDIENTE (falta elección + tour de la app) · Aprobada por el usuario: NO
+## Idioma UI: Español LATAM neutro · Fecha de cierre de la ficha: PENDIENTE (falta aprobación del tour) · Aprobada por el usuario: NO

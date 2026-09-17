@@ -1,7 +1,7 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Última acción completada: usuario eligió que el agente proponga el diseño; se generó la comparativa A/B/C (`direcciones-abc.html`, screenshot en `docs/revisiones/direcciones-abc-full.png`) y `FICHA-ARTE.md` con las 3 opciones. / Siguiente acción exacta: esperar que el usuario elija A, B, C, combine o pida ajustes.
+⏸️ CHECKPOINT — Última acción completada: usuario eligió la Opción B "Respira en calma"; se construyó el TOUR DE LA APP (`vista-previa-app.html`, screenshot en `docs/revisiones/vista-previa-app-full.png`, 5 vistas) y se muestra al usuario. / Siguiente acción exacta: esperar 1/2/3 (me encanta / ajustar / repensar). Si aprueba → cerrar FICHA-ARTE.md (fecha + aprobada:SÍ), volcar tokens a globals.css y arrancar Sesión 3 (página de ventas).
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -16,11 +16,12 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Brecha LATAM confirmada: sí — money mindset en español activo solo en formato estático (cursos/journals), sin competidor app dedicado a este cruce dinero+emoción.
 - Precio de referencia del mercado: journals digitales $8.99 (pago único) · apps de finanzas $5.99-13/mes (sin fuente propia con fecha — ver FICHA-MERCADO.md, pendiente de verificación propia).
 
-## Dirección de Arte (Sesión 2 — en curso)
-- FICHA-ARTE.md: creada, con 3 opciones (A/B/C) — esperando elección del usuario para cerrarla.
+## Dirección de Arte (Sesión 2 — en curso, falta aprobar el tour)
+- FICHA-ARTE.md: creada, opción **B "Respira en calma"** elegida — falta la aprobación del TOUR DE LA APP para cerrarla como cosa juzgada.
 - ¿Hubo referencia visual del usuario?: NO — eligió que el agente proponga (opción 1 de LA PREGUNTA DE REFERENCIA).
-- Resumen de las 3 opciones: A "Claridad templada" (verde #178A54, Archivo/Instrument Sans, dato-héroe) · B "Respira en calma" (azul-lila #5468D4, Sentient/Switzer, anillo de respiración — recomendada) · C "Diario del dinero" (verde #2E9E6B + hito #F0A05A, Nunito, timeline).
-- Modo: claro en las 3 (derivado — rompe con el fintech oscuro institucional).
+- Brand kit de B: fondo `#FAF6EF` · acento `#5468D4` (azul-lila calmo) · DM Sans (una sola familia) · radio 22/16 · dispositivo ownable: anillo de respiración.
+- Modo: claro (derivado — rompe con el fintech oscuro institucional).
+- Nota técnica: Sentient/Switzer (Fontshare) se descartó por bloqueo de red del entorno de construcción — se usó DM Sans (Google Fonts), misma familia de mood, sin cambiar la paleta ni la composición elegida.
 
 ## Avatar y venta (Sesión 1 — ficha creada, pendiente de completar con VoC real)
 - FICHA-AVATAR.md: creada a partir del RESUMEN FINAL del usuario — estado BORRADOR (faltan ≥10 frases VoC con fuente verificable; las 5 dadas por el usuario cuentan como base pero sin fuente citable todavía).
