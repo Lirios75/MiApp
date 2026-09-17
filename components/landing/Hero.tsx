@@ -6,11 +6,44 @@
 // franja de prueba social como slot (SOLO datos reales — 19 §1) · mesh sutil de
 // fondo YA incluido · carga inmediata (fade simple, nada que compita con el LCP).
 
-import type { ReactNode } from 'react';
-import { motion } from 'motion/react';
+import { useRef, type ReactNode } from 'react';
+import { motion, useInView, useReducedMotion } from 'motion/react';
 import { Camera } from 'lucide-react';
 import { CtaButton } from './ui';
 import { MarkedCopy, truncarMarcado, warnCopy } from './MarkedCopy';
+
+/* ── <EcoAnillo> — la misma firma de movimiento de RespiraMark.tsx, a escala de
+   fondo: se llena al entrar en vista, nunca compite con el copy (12% opacidad). ── */
+function EcoAnillo() {
+  const ref = useRef<SVGSVGElement>(null);
+  const enVista = useInView(ref, { once: true, amount: 0.5 });
+  const reduce = useReducedMotion();
+  const CIRC = 405;
+  const OBJETIVO = 135; // ~67% lleno — eco, no calco exacto del anillo pequeño
+  return (
+    <svg
+      ref={ref}
+      aria-hidden="true"
+      viewBox="0 0 200 200"
+      className="pointer-events-none absolute -right-16 top-8 -z-10 size-[280px] opacity-[0.12] md:-right-10 md:top-0 md:size-[360px]"
+    >
+      <motion.circle
+        cx="100"
+        cy="100"
+        r="86"
+        fill="none"
+        stroke="var(--accent)"
+        strokeWidth="14"
+        strokeLinecap="round"
+        strokeDasharray={CIRC}
+        initial={{ strokeDashoffset: reduce ? OBJETIVO : CIRC }}
+        animate={{ strokeDashoffset: enVista ? OBJETIVO : reduce ? OBJETIVO : CIRC }}
+        transition={{ duration: reduce ? 0 : 0.9, ease: [0.16, 1, 0.3, 1] }}
+        transform="rotate(-90 100 100)"
+      />
+    </svg>
+  );
+}
 
 export interface HeroProps {
   appName: string;
@@ -67,14 +100,9 @@ export function Hero({
       />
 
       {/* Eco grande del anillo de respiración (dispositivo ownable, FICHA-ARTE.md):
-          apenas visible, marca el territorio sin competir con el copy. */}
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 200 200"
-        className="pointer-events-none absolute -right-16 top-8 -z-10 size-[280px] opacity-[0.06] md:-right-10 md:top-0 md:size-[360px]"
-      >
-        <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" strokeLinecap="round" strokeDasharray="405" strokeDashoffset="135" transform="rotate(-90 100 100)" />
-      </svg>
+          se llena al entrar en vista igual que RespiraMark — visible pero sin
+          competir con el copy. */}
+      <EcoAnillo />
 
       <div className="mx-auto w-full max-w-[1140px] px-5">
         {/* Header 64px: marca a la izquierda, SOLO "Entrar" terciario a la derecha (19) */}
