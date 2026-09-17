@@ -1,7 +1,7 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Los 5 ajustes pedidos sobre la landing quedaron aplicados y verificados (tsc ✓ build ✓). 7 pasadas del revisor-visual después, el veredicto sigue NO LISTA (31/40 usabilidad · 15/20 craft · 19/20 copy — gate exige ≥36/40 y ≥16/20). Se le presentó al usuario la disyuntiva (mantener "check-in"+emojis tal cual vs. revertirlos para subir la nota) y RESPONDIÓ: dejar todo como está. Decisión final tomada — landing queda APROBADA POR EL USUARIO EN SUSTANCIA, pendiente de certificación formal del revisor-visual hasta que exista la app real (Sesión 5, que resuelve el resto de la brecha de usabilidad vía los placeholders). No se vuelve a insistir en esto sin que el usuario lo pida. / Siguiente acción exacta: hacer commit + push de todo el trabajo pendiente a claude/awesome-brown-rq2dqc, y proponerle al usuario arrancar la Sesión 4 (onboarding, paywall, login).
+⏸️ CHECKPOINT — Sesión 4 EN CONSTRUCCIÓN: onboarding (quiz de 4 preguntas + 2 reconocimientos + compromiso), paywall (planes + timeline de trial) y login (magic link simulado) ya están codeados, verificados (tsc ✓ build ✓) y probados en navegador real con el flujo completo (screenshots en docs/revisiones/onboarding-375.png, paywall-375.png, entrar-375.png). Se lanzaron las 2 revisiones obligatorias (onboarding y paywall, primera pasada cada una) — EN CURSO, resultado pendiente. Login no requiere revisor obligatorio (no es una de las 4 pantallas del dinero) pero pasó verificación manual completa (estados idle/enviando/enviado probados). / Siguiente acción exacta: leer los veredictos de onboarding y paywall; corregir lo que señalen; luego actualizar ESTADO.md (puertas de etapa, secuencia maestra) y hacer commit+push a claude/awesome-brown-rq2dqc.
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -47,17 +47,17 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Estado de la secuencia: Landing construida, PENDIENTE de certificación formal (Sesión 3 — ver Problemas conocidos). Resto pendiente.
 - Ruta aprobada: `/` → `/onboarding` → `/paywall` → `/login` → `/app`
 - Landing: construida y aprobada por el usuario en sustancia, PENDIENTE de certificación formal del revisor-visual hasta la Sesión 5 — protagonista: el Semáforo del Gasto — CTA primario: "Quiero mi primer registro" → `/onboarding` (hoy es un placeholder honesto "en construcción"; la Sesión 4 la reemplaza por el flujo real)
-- Onboarding: pendiente
-- Paywall: pendiente
-- Login/Auth: pendiente
+- Onboarding: construida, PENDIENTE de verificación del revisor-visual (Sesión 4, en curso)
+- Paywall: construida, PENDIENTE de verificación del revisor-visual (Sesión 4, en curso)
+- Login/Auth: construida (UI completa, magic link SIMULADO — Supabase Auth real se conecta en Sesión 6), no requiere revisor obligatorio
 - App interna: pendiente
 - Servicios externos: pendiente
 
 ## Puertas de etapa (aprobacion antes de avanzar)
 - Landing: APROBADA POR EL USUARIO EN SUSTANCIA, PENDIENTE de certificación formal del revisor-visual — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto actual en docs/revisiones/landing-veredicto.md = NO LISTA (usabilidad 31/40 · craft 15/20 · copy 19/20, 7ª pasada). El techo restante es estructural (2 excepciones de identidad que el usuario decidió mantener + placeholders de app real que no existe hasta la Sesión 5) — el usuario, informado del detalle exacto, decidió avanzar así. No re-abrir esta decisión sin que el usuario lo pida.
-- Onboarding: no iniciada
-- Paywall: no iniciada
-- Login/Auth: no iniciada
+- Onboarding: construida, PENDIENTE — evidencia: tsc ✓ build ✓ · flujo completo probado en navegador (4 preguntas + 2 reconocimientos + compromiso, con lógica condicional verificada) · screenshot docs/revisiones/onboarding-375.png · veredicto en curso (1ª pasada del revisor-visual, obligatoria por ser plantilla nueva)
+- Paywall: construida, PENDIENTE — evidencia: tsc ✓ build ✓ · loading personalizado con respuestas reales + planes + timeline de trial probados en navegador · screenshot docs/revisiones/paywall-375.png · veredicto en curso (1ª pasada del revisor-visual, obligatoria)
+- Login/Auth: construida — evidencia: tsc ✓ build ✓ · estados idle/enviando/enviado probados en navegador · screenshot docs/revisiones/entrar-375.png · sin revisor (pantalla secundaria, no es de las 4 del dinero) · magic link SIMULADO, sin backend real todavía (Sesión 6)
 - App interna: no iniciada
 - Servicios externos: bloqueados
 
@@ -80,7 +80,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 3 — Página de ventas (10 secciones) — cerrada 2026-09-17. Nota: tras el cierre, el usuario pidió 5 ajustes (registro/emojis/colores/garantía) que reabrieron 7 pasadas de revisión; el veredicto final quedó NO LISTA por un techo estructural (ver Problemas conocidos) que el usuario decidió aceptar en vez de seguir corrigiendo.
 
 ## Sesión en progreso 🔧
-(ninguna — esperando OK del usuario para arrancar Sesión 4)
+- Sesión 4 (código listo, certificación PENDIENTE) — onboarding, paywall y login. Código construido y verificado; esperando veredicto del revisor-visual antes de cerrar.
 
 ## Próximas sesiones 📋
 - Sesión 4: onboarding, paywall y login.
