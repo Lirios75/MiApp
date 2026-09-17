@@ -1,7 +1,7 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Última acción completada: usuario eligió la Opción B "Respira en calma"; se construyó el TOUR DE LA APP (`vista-previa-app.html`, screenshot en `docs/revisiones/vista-previa-app-full.png`, 5 vistas) y se muestra al usuario. / Siguiente acción exacta: esperar 1/2/3 (me encanta / ajustar / repensar). Si aprueba → cerrar FICHA-ARTE.md (fecha + aprobada:SÍ), volcar tokens a globals.css y arrancar Sesión 3 (página de ventas).
+⏸️ CHECKPOINT — Última acción completada: usuario pidió ajustar el tour (más color — verde y naranja — y menos espacios vacíos); se agregaron 2 notas de color funcionales (verde=progreso, naranja=racha/hito) y se llenaron los espacios de las 5 vistas; tour re-renderizado. / Siguiente acción exacta: mostrar el tour ajustado y esperar 1/2/3 de nuevo (me encanta / ajustar otro detalle / repensar). Si aprueba → cerrar FICHA-ARTE.md (fecha + aprobada:SÍ), volcar tokens a globals.css y arrancar Sesión 3 (página de ventas).
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -19,7 +19,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 ## Dirección de Arte (Sesión 2 — en curso, falta aprobar el tour)
 - FICHA-ARTE.md: creada, opción **B "Respira en calma"** elegida — falta la aprobación del TOUR DE LA APP para cerrarla como cosa juzgada.
 - ¿Hubo referencia visual del usuario?: NO — eligió que el agente proponga (opción 1 de LA PREGUNTA DE REFERENCIA).
-- Brand kit de B: fondo `#FAF6EF` · acento `#5468D4` (azul-lila calmo) · DM Sans (una sola familia) · radio 22/16 · dispositivo ownable: anillo de respiración.
+- Brand kit de B: fondo `#FAF6EF` · acento primario `#5468D4` (azul-lila) + verde `#2E9E6B` (progreso) + naranja `#E08A3C` (racha/hito) · DM Sans (una sola familia) · radio 22/16 · dispositivo ownable: anillo de respiración.
 - Modo: claro (derivado — rompe con el fintech oscuro institucional).
 - Nota técnica: Sentient/Switzer (Fontshare) se descartó por bloqueo de red del entorno de construcción — se usó DM Sans (Google Fonts), misma familia de mood, sin cambiar la paleta ni la composición elegida.
 
