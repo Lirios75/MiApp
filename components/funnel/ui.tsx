@@ -5,7 +5,7 @@
 // el kit de landing (components/landing/tokens.css, ya global vía globals.css) —
 // cero valores nuevos de marca aquí, solo estructura y comportamiento.
 
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { forwardRef, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ChevronLeft, Check, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -76,23 +76,19 @@ export function FunnelHeader({
 
 /* ── <FunnelButton> — el CTA del funnel (equivalente a CtaButton del kit de
    landing, pero como <button> con onClick — aquí no navegamos por href). ── */
-export function FunnelButton({
-  children,
-  onClick,
-  variant = 'solid',
-  disabled = false,
-  cargando = false,
-  type = 'button',
-}: {
-  children: ReactNode;
-  onClick?: () => void;
-  variant?: 'solid' | 'outline';
-  disabled?: boolean;
-  /** Muestra un anillo girando junto al texto — sin esto, "disabled" a secas
-   * se lee como congelado, no como "trabajando" (heurística 1). */
-  cargando?: boolean;
-  type?: 'button' | 'submit';
-}) {
+export const FunnelButton = forwardRef<
+  HTMLButtonElement,
+  {
+    children: ReactNode;
+    onClick?: () => void;
+    variant?: 'solid' | 'outline';
+    disabled?: boolean;
+    /** Muestra un anillo girando junto al texto — sin esto, "disabled" a secas
+     * se lee como congelado, no como "trabajando" (heurística 1). */
+    cargando?: boolean;
+    type?: 'button' | 'submit';
+  }
+>(function FunnelButton({ children, onClick, variant = 'solid', disabled = false, cargando = false, type = 'button' }, ref) {
   const reduce = useReducedMotion();
   const estilo =
     variant === 'outline'
@@ -100,6 +96,7 @@ export function FunnelButton({
       : 'bg-[var(--accent)] text-[var(--bg)] shadow-[0_8px_30px_color-mix(in_oklab,var(--accent)_25%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_88%,var(--text-primary))]';
   return (
     <motion.button
+      ref={ref}
       type={type}
       whileTap={disabled ? undefined : { scale: 0.97 }}
       onClick={onClick}
@@ -117,7 +114,7 @@ export function FunnelButton({
       {children}
     </motion.button>
   );
-}
+});
 
 /* ── <OptionChip> — chip de opción única, ancho completo (50 §A2/A3).
    Tap → marca seleccionado → pausa 300ms visible → onSelect (auto-avance). ── */
@@ -356,6 +353,16 @@ export function ConfirmSalir({
   labelSalir?: string;
 }) {
   const reduce = useReducedMotion();
+  const botonSeguirRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (abierto) botonSeguirRef.current?.focus();
+  }, [abierto]);
+
+  function alPresionarTecla(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key === 'Escape') onSeguir(); // Escape = quedarse, no perder el progreso por accidente
+  }
+
   return (
     <AnimatePresence>
       {abierto && (
@@ -364,19 +371,27 @@ export function ConfirmSalir({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: reduce ? 0.1 : 0.2 }}
+          onKeyDown={alPresionarTecla}
           className="fixed inset-0 z-50 flex items-center justify-center bg-[color-mix(in_oklab,var(--text-primary)_45%,transparent)] px-6"
         >
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="confirm-salir-titulo"
             initial={{ opacity: 0, scale: reduce ? 1 : 0.94, y: reduce ? 0 : 8 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: reduce ? 1 : 0.94, y: reduce ? 0 : 8 }}
             transition={{ duration: reduce ? 0.1 : 0.25, ease: [0.16, 1, 0.3, 1] }}
             className="w-full max-w-[340px] rounded-[var(--radius-card)] bg-[var(--surface)] p-6 shadow-[var(--shadow-2)]"
           >
-            <h2 className="text-[18px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">¿Salir?</h2>
+            <h2 id="confirm-salir-titulo" className="text-[18px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">
+              ¿Salir?
+            </h2>
             <p className="mt-2 text-[14px] leading-snug text-[var(--text-secondary)]">{mensaje}</p>
             <div className="mt-5 flex flex-col gap-2">
-              <FunnelButton onClick={onSeguir}>Seguir aquí</FunnelButton>
+              <FunnelButton ref={botonSeguirRef} onClick={onSeguir}>
+                Seguir aquí
+              </FunnelButton>
               <FunnelButton onClick={onSalir} variant="outline">
                 {labelSalir}
               </FunnelButton>

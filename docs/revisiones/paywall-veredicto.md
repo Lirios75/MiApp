@@ -1,49 +1,47 @@
-# VEREDICTO revisor-visual — paywall (8ª ronda)
+# VEREDICTO revisor-visual — paywall
 Fecha: 2026-09-17 00:00
-Screenshot: docs/revisiones/paywall-375.png (+ docs/revisiones/paywall-cargando-375.png)
-Usabilidad: 33/40
-Craft: 14/20
+Screenshot: docs/revisiones/paywall-375.png (+ docs/revisiones/paywall-cargando-375.png, fase de carga)
+Usabilidad: 32/40
+Craft: 16/20
 Copy (si vende): 19/20
 Fidelidad (si hubo referencia): N-A
 Veredicto: NO LISTA
 
-## Desglose usabilidad /40
-h1 Visibilidad del estado: 3 — spinner en CTA (`cargando`), anillo+checklist con aria-live en LoadingPlan, feedback de selección de plan inmediato. Falta pulir la combinación disabled+opacity-40 durante "Un momento…" (se ve algo apagado a la vez que gira el spinner).
-h2 Lenguaje del usuario: 4 — cero jerga, copy natural en todo el flujo.
-h3 Control y libertad: 2 — el cierre (X) en la fase "cargando" navega directo sin confirmar (page.tsx L113), pero el mismo ícono en la fase "listo" sí confirma con un modal que además AFIRMA una pérdida de datos que no ocurre (las respuestas se persisten en localStorage — lib/onboarding.ts L87-93). Comportamiento inconsistente y mensaje inexacto.
-h4 Consistencia: 2 — la fase "cargando" no comparte el fondo con textura (`FunnelFondo`) que sí tiene el resto del funnel/paywall; salto visual brusco de plano a texturado al terminar de cargar. Sumado al punto anterior (mismo ícono X, dos comportamientos).
-h5 Prevención de errores: 4 — guard contra doble-tap (`if (avanzando) return`), selección de plan sin posibilidad de error, timeout con recuperación.
-h6 Reconocer vs recordar: 4 — precios, fechas reales y oferta siempre visibles, cero memoria requerida.
-h7 Flexibilidad: 3 — buen default (plan anual preseleccionado), navegación por teclado nativa en los botones; sin atajos adicionales para el usuario avanzado (esperable en este tipo de pantalla).
-h8 Estético y minimalista: 3 — una sola acción primaria, secundaria de bajo peso ("Ahora no"); la dispersión de tamaños tipográficos (ver craft eje 1) y el fondo plano de "cargando" restan algo de pulido.
-h9 Errores con solución: 4 — mensaje de error de avance claro (qué pasó + qué hacer), sin jerga técnica.
-h10 Ayuda contextual: 4 — el loading personaliza con las respuestas reales del usuario, trust row explica seguridad/garantía.
+## Desglose usabilidad (Nielsen, /40)
+- h1 Visibilidad del estado: 4 — spinner+texto "Un momento…" al tocar el CTA, guard contra doble-tap (`if (avanzando) return`), y salvaguarda de timeout a 7s con mensaje de error visible y CTA reutilizable para reintentar (app/paywall/page.tsx:66-83). Loading con anillo + checklist que se va completando. Nivel ejemplar para una pantalla de cobro.
+- h2 Lenguaje del usuario: 3 — copy 100% en español coloquial, sin jerga ni inglés crudo. "Garantía de los Primeros 14 Días Sin Culpa" en Title Case lee como nombre propio de garantía (técnica de copy válida), no como anglicismo.
+- h3 Control y libertad: 3 — VERIFICADO EN CÓDIGO: el hallazgo real de la ronda 8 (ConfirmSalir afirmaba "perderás las respuestas de tu quiz" cuando ya estaban en localStorage) está corregido: ambas fases pasan el mismo `mensaje="Tus respuestas ya están guardadas — puedes volver a esto cuando quieras."` y el mismo `labelSalir="Salir"` (app/paywall/page.tsx:118-124 y 298-304) — cierre consistente entre "cargando" y "listo", ya no hay dos comportamientos para el mismo ícono X. Cierre visible en ambas fases (X arriba + "Ahora no"). Resta: `ConfirmSalir` (components/funnel/ui.tsx:298-328) no tiene `role="dialog"`/`aria-modal`, no mueve el foco al primer botón al abrirse ni cierra con Escape — un usuario de teclado que dispara "Salir" sigue tabulando por los controles de fondo antes de llegar a "Seguir aquí"/"Salir". No baja más porque el flujo funciona al tacto/mouse (mayoría de uso real) y el mensaje ya es honesto.
+- h4 Consistencia: 3 — `FunnelFondo` ahora es un componente único compartido por onboarding, paywall "cargando" y paywall "listo" (components/funnel/ui.tsx:190-240), confirmado en código y en ambos screenshots (mismo mesh + anillo). El botón de cerrar de la fase "listo" duplica a mano el markup de `FunnelHeader` en vez de reutilizarlo — visualmente idéntico hoy, pero es deuda de mantenimiento (dos lugares que pueden divergir).
+- h5 Prevención de errores: 3 — nada que validar (sin formularios), selección de plan sin estados inválidos, doble-tap del CTA bloqueado.
+- h6 Reconocer vs recordar: 4 — fechas de calendario explícitas ("Día 5 — 22 sept", "Día 7 — [fecha], 1er cobro: $X"), montos exactos por plan, cero carga de memoria entre pantallas.
+- h7 Flexibilidad y eficiencia: 3 — VERIFICADO EN CÓDIGO: plan anual preseleccionado por defecto (ahorra un paso a la mayoría), todos los controles son `<button>` nativos con foco visible y operables por teclado. Sin atajos adicionales, pero es lo esperable en una pantalla de checkout.
+- h8 Estético y minimalista: 3 — 1 CTA primario + "Ahora no" secundario + X terciario (cumple el límite), jerarquía tipográfica clara en el screenshot, ningún elemento decorativo sin función.
+- h9 Errores con solución: 3 — "Esto está tardando más de lo normal. Vuelve a intentarlo — si sigue sin avanzar, revisa tu conexión." dice qué pasó y qué hacer, sin jerga. El `pb-40` (antes `pb-32`, app/paywall/page.tsx:136) alcanza para que este mensaje no quede tapado por la barra fija del CTA. Resta: el `<p>` del error (líneas 291-295) no tiene `aria-live`, a diferencia del checklist de `LoadingPlan.tsx:83` que sí lo tiene — un lector de pantalla no se entera de que apareció el error.
+- h10 Ayuda contextual: 3 — sin pantallas mudas; el loading narra explícitamente qué está "armando" con las respuestas reales del usuario.
 
-## Desglose craft /20
-Jerarquía: 3 — se lee bien en el squint test, pero la pantalla usa 7 tamaños de texto (28/20/15/14/13/12/11px) que no coinciden con los 4 valores declarados en FICHA-ARTE.md (34/19/15/12).
-Profundidad: 2 — la fase "listo" tiene 3 niveles correctos (bg/surface/surface-2 + mesh + anillo), pero la fase "cargando" (primera pantalla que ve el usuario en esta ruta) es un fill plano total, sin ningún tratamiento — coincide con el ancla "0 = fondo de un fill plano" del eje.
-Identidad ownable: 3 — anillo de respiración consistente (logo, fondo, progreso de carga), paleta/tipografía fiel a FICHA-ARTE, sin coincidir con las paletas vetadas del test anti-clon. Sólido pero no extraordinario.
-Movimiento: 3 — stagger de entrada, dibujado de anillo, tap feedback, modal con AnimatePresence y reduced-motion respetados; falta transición entre la fase "cargando" y "listo" (corte duro, sin fade) — una de las 7 baseline queda incompleta en el momento más importante de la pantalla.
-Encaje óptico: 3 — radios y paddings consistentes, badge y chips bien encajados; el mensaje de error dentro de la barra fija puede crecer más de lo que reserva el `pb-32` del contenido y tapar el bloque de confianza.
+**Gate de carga cognitiva: pasa.** Grupos ≤5 ítems, 1 decisión de 2 opciones, 1 acción primaria, nada que recordar entre pantallas, bloques de texto cortos, próximo paso obvio, cero elementos "muertos".
 
-## Desglose copy /20 (FICHA-AVATAR.md — nota: ficha marcada BORRADOR, no aprobada por el usuario)
-Idea única: 4 — "Semáforo del Gasto" nombrado y sostenido en hero + bullets.
-Especificidad y prueba: 3 — claims concretos y sin adjetivos vacíos, pero sin número verificable ni prueba social en esta pantalla.
-Emoción/dolor real: 4 — el subtítulo cita casi textual el dolor #1 de la ficha ("gasto y no sé en qué se me fue").
-Claridad de oferta: 4 — plan, precio, fechas de cobro y garantía (nombrada, con plazo, cerca del CTA) explícitos.
-Dirección a una acción: 4 — un solo tipo de CTA, primera persona ("mis 7 días gratis"), sin competencia visual.
-Sub-checks: garantía nombrada con plazo cerca del CTA de compra — CUMPLE (coincide textualmente con la landing: "Garantía de los Primeros 14 Días Sin Culpa").
+## Desglose craft (/20)
+- Jerarquía: 3 — 4 niveles reconocibles (display 28px → body 14-16px → label 11-13px), pero el titular parte la frase resaltada en acento "Semáforo del Gasto" en dos líneas ("Tu Semáforo del / Gasto para ahorrar más está listo" — app/paywall/page.tsx:153-155), diluyendo el golpe visual de la palabra clave. Además conviven ~8 tamaños distintos de fuente en la pantalla "listo" (28/20/17/15/14/13/12/11), más de los 3 recomendados por vista.
+- Profundidad: 4 — FIX VERIFICADO: `LoadingPlan` ahora renderiza dentro de `<FunnelFondo />` (app/paywall/page.tsx:116), el mismo mesh radial + anillo pulsante que usa el resto del funnel (antes era un fill plano, causa única de la caída craft 16→14 en ronda 8). Confirmado en el screenshot de "cargando": gradiente superior + anillo inferior-derecho visibles, igual que en "listo". Recupera limpiamente los 3 niveles (base con tinte, superficies elevadas con shadow-1/shadow-2, superficie hundida `--surface-2` en la card de timeline).
+- Identidad ownable: 3 — timeline con línea conectora + nodos, checks custom (CheckCustom, no emoji), hairline degradé en el plan anual, badge "5 MESES GRATIS", anillo de respiración de marca. Paleta crema + azul-lila no coincide con ninguna de las dos paletas vetadas del test anti-clon (papel+tinta verde+Petrona/Karla, o pizarra+latón+Archivo) — no aplica el auto-cero.
+- Movimiento: 3 — stagger de entrada por bloque (`Bloque`, delay indice*0.07), anillo de progreso que se dibuja y % que cuenta en el loading, `whileTap` en todos los botones, modal `ConfirmSalir` con fade+scale suave, `useReducedMotion()` respetado en cada pieza (Bloque, FunnelButton, LoadingPlan, FunnelFondo). No aplica tabs/celebración en esta pantalla.
+- Encaje óptico: 3 — radios (`--radius-card`/`--radius-button`) consistentes en toda la pantalla, precios bien alineados con su "/mes", padding p-5 simétrico en todas las cards. Ver nota de jerarquía sobre el wrap del titular.
 
-## Verificación de los 5 fixes reportados de la ronda 7
-1. CTA fijo `fixed inset-x-0 bottom-0` con `pb-32` en el contenido — CONFIRMADO, ya no depende de scroll. Contraste del CTA (#5468d4 sobre #faf6ef) ≈4.6:1, área táctil 52px de alto x ancho completo — pasa las 4 anclas del CTA héroe vivo.
-2. Nombre de garantía igualado a la landing ("Garantía de los Primeros 14 Días Sin Culpa") — CONFIRMADO, coincide letra por letra con app/page.tsx L139.
-3. `cargando` en FunnelButton con anillo girando + `prefers-reduced-motion` — CONFIRMADO (components/funnel/ui.tsx L102-109).
-4. `onClose` en LoadingPlan con X visible — CONFIRMADO que existe, pero es INCONSISTENTE con el cierre de la pantalla "listo" (ver h3/h4 arriba) y el mensaje de confirmación de la otra pantalla es inexacto.
-5. Línea redundante bajo el CTA eliminada — CONFIRMADO, solo quedan las 2 menciones del timeline (Día 5 / Día 7).
+**Verificación FICHA-ARTE: FIEL.** components/landing/tokens.css confirma bg `#faf6ef`, accent `#5468d4`, radius-card 22px, radius-button 16px y `--font-display`/`--font-body` = Nunito — coincide exactamente con FICHA-ARTE.md. El bloque de tokens oscuros (líneas 61-77 de tokens.css) es un comentario de ejemplo, no CSS vivo — no contamina el modo claro real.
 
-## Top defectos
-1. [Pantalla "cargando", fondo completo] Fill plano sin ningún tratamiento de profundidad mientras el resto del funnel usa `FunnelFondo` (mesh+anillo) → app/paywall/page.tsx L110-116 no invoca `<FunnelFondo />`, components/funnel/LoadingPlan.tsx no la importa. Fix: envolver LoadingPlan con el mismo `<FunnelFondo />` compartido.
-2. [Botón X — fase "cargando" vs. fase "listo"] Comportamiento inconsistente: LoadingPlan.onClose navega directo sin confirmar (page.tsx L113: `onClose={() => router.push('/')}`) mientras el X de la fase "listo" dispara un modal de confirmación (L126-138) que además AFIRMA pérdida de datos que no ocurre (las respuestas se guardan en localStorage — lib/onboarding.ts L87-93). Fix: usar el mismo `salirConfirmando` en ambas fases y corregir el texto del modal (ConfirmSalir en components/funnel/ui.tsx L300-303) para no prometer una pérdida que no sucede.
-3. [Barra de error bajo el CTA fijo] El mensaje de `errorAvance` (2 líneas) se inserta dentro de la barra `fixed` (page.tsx L280-284) sin que el `pb-32` del contenido (L125) reserve espacio extra para ese caso — puede tapar el bloque de confianza/garantía. Fix: aumentar el padding inferior condicionalmente cuando `errorAvance` es true.
-4. [Escala tipográfica de toda la pantalla] 7 tamaños de texto en uso (28/20/15/14/13/12/11px) que no coinciden con los 4 declarados en FICHA-ARTE.md ("display 34 / title 19 / body 15 / label 12") → page.tsx L142 (h1 28px), L192/L214 (precio 20px), L187 (badge 11px). Fix: alinear el h1 a 34px o documentar formalmente una escala de funnel distinta a la de display; consolidar los tamaños secundarios a 2-3 valores.
-5. [Transición de fase cargando→listo] Corte duro sin fade/slide entre los dos `return` de Paywall (page.tsx L110-116 vs. L118+) — rompe la baseline de "transición suave entre pantallas" justo cuando aparece la oferta. Fix: envolver ambos estados en `AnimatePresence` con una transición de 200-300ms.
+## Desglose copy (/20) — FICHA-AVATAR.md usada para la traza
+- Idea única: 4 — "Semáforo del Gasto" es el mecanismo bautizado, repetido en hero, checklist y loading; responde a la objeción #2 de la ficha ("no quiero conectar mi cuenta bancaria") con "sin conectar tu banco".
+- Especificidad y prueba: 3 — "Hecho con tus 5 respuestas" personaliza con dato real; precios, % de ahorro y fechas son verificables; no hay prueba externa (testimonio/demo) en esta pantalla, solo especificidad interna.
+- Emoción/dolor real: 4 — "Para que no vuelvas a decir «gasto y no sé en qué se me fue»" es casi cita literal del dolor #1 de FICHA-AVATAR ("Otra vez gasté sin darme cuenta y ahora no sé en qué se me fue la plata").
+- Claridad de oferta: 4 — trial de 7 días, fechas de cobro exactas, garantía nombrada con plazo ("Garantía de los Primeros 14 Días Sin Culpa") cerca del CTA — sub-check binario de garantía nombrada: CUMPLE.
+- Dirección a una acción: 4 — un solo CTA primario en 1ª persona ("Empezar mis 7 días gratis"), "Ahora no" es salida de baja fricción, no una acción que compita.
+
+## TOP DEFECTOS
+1. [app/paywall/page.tsx:153-155, titular "listo"] La frase resaltada en acento "Semáforo del Gasto" se parte en dos líneas a 375px, diluyendo el golpe visual de la palabra clave → forzar que la frase de acento no rompa línea (ej. `whitespace-nowrap` en el `<span>` o acortar "para ahorrar más está listo" a algo más corto).
+2. [components/funnel/ui.tsx:298-328, `ConfirmSalir`] El modal no tiene `role="dialog"`/`aria-modal="true"`, no mueve el foco a "Seguir aquí" al abrirse ni cierra con Escape → agregar esos tres atributos/comportamientos; hoy un usuario de teclado que pulsa "Salir" sigue tabulando por los controles de fondo.
+3. [app/paywall/page.tsx:291-295, mensaje de `errorAvance`] No tiene `aria-live`, a diferencia del checklist de `LoadingPlan.tsx:83` que sí lo tiene → envolver el `<p>` en `role="status" aria-live="polite"` para que un lector de pantalla anuncie el error del timeout.
+4. [app/paywall/page.tsx, pantalla "listo" completa] ~8 tamaños de fuente distintos (28/20/17/15/14/13/12/11px) conviven en una sola vista, por encima del máximo de 3 recomendado → consolidar los tamaños de 13/12/11px en un único token de "label".
+5. [components/funnel/ui.tsx, header de "listo" en app/paywall/page.tsx:137-149 vs `FunnelHeader`] El botón de cerrar de la fase "listo" reimplementa a mano el markup que ya existe en `FunnelHeader` (mismo componente usado en onboarding) → reutilizar `FunnelHeader` (sin barra de progreso) en vez de duplicar el markup, para que un cambio futuro no diverja entre pantallas.
+
+**Nota de proceso:** los 3 fixes reportados para esta ronda se verificaron línea por línea y SÍ funcionan como se describe: (1) `FunnelFondo` compartido en `LoadingPlan` — confirmado en código y en ambos screenshots; (2) mensaje de `ConfirmSalir` honesto y consistente entre fases — confirmado, mismo string en ambas invocaciones; (3) `pb-40` alcanza para no tapar el mensaje de error bajo el CTA fijo — confirmado por cálculo de alturas. El gate de craft (≥16/20) ya se cumple gracias al fix de profundidad. El gate de usabilidad (≥36/40) sigue sin alcanzarse: no por regresiones nuevas, sino por hallazgos de accesibilidad de teclado/lector de pantalla (defectos 2 y 3) y un ajuste fino de jerarquía tipográfica (defectos 1 y 4) que ninguna ronda anterior había atendido — son defectos concretos y accionables, no refinamiento subjetivo: cada uno tiene ubicación exacta y fix de una línea.

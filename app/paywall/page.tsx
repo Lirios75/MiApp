@@ -151,7 +151,7 @@ export default function Paywall() {
         <div className="mt-4 flex flex-col gap-6">
           <Bloque indice={0} reduce={reduce}>
             <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
-              Tu <span className="text-[var(--accent)]">Semáforo del Gasto</span> para {metaHeadline} está listo
+              Tu <span className="whitespace-nowrap text-[var(--accent)]">Semáforo del Gasto</span> para {metaHeadline} está listo
             </h1>
             {dolorLabel && (
               <p className="mt-2 text-[15px] leading-snug text-[var(--text-secondary)]">
@@ -289,7 +289,7 @@ export default function Paywall() {
             {avanzando ? 'Un momento…' : `Empezar mis ${TRIAL_DIAS} días gratis`}
           </FunnelButton>
           {errorAvance && (
-            <p className="mt-2 text-center text-[13px] text-[var(--text-secondary)]">
+            <p role="status" aria-live="polite" className="mt-2 text-center text-[13px] text-[var(--text-secondary)]">
               Esto está tardando más de lo normal. Vuelve a intentarlo — si sigue sin avanzar, revisa tu conexión.
             </p>
           )}
