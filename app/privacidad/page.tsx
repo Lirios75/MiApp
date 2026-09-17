@@ -7,13 +7,13 @@ export default function Privacidad() {
         Política de Privacidad
       </h1>
       <p className="mt-2 text-sm text-[var(--text-tertiary)]">
-        Última actualización: [pendiente — se completa al confirmar el responsable y el dominio]
+        Última actualización: 17 de septiembre de 2026
       </p>
 
       <div className="mt-8 flex flex-col gap-6 text-base leading-relaxed text-[var(--text-secondary)]">
         <p>
-          Respira (&quot;la app&quot;) es operada por [Nombre o razón social del responsable], con
-          domicilio en [país]. Esta política explica qué datos recopilamos, cómo los usamos y cómo
+          Respira (&quot;la app&quot;) es operada por Lina Rios, con
+          domicilio en Colombia. Esta política explica qué datos recopilamos, cómo los usamos y cómo
           puedes controlarlos.
         </p>
 
@@ -44,7 +44,7 @@ export default function Privacidad() {
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Cómo eliminar tus datos</h2>
           <p className="mt-2">
             Puedes pedir la eliminación completa de tu cuenta y tus datos escribiendo a{" "}
-            <a href="mailto:hola@respira.app" className="underline underline-offset-4">hola@respira.app</a>.
+            <a href="mailto:lina.rios@ikigaihumano.com" className="underline underline-offset-4">lina.rios@ikigaihumano.com</a>.
             Procesamos la solicitud en un plazo razonable y te confirmamos por correo.
           </p>
         </section>
@@ -53,7 +53,7 @@ export default function Privacidad() {
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Contacto</h2>
           <p className="mt-2">
             Para cualquier duda sobre esta política, escribe a{" "}
-            <a href="mailto:hola@respira.app" className="underline underline-offset-4">hola@respira.app</a>.
+            <a href="mailto:lina.rios@ikigaihumano.com" className="underline underline-offset-4">lina.rios@ikigaihumano.com</a>.
           </p>
         </section>
 

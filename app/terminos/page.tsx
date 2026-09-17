@@ -7,7 +7,7 @@ export default function Terminos() {
         Términos y Condiciones
       </h1>
       <p className="mt-2 text-sm text-[var(--text-tertiary)]">
-        Última actualización: [pendiente — se completa al confirmar el responsable y el dominio]
+        Última actualización: 17 de septiembre de 2026
       </p>
 
       <div className="mt-8 flex flex-col gap-6 text-base leading-relaxed text-[var(--text-secondary)]">
@@ -57,7 +57,7 @@ export default function Terminos() {
         <section>
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Ley aplicable</h2>
           <p className="mt-2">
-            Estos términos se rigen por las leyes de [país del responsable]. Cualquier disputa se
+            Estos términos se rigen por las leyes de Colombia. Cualquier disputa se
             resuelve ante los tribunales competentes de esa jurisdicción.
           </p>
         </section>
@@ -65,7 +65,7 @@ export default function Terminos() {
         <section>
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Contacto</h2>
           <p className="mt-2">
-            <a href="mailto:hola@respira.app" className="underline underline-offset-4">hola@respira.app</a>
+            <a href="mailto:lina.rios@ikigaihumano.com" className="underline underline-offset-4">lina.rios@ikigaihumano.com</a>
           </p>
         </section>
 

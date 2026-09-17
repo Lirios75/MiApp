@@ -109,11 +109,16 @@ export function SectionShell({
 }) {
   const pt = flush === 'top' ? 'pt-0' : compacta ? 'pt-12 md:pt-16' : 'pt-16 md:pt-24';
   const pb = flush === 'bottom' ? 'pb-8 md:pb-10' : compacta ? 'pb-12 md:pb-16' : 'pb-16 md:pb-24';
+  // Hairline en las transiciones REALES base<->elevada (nunca entre secciones flush,
+  // que son un solo movimiento visual): sin esto la alternancia es imperceptible a 375px.
+  const borderTop = elevacion === 'elevada' && flush !== 'top' ? 'border-t' : '';
+  const borderBottom = elevacion === 'elevada' && flush !== 'bottom' ? 'border-b' : '';
+  const borderColor = 'border-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)]';
   return (
     <section
       id={id}
       aria-label={ariaLabel}
-      className={`${elevacion === 'elevada' ? 'bg-[var(--surface)]' : ''} ${pt} ${pb} ${className}`}
+      className={`${elevacion === 'elevada' ? 'bg-[var(--surface)]' : ''} ${borderTop} ${borderBottom} ${borderTop || borderBottom ? borderColor : ''} ${pt} ${pb} ${className}`}
     >
       <div className="mx-auto w-full max-w-[1140px] px-5">{children}</div>
     </section>

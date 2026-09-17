@@ -86,7 +86,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 5: app interna simplificada (ahí se toman los screenshots reales para el carrusel de la landing).
 
 ## Problemas conocidos ⚠️
-- veredicto:landing — el subagente `revisor-visual` fue lanzado (obligatorio: la landing es una de las 4 pantallas del dinero) y está corriendo en paralelo; `docs/revisiones/landing-veredicto.md` todavía no existe. No declarar la landing "lista" hasta que ese archivo tenga Veredicto/Usabilidad/Craft. Se resuelve solo con el resultado del subagente, no autoevaluándose.
+- veredicto:landing — 1ª pasada del `revisor-visual`: NO LISTA (usabilidad 27/40, craft 13/20). 5 defectos corregidos: (1) `/onboarding` y `/entrar` ya no dan 404 (páginas honestas "en construcción" + `not-found.tsx` de marca), (2) `--text-secondary` de tokens.css bajado a `#6B6152` (antes `#8C8172` daba 3.55:1, ahora ~5.6-6:1 AA), (3) hairline de separación en `SectionShell` (ui.tsx) entre bloques base/elevado reales (respeta `flush` para no partir Problema+Agitación), (4) anillo de respiración (`components/RespiraMark.tsx`) plantado en el header y el footer en vez del cuadrado genérico, (5) los 3 CTA de Oferta unificados a `CTA_LABEL`. Screenshot re-renderizado en `docs/revisiones/landing-375.png`. Se relanzó el revisor-visual para la 2ª pasada — veredicto pendiente.
 - carrusel "La app por dentro": usa 4 placeholders honestos rotulados (Check-in diario / Metas / Pantalla principal / Reporte semanal) porque la app interna todavía no existe — se reemplazan por screenshots reales al cerrar la Sesión 5 (regla dura de 19 §5). No declarar la landing "100% terminada" hasta ese reemplazo.
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
 - Garantía (footer/reembolsos): el piso legal dice "política de reembolso de Hotmart" SIN número de días porque Hotmart aún no está configurado (Sesión 6) — no prometer un plazo exacto hasta configurarlo.
@@ -94,7 +94,9 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 
 ## Pendientes del usuario (acciones que el usuario debe hacer)
 - [ ] (no bloqueante) Verificar "Respira" en el registro oficial de marcas (SIC/IMPI) antes de comprar dominio.
-- [ ] Dar 3 datos para las páginas legales: tu nombre o razón social, el país desde el que operas, y si quieres usar `hola@respira.app` como correo de soporte o prefieres otro (esto no bloquea seguir construyendo — se completa antes de vender).
+
+## Datos del responsable (para las páginas legales — confirmados por el usuario 2026-09-17)
+- Responsable: Lina Rios · País: Colombia · Correo de soporte/legal: lina.rios@ikigaihumano.com (provisional hasta que exista un dominio propio — cuando se compre el dominio, cambiar a un correo con ese dominio en las 3 páginas legales + FooterLegal).
 
 ## Notas para la próxima sesión
 - El usuario ya trae el RESUMEN FINAL validado — no se debe re-investigar mercado desde cero, solo completar los huecos de fuente+fecha en FICHA-MERCADO.md cuando se fije el precio definitivo.

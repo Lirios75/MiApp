@@ -19,7 +19,7 @@ export default function Reembolsos() {
             Tienes 7 días de prueba gratis para probar Respira sin que se te cobre nada. Si ya
             pagaste y en tus primeros 14 días con el Semáforo del Gasto no logras notar un
             patrón real, escríbenos a{" "}
-            <a href="mailto:hola@respira.app" className="underline underline-offset-4">hola@respira.app</a>{" "}
+            <a href="mailto:lina.rios@ikigaihumano.com" className="underline underline-offset-4">lina.rios@ikigaihumano.com</a>{" "}
             y te devolvemos todo. Sin preguntas, sin formularios.
           </p>
         </section>
@@ -36,7 +36,7 @@ export default function Reembolsos() {
         <section>
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">Cómo pedir un reembolso</h2>
           <ol className="mt-2 list-decimal pl-5">
-            <li>Escribe a <a href="mailto:hola@respira.app" className="underline underline-offset-4">hola@respira.app</a> desde el correo con el que compraste.</li>
+            <li>Escribe a <a href="mailto:lina.rios@ikigaihumano.com" className="underline underline-offset-4">lina.rios@ikigaihumano.com</a> desde el correo con el que compraste.</li>
             <li>Cuéntanos brevemente qué pasó (no es obligatorio, pero nos ayuda a mejorar).</li>
             <li>Procesamos la devolución a través de Hotmart en los plazos que su plataforma indique.</li>
           </ol>

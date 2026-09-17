@@ -12,6 +12,7 @@ import { Faq } from "@/components/landing/Faq";
 import { CtaFinal } from "@/components/landing/CtaFinal";
 import { FooterLegal } from "@/components/landing/FooterLegal";
 import { StickyCtaMobile } from "@/components/landing/ui";
+import { RespiraMark } from "@/components/RespiraMark";
 
 // Modelo onboarding-first (02C/ESTADO.md): el CTA lleva al onboarding gratis,
 // nunca directo al checkout — el pago se cierra en el paywall in-app (Sesión 4).
@@ -24,6 +25,7 @@ export default function LandingRespira() {
       {/* 1. HERO */}
       <Hero
         appName="Respira"
+        logo={<RespiraMark />}
         loginHref="/entrar"
         h1Marked="Deja de [acento]gastar por ansiedad[/acento] sin darte cuenta"
         subtitleMarked="Un check-in de 30 segundos para notar el patrón antes de repetirlo."
@@ -110,7 +112,7 @@ export default function LandingRespira() {
           totalAnual: "Se cobra $49.99/año",
           ahorro: "Ahorras ~40% vs. mensual",
           descomposicionDia: "menos de $0.14 al día",
-          ctaLabel: "Empezar mis 7 días gratis",
+          ctaLabel: CTA_LABEL,
           ctaHref: CTA_HREF,
           features: [
             "Check-in diario sin conectar tu banco",
@@ -122,7 +124,7 @@ export default function LandingRespira() {
         mensual={{
           nombre: "Mensual",
           precioMes: "$6.99",
-          ctaLabel: "Elegir mensual",
+          ctaLabel: CTA_LABEL,
           ctaHref: CTA_HREF,
           features: [
             "Check-in diario sin conectar tu banco",
@@ -189,7 +191,8 @@ export default function LandingRespira() {
       {/* 10. FOOTER LEGAL */}
       <FooterLegal
         appName="Respira"
-        soporteEmail="hola@respira.app"
+        logo={<RespiraMark />}
+        soporteEmail="lina.rios@ikigaihumano.com"
         enlaces={[
           { label: "Privacidad", href: "/privacidad" },
           { label: "Términos y Condiciones", href: "/terminos" },
