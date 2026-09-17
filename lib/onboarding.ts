@@ -64,6 +64,16 @@ export const LABEL_MOMENTO = mapaDeLabels(OPCIONES_MOMENTO);
 export const LABEL_INTENTO = mapaDeLabels(OPCIONES_INTENTO);
 export const LABEL_META = mapaDeLabels(OPCIONES_META);
 
+/** Variante de la meta para insertar después de "para" en el headline del paywall
+ * (LABEL_META ya empieza con un verbo — "Ahorrar para algo" duplicaría la palabra
+ * "para" si se concatena directo: "para ahorrar para algo"). */
+export const LABEL_META_HEADLINE: Record<string, string> = {
+  ahorrar: 'ahorrar más',
+  salir_deuda: 'salir de tu deuda',
+  dejar_impulso: 'dejar de gastar por impulso',
+  entender: 'entender en qué se va tu plata',
+};
+
 export interface RespuestasOnboarding {
   dolor?: string;
   momento?: string;

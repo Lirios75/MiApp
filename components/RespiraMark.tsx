@@ -10,7 +10,7 @@ import { motion, useInView, useReducedMotion } from 'motion/react';
 const CIRC = 44.7;
 const OBJETIVO = 11.2; // ~75% lleno
 
-export function RespiraMark() {
+export function RespiraMark({ duracionS = 0.9 }: { duracionS?: number }) {
   const ref = useRef<SVGSVGElement>(null);
   const inView = useInView(ref, { once: true, amount: 0.8 });
   const reduce = useReducedMotion();
@@ -28,7 +28,7 @@ export function RespiraMark() {
         strokeDasharray={CIRC}
         initial={{ strokeDashoffset: reduce ? OBJETIVO : CIRC }}
         animate={{ strokeDashoffset: inView ? OBJETIVO : reduce ? OBJETIVO : CIRC }}
-        transition={{ duration: reduce ? 0 : 0.9, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: reduce ? 0 : duracionS, ease: [0.16, 1, 0.3, 1] }}
         transform="rotate(-90 12 12)"
       />
     </svg>

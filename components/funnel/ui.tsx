@@ -35,7 +35,7 @@ export function FunnelHeader({
           </button>
         ) : (
           <a href="/" className="flex size-11 shrink-0 items-center justify-center [touch-action:manipulation]">
-            <RespiraMark />
+            <RespiraMark duracionS={0.35} />
           </a>
         )}
         <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)]">
@@ -90,12 +90,16 @@ export function OptionChip({
   label,
   seleccionado,
   onSelect,
+  indice = 0,
 }: {
   icon: LucideIcon;
   label: string;
   seleccionado: boolean;
   onSelect: () => void;
+  /** Posición en la lista — dispara el stagger de entrada (14: 50-80ms entre ítems). */
+  indice?: number;
 }) {
+  const reduce = useReducedMotion();
   const [marcando, setMarcando] = useState(false);
   const bloqueado = marcando || seleccionado;
 
@@ -110,9 +114,12 @@ export function OptionChip({
   return (
     <motion.button
       type="button"
+      initial={{ opacity: 0, y: reduce ? 0 : 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: reduce ? 0.15 : 0.3, delay: reduce ? 0 : indice * 0.07, ease: [0.16, 1, 0.3, 1] }}
       whileTap={bloqueado ? undefined : { scale: 0.98 }}
       onClick={handleTap}
-      className={`flex h-16 w-full items-center gap-3 rounded-[var(--radius-button)] border px-4 text-left transition-colors duration-150 [touch-action:manipulation] ${
+      className={`flex h-16 w-full items-center gap-3 rounded-[var(--radius-button)] border px-4 text-left shadow-[var(--shadow-1)] transition-colors duration-150 [touch-action:manipulation] ${
         activo
           ? 'border-[1.5px] border-[var(--accent)] bg-[var(--chip-bg)]'
           : 'border-[color-mix(in_oklab,var(--text-tertiary)_22%,transparent)] bg-[var(--surface)]'

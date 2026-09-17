@@ -68,7 +68,7 @@ export default function Entrar() {
     <main className="flex min-h-dvh flex-col items-center justify-center px-4 py-16 text-[var(--text-primary)] [font-family:var(--font-body)]">
       <div className="flex w-full max-w-[380px] flex-col items-center text-center">
         <a href="/" className="mb-6 flex items-center gap-2 text-[16px] font-semibold">
-          <RespiraMark /> Respira
+          <RespiraMark duracionS={0.35} /> Respira
         </a>
 
         <h1 className="text-[26px] font-bold leading-[1.2] [font-family:var(--font-display)]">

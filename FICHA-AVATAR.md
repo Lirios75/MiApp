@@ -51,7 +51,7 @@
 ## Lenguaje
 - Registro: tuteo, español latino neutro
 - Léxico local: "plata" (usado por el propio usuario en su resumen) — verificar con audiencia real de Colombia/México antes de fijarlo como palabra ancla, ya que "plata" es más colombiano que mexicano
-- Palabras vetadas: jerga financiera técnica (presupuesto, categorización, flujo de caja) — el ángulo es emocional, no contable
+- Palabras vetadas: jerga financiera técnica (categorización, flujo de caja) — el ángulo es emocional, no contable. EXCEPCIÓN: "presupuesto" SÍ se usa cuando ecoa el dolor #3 literal ("empecé un presupuesto y lo dejé a la semana") — ahí es la propia voz de Camila, no jerga nuestra; se mantiene igual en landing y onboarding para no romper la continuidad de esa pregunta. Fuera de ese eco puntual, sigue vetada.
 - Ancla emocional: dolor #1 (gastar sin darse cuenta y no saber en qué) → alivio (ver el progreso de su meta y entender el patrón antes de que se repita)
 
 ## Cierre

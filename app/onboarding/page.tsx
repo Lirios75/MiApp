@@ -45,21 +45,20 @@ export default function Onboarding() {
   if (paso === 0) {
     return (
       <FunnelScreen progreso={progreso} stepKey={paso}>
-        <div className="flex flex-1 flex-col justify-center">
-          <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
-            ¿Qué te pasa más seguido?
-          </h1>
-          <div className="mt-8 flex flex-col gap-3">
-            {OPCIONES_DOLOR.map((o) => (
-              <OptionChip
-                key={o.value}
-                icon={o.icon}
-                label={o.label}
-                seleccionado={respuestas.dolor === o.value}
-                onSelect={() => guardarYAvanzar('dolor', o.value)}
-              />
-            ))}
-          </div>
+        <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
+          ¿Qué te pasa más seguido?
+        </h1>
+        <div className="mt-8 flex flex-col gap-3">
+          {OPCIONES_DOLOR.map((o, i) => (
+            <OptionChip
+              key={o.value}
+              icon={o.icon}
+              label={o.label}
+              indice={i}
+              seleccionado={respuestas.dolor === o.value}
+              onSelect={() => guardarYAvanzar('dolor', o.value)}
+            />
+          ))}
         </div>
       </FunnelScreen>
     );
@@ -94,22 +93,21 @@ export default function Onboarding() {
   if (paso === 2) {
     return (
       <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
-        <div className="flex flex-1 flex-col justify-center">
-          <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
-            ¿En qué momento te pasa más?
-          </h1>
-          <p className="mt-2 text-[14px] text-[var(--text-secondary)]">Así ajustamos cuándo te recordamos marcar tu Semáforo.</p>
-          <div className="mt-8 flex flex-col gap-3">
-            {OPCIONES_MOMENTO.map((o) => (
-              <OptionChip
-                key={o.value}
-                icon={o.icon}
-                label={o.label}
-                seleccionado={respuestas.momento === o.value}
-                onSelect={() => guardarYAvanzar('momento', o.value)}
-              />
-            ))}
-          </div>
+        <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
+          ¿En qué momento te pasa más?
+        </h1>
+        <p className="mt-2 text-[14px] text-[var(--text-secondary)]">Así ajustamos cuándo te recordamos marcar tu Semáforo.</p>
+        <div className="mt-8 flex flex-col gap-3">
+          {OPCIONES_MOMENTO.map((o, i) => (
+            <OptionChip
+              key={o.value}
+              icon={o.icon}
+              label={o.label}
+              indice={i}
+              seleccionado={respuestas.momento === o.value}
+              onSelect={() => guardarYAvanzar('momento', o.value)}
+            />
+          ))}
         </div>
       </FunnelScreen>
     );
@@ -119,21 +117,20 @@ export default function Onboarding() {
   if (paso === 3) {
     return (
       <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
-        <div className="flex flex-1 flex-col justify-center">
-          <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
-            ¿Ya intentaste controlar tus gastos antes?
-          </h1>
-          <div className="mt-8 flex flex-col gap-3">
-            {OPCIONES_INTENTO.map((o) => (
-              <OptionChip
-                key={o.value}
-                icon={o.icon}
-                label={o.label}
-                seleccionado={respuestas.intento === o.value}
-                onSelect={() => guardarYAvanzar('intento', o.value)}
-              />
-            ))}
-          </div>
+        <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
+          ¿Ya intentaste controlar tus gastos antes?
+        </h1>
+        <div className="mt-8 flex flex-col gap-3">
+          {OPCIONES_INTENTO.map((o, i) => (
+            <OptionChip
+              key={o.value}
+              icon={o.icon}
+              label={o.label}
+              indice={i}
+              seleccionado={respuestas.intento === o.value}
+              onSelect={() => guardarYAvanzar('intento', o.value)}
+            />
+          ))}
         </div>
       </FunnelScreen>
     );
@@ -173,21 +170,20 @@ export default function Onboarding() {
   if (paso === 5) {
     return (
       <FunnelScreen progreso={progreso} onBack={retroceder} stepKey={paso}>
-        <div className="flex flex-1 flex-col justify-center">
-          <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
-            ¿Cuál es tu meta principal?
-          </h1>
-          <div className="mt-8 flex flex-col gap-3">
-            {OPCIONES_META.map((o) => (
-              <OptionChip
-                key={o.value}
-                icon={o.icon}
-                label={o.label}
-                seleccionado={respuestas.meta === o.value}
-                onSelect={() => guardarYAvanzar('meta', o.value)}
-              />
-            ))}
-          </div>
+        <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
+          ¿Cuál es tu meta principal?
+        </h1>
+        <div className="mt-8 flex flex-col gap-3">
+          {OPCIONES_META.map((o, i) => (
+            <OptionChip
+              key={o.value}
+              icon={o.icon}
+              label={o.label}
+              indice={i}
+              seleccionado={respuestas.meta === o.value}
+              onSelect={() => guardarYAvanzar('meta', o.value)}
+            />
+          ))}
         </div>
       </FunnelScreen>
     );
