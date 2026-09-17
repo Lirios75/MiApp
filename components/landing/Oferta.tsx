@@ -8,10 +8,36 @@
 // la card recomendada (el uso canónico de la técnica) · checkmarks custom.
 // El destino de los CTAs sigue al MODELO de 02C (checkout vs /onboarding).
 
-import { motion } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
+import { motion, useInView, useReducedMotion } from 'motion/react';
 import { Star } from 'lucide-react';
 import { CheckCustom, CtaButton, Hairline, Kicker, SectionShell, useReveal, VIEWPORT_ONCE } from './ui';
 import { MarkedCopy, warnCopy, warnRango } from './MarkedCopy';
+
+/** Conteo animado del precio (baseline #2 de 32: "un 53 nunca es estático") —
+ * arranca cuando el precio entra en pantalla, respeta prefers-reduced-motion. */
+function useCountUp(target: number, activo: boolean, duracionMs = 800): number {
+  const [valor, setValor] = useState(0);
+  const reduce = useReducedMotion();
+  useEffect(() => {
+    if (!activo) return;
+    if (reduce) {
+      setValor(target);
+      return;
+    }
+    let raf = 0;
+    const inicio = performance.now();
+    const tick = (ahora: number) => {
+      const t = Math.min(1, (ahora - inicio) / duracionMs);
+      const suavizado = 1 - Math.pow(1 - t, 3);
+      setValor(target * suavizado);
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, activo, duracionMs, reduce]);
+  return valor;
+}
 
 export interface PlanOferta {
   nombre: string;
@@ -61,11 +87,25 @@ function TrialBadge({ dias }: { dias: number }) {
 }
 
 function Precio({ plan }: { plan: PlanOferta }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const enVista = useInView(ref, { once: true, amount: 0.6 });
+  // Separa el prefijo ($) del número para poder contarlo — conserva decimales tal cual vinieron.
+  const coincidencia = plan.precioMes.match(/^([^\d]*)(\d+)(?:[.,](\d+))?/);
+  const prefijo = coincidencia?.[1] ?? '';
+  const parteEntera = coincidencia ? parseInt(coincidencia[2], 10) : 0;
+  const parteDecimal = coincidencia?.[3];
+  const objetivo = parteDecimal ? parseFloat(`${parteEntera}.${parteDecimal}`) : parteEntera;
+  const decimales = parteDecimal ? parteDecimal.length : 0;
+  const valor = useCountUp(objetivo, enVista);
   return (
     <div>
       <p className="flex items-baseline gap-1">
-        <span className="text-[36px] font-bold leading-none tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
-          {plan.precioMes}
+        <span
+          ref={ref}
+          className="text-[36px] font-bold leading-none tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]"
+        >
+          {prefijo}
+          {valor.toFixed(decimales)}
         </span>
         <span className="text-[14px] text-[var(--text-secondary)]">{plan.sufijo ?? '/mes'}</span>
       </p>

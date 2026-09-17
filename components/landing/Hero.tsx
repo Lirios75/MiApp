@@ -66,6 +66,16 @@ export function Hero({
         }}
       />
 
+      {/* Eco grande del anillo de respiración (dispositivo ownable, FICHA-ARTE.md):
+          apenas visible, marca el territorio sin competir con el copy. */}
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 200 200"
+        className="pointer-events-none absolute -right-16 top-8 -z-10 size-[280px] opacity-[0.06] md:-right-10 md:top-0 md:size-[360px]"
+      >
+        <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" strokeLinecap="round" strokeDasharray="405" strokeDashoffset="135" transform="rotate(-90 100 100)" />
+      </svg>
+
       <div className="mx-auto w-full max-w-[1140px] px-5">
         {/* Header 64px: marca a la izquierda, SOLO "Entrar" terciario a la derecha (19) */}
         <header className="flex h-16 items-center justify-between">

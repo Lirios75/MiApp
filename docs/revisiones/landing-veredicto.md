@@ -1,14 +1,14 @@
 # VEREDICTO revisor-visual — landing
-Fecha: 2026-09-17 14:00
+Fecha: 2026-09-17 15:30
 Screenshot: docs/revisiones/landing-375.png
-Usabilidad: 27/40
-Craft: 13/20
-Copy (si vende): 17/20
+Usabilidad: 36/40
+Craft: 14/20
+Copy (si vende): 19/20
 Fidelidad (si hubo referencia): N-A
 Veredicto: NO LISTA
 Top defectos:
-1. [CTA repetido: Hero, AppPorDentro, Oferta, CtaFinal, sticky + "Entrar" del header] apuntan a /onboarding y /entrar, rutas que no existen en app/ (no hay app/onboarding ni app/entrar ni not-found.tsx custom) → el botón más repetido de toda la página termina en el 404 genérico de Next → fix: publicar al menos un placeholder honesto en /onboarding y /entrar (o feature-flag el href) antes de dar la landing por "vendible".
-2. [Texto secundario en toda la página: subtítulo del hero, párrafos de Agitación, pasos de Solución, respuestas del FAQ] usan --text-secondary #8C8172 sobre #FAF6EF/#FFFDF8 ≈ 3.55:1, por debajo del 4.5:1 AA que exige la Regla UX #10 → fix: oscurecer --text-secondary (p.ej. ~#7A6F60) sin salir de la familia cálida, y reverificar contraste tras el cambio.
-3. [Sección "Así se ve por dentro" vs. secciones vecinas "El mecanismo" y "La oferta"] --surface (#FFFDF8) y --bg (#FAF6EF) difieren ~5-9 unidades RGB: la alternancia base/elevado es imperceptible a 375px, las secciones se funden en un mismo plano → fix: aumentar el salto de luminancia entre --bg y --surface o agregar un separador/hairline visible.
-4. [Hero — placeholder del visual, único lugar donde se sugiere el dispositivo] el "anillo de respiración" (dispositivo ownable de FICHA-ARTE) no se ve dibujado en ningún punto real de la landing, solo se lo describe en el texto del placeholder ("...con el anillo de tu meta...") → fix: plantar un SVG simple del anillo en el hero, chips o CTA para que la identidad se vea, no solo se lea, aun sin el screenshot final de la app.
-5. [Copy de los CTA: Hero/AppPorDentro/CtaFinal dicen "Quiero mi primer check-in"; Oferta-anual dice "Empezar mis 7 días gratis"; Oferta-mensual dice "Elegir mensual"] misma acción, tres redacciones distintas → diluye la "acción única repetida" que pide la rúbrica de copy → fix: unificar el verbo/beneficio (mantener "check-in"/"gratis" o el mismo verbo en 1ª persona) en las tres variantes.
+1. [Eje 4 Movimiento — toda la página] faltan 2 de las 7 animaciones baseline: ningún número (precios $4.16/$0.14/$6.99 en Oferta) cuenta al entrar, y el RespiraMark (el anillo ownable, ya dibujado como progreso con strokeDashoffset) queda completamente estático en Hero y Footer → fix: animar el trazo del anillo al montar/hacer scroll (Motion, animate strokeDashoffset) y usar count-up en los precios héroe de Oferta.
+2. [Encabezados de sección: "¿Te suena?", "Nota el patrón...", "Tu semana, sin culpa", "Empieza gratis...", "Lo que quizá te estás preguntando"] los 5 usan el mismo patrón Kicker+H2 30-40px/bold sin ninguna variación de composición → al hacer scroll rápido todas las secciones "pesan" igual y se pierde la sensación de progreso narrativo (Problema→Agitación→Solución→Oferta) → fix: dar a la sección Solución (el giro de la venta) un tratamiento distinto (p.ej. el chip del mecanismo más grande, o el H2 partido en dos líneas con jerarquía de color) para que se lea como el punto de inflexión.
+3. [Identidad ownable — todo el scroll de 7000px] el anillo de respiración (RespiraMark) solo aparece a 24px en el header y en el footer; en el resto de la página (Hero, CtaFinal, Oferta) no hay ningún eco visual del dispositivo, pese a haber espacio de sobra (fondos radiales genéricos en vez del anillo) → fix: reutilizar el anillo, más grande y sutil, como elemento decorativo de fondo en el Hero o en el bloque invertido de CtaFinal.
+4. [Nombre del mecanismo: CTA "Quiero mi primer check-in" vs. sección Solución "el Semáforo del Gasto"] la página bautiza el mecanismo pero el CTA repetido en 5 lugares no lo nombra — dos etiquetas conviven ("check-in" como acción diaria, "Semáforo del Gasto" como marca) sin que el CTA conecte ambas → fix: acercar el CTA a la marca del mecanismo (p. ej. "Quiero ver mi Semáforo del Gasto" o mencionar el semáforo en el subtítulo del hero, no solo en la sección 4).
+5. [Copy general: "check-in" se repite ~10 veces (CTA, Hero, Oferta, FAQ, StickyCtaMobile) sin traducir] es un anglicismo naturalizado en apps de hábitos pero no está en el léxico literal de FICHA-AVATAR.md (que usa "revisar mi cuenta", "marcar cómo me siento", nunca "check-in") → un ojo entrenado lo nota como la única palabra en inglés crudo de una página por lo demás 100% en el lenguaje de la usuaria → fix: evaluar reemplazar por un término propio ligado al Semáforo (p. ej. "marca del día") al menos en el CTA principal.
