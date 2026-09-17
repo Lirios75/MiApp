@@ -1,7 +1,7 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Última acción completada: Sesión 3 (página de ventas) construida — scaffold Next.js 16 + kit canónico de landing tematizado + 10 secciones con copy derivado de FICHA-AVATAR.md + páginas legales borrador (privacidad/terminos/reembolsos) + tsc/build limpios + screenshot 375px verificado. Se lanzó el subagente revisor-visual (obligatorio, landing = pantalla del dinero) — veredicto pendiente. / Siguiente acción exacta: leer docs/revisiones/landing-veredicto.md cuando el revisor termine; si aprueba (≥36/40 y ≥16/20), cerrar Sesión 3 y proponer Sesión 4 (onboarding+paywall+login); si no, corregir lo que señale y re-renderizar.
+⏸️ CHECKPOINT — Última acción completada: Sesión 3 (página de ventas) CERRADA — el revisor-visual dio veredicto LISTA en su 4ª pasada (usabilidad 36/40 · craft 17/20 · copy 19/20). Landing verificada y aprobada. / Siguiente acción exacta: presentar el resultado al usuario y proponer Sesión 4 (onboarding, paywall y login), esperando su OK.
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -46,7 +46,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 ## Secuencia maestra de construcción (NO saltar)
 - Estado de la secuencia: Landing construida, verificando (Sesión 3). Resto pendiente.
 - Ruta aprobada: `/` → `/onboarding` → `/paywall` → `/login` → `/app`
-- Landing: construida — verificada (tsc+build+dev limpios, screenshot 375px) — protagonista: el Semáforo del Gasto — CTA primario: "Quiero mi primer check-in" → `/onboarding` (ruta aún no existe, se construye en Sesión 4)
+- Landing: LISTA (aprobada por el revisor-visual, 4ª pasada) — protagonista: el Semáforo del Gasto — CTA primario: "Quiero mi primer check-in" → `/onboarding` (hoy es un placeholder honesto "en construcción"; la Sesión 4 la reemplaza por el flujo real)
 - Onboarding: pendiente
 - Paywall: pendiente
 - Login/Auth: pendiente
@@ -54,7 +54,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Servicios externos: pendiente
 
 ## Puertas de etapa (aprobacion antes de avanzar)
-- Landing: construida, NO aprobada todavía — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto:landing 1ª pasada = NO LISTA (27/40, 13/20), los 5 defectos ya se corrigieron (detalle en "Problemas conocidos") y se relanzó el revisor-visual para la 2ª pasada — resultado aún no aterriza en docs/revisiones/landing-veredicto.md.
+- Landing: APROBADA — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto en docs/revisiones/landing-veredicto.md = LISTA (usabilidad 36/40 · craft 17/20 · copy 19/20, 4ª pasada tras 3 rondas de correcciones).
 - Onboarding: no iniciada
 - Paywall: no iniciada
 - Login/Auth: no iniciada
@@ -77,16 +77,17 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 ## Sesiones completadas ✅
 - Sesión 1 — Validación, avatar, monetización, arquitectura y nombre — cerrada 2026-09-17.
 - Sesión 2 — Identidad visual (FICHA-ARTE.md aprobada, dirección B "Respira en calma") — cerrada 2026-09-17.
+- Sesión 3 — Página de ventas (10 secciones, LISTA por el revisor-visual: 36/40 · 17/20 · 19/20) — cerrada 2026-09-17.
 
 ## Sesión en progreso 🔧
-- Sesión 3 — Página de ventas: construida, verificando con el revisor-visual (obligatorio, es pantalla del dinero).
+(ninguna — esperando OK del usuario para arrancar Sesión 4)
 
 ## Próximas sesiones 📋
 - Sesión 4: onboarding, paywall y login.
 - Sesión 5: app interna simplificada (ahí se toman los screenshots reales para el carrusel de la landing).
 
 ## Problemas conocidos ⚠️
-- veredicto:landing — 1ª pasada NO LISTA (usabilidad 27/40, craft 13/20). 2ª pasada: usabilidad 36/40 ✅, craft 14/20 ❌. 3ª pasada (tras animar RespiraMark + count-up de precios): usabilidad 36/40 ✅, craft 15/20 ❌ — faltaba 1 punto: el eco grande del anillo en el Hero seguía estático e imperceptible (6% opacidad). Se animó con el mismo patrón de RespiraMark y se subió a 12%. Se relanzó el revisor-visual para la 4ª pasada — veredicto pendiente.
+- Refinamientos opcionales anotados por el revisor en la 4ª pasada (NO bloqueantes, quedan para una futura pasada de pulido si se quiere): (1) dar a la sección Solución un tratamiento distinto al resto (marca el punto de inflexión Problema→Solución), (2) conectar el CTA con el nombre del mecanismo ("Quiero ver mi Semáforo del Gasto"), (3) reemplazar el anglicismo "check-in" por un término propio, (4) verificar que los 2 badges de la card anual de Oferta no se pisen a resolución completa, (5) el eco del anillo en el Hero podría subir un poco más de opacidad (12%→16-18%) para más contundencia de marca.
 - carrusel "La app por dentro": usa 4 placeholders honestos rotulados (Check-in diario / Metas / Pantalla principal / Reporte semanal) porque la app interna todavía no existe — se reemplazan por screenshots reales al cerrar la Sesión 5 (regla dura de 19 §5). No declarar la landing "100% terminada" hasta ese reemplazo.
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
 - Garantía (footer/reembolsos): el piso legal dice "política de reembolso de Hotmart" SIN número de días porque Hotmart aún no está configurado (Sesión 6) — no prometer un plazo exacto hasta configurarlo.
