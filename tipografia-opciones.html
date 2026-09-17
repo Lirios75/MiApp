@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elegir tipografía — Respira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Nunito:wght@400;600;700;800&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#e9e9ec; padding:32px 20px 60px; font-family: system-ui, sans-serif; color:#1c1c1f; }
+  h1 { max-width:900px; margin:0 auto 6px; font-size:24px; font-weight:700; }
+  p.sub { max-width:900px; margin:0 auto 24px; font-size:14px; color:#55555c; }
+  .grid { max-width:1080px; margin:0 auto; display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); }
+  .card { background:#faf6ef; border-radius:22px; padding:26px 24px; border:1.5px solid #e4ddcf; box-shadow:0 10px 30px -12px rgba(40,35,25,0.18); }
+  .card .letra { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:8px; background:#2a2620; color:#faf6ef; font-weight:800; font-size:13px; margin-bottom:10px; }
+  .card .nombre { font-size:13px; font-weight:700; color:#5468d4; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:12px; }
+  .card h2 { font-size:26px; line-height:1.15; color:#2a2620; margin-bottom:12px; }
+  .card .num { font-size:34px; font-weight:700; color:#2e9e6b; margin-bottom:10px; font-variant-numeric:tabular-nums; }
+  .card .body-txt { font-size:14px; line-height:1.55; color:#66604f; }
+  .op-a h2, .op-a .num { font-family:'Sora', sans-serif; }
+  .op-a .body-txt { font-family:'Sora', sans-serif; }
+  .op-b h2, .op-b .num { font-family:'Nunito', sans-serif; font-weight:800; }
+  .op-b .body-txt { font-family:'Nunito', sans-serif; }
+  .op-c h2 { font-family:'Fraunces', serif; font-optical-sizing:auto; }
+  .op-c .num { font-family:'Fraunces', serif; }
+  .op-c .body-txt { font-family:'Instrument Sans', sans-serif; }
+</style>
+</head>
+<body>
+<h1>3 tipografías para Respira</h1>
+<p class="sub">Mismo texto, misma pantalla — solo cambia la letra. Dime cuál te gusta más (A, B o C).</p>
+<div class="grid">
+  <div class="card op-a">
+    <span class="letra">A</span>
+    <p class="nombre">Sora — geométrica, moderna</p>
+    <h2>Respira. Vamos paso a paso.</h2>
+    <p class="num">68%</p>
+    <p class="body-txt">Vas mejor que la semana pasada. Los miércoles gastas menos ansiedad que los lunes.</p>
+  </div>
+  <div class="card op-b">
+    <span class="letra">B</span>
+    <p class="nombre">Nunito — redondeada, cálida</p>
+    <h2>Respira. Vamos paso a paso.</h2>
+    <p class="num">68%</p>
+    <p class="body-txt">Vas mejor que la semana pasada. Los miércoles gastas menos ansiedad que los lunes.</p>
+  </div>
+  <div class="card op-c">
+    <span class="letra">C</span>
+    <p class="nombre">Fraunces + Instrument Sans — cálida con carácter editorial</p>
+    <h2>Respira. Vamos paso a paso.</h2>
+    <p class="num">68%</p>
+    <p class="body-txt">Vas mejor que la semana pasada. Los miércoles gastas menos ansiedad que los lunes.</p>
+  </div>
+</div>
+</body>
+</html>
