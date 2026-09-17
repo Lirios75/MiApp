@@ -1,7 +1,7 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Última acción completada: RESUMEN FINAL del usuario cargado, fichas creadas, nombre recomendado. / Siguiente acción exacta: esperar OK del usuario sobre el nombre y el Plan Maestro para arrancar Sesión 1 (arquitectura, modelo de datos, auth).
+⏸️ CHECKPOINT — Última acción completada: usuario confirmó el nombre "Respira". / Siguiente acción exacta: hacer LA PREGUNTA DE REFERENCIA (PASO 0 del 54) para arrancar Sesión 2 (identidad visual).
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -64,27 +64,25 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Features del MVP (del usuario): (1) check-in diario emoción/dinero, (2) 1-2 metas de ahorro/deuda con registro manual, (3) racha/progreso visual, (4) tip/reflexión corta diaria. Fuera del MVP: conexión bancaria, metas múltiples simultáneas, comunidad/social, gamificación compleja.
 - Idioma UI: español LATAM neutro, mono-idioma.
 
-## Nombre — decisión pendiente del usuario
-- Candidatos del usuario: Respira (principal) · Junto/Junta (alt. 1) · Al Día (alt. 2).
-- Investigación de conflicto (búsqueda web, no reemplaza verificación oficial en IMPI/SIC): "Respira" no tiene conflicto en la categoría finanzas (sí existe una app de respiración/meditación con ese nombre — categoría distinta); "Junta"/"Junto" choca con apps financieras reales (ej. una app bancaria cooperativa) y es una palabra genérica de uso común, lo que la debilita como marca; "Al Día" no tiene app homónima encontrada pero es una frase genérica (bajo poder distintivo) y existe "Em Dia", su equivalente en portugués, como app de finanzas en Brasil.
-- Recomendación del agente: **Respira**. Pendiente: el usuario confirma o ajusta.
+## Nombre — CONFIRMADO
+- Nombre definitivo: **Respira**. Confirmado por el usuario el 2026-09-17.
+- Pendiente (acción del usuario, no bloqueante): verificar disponibilidad oficial en SIC (Colombia) / IMPI (México) antes de comprar dominio o lanzar públicamente.
 
 ## Sesiones completadas ✅
-(ninguna todavía)
+- Sesión 1 — Validación, avatar, monetización, arquitectura y nombre — cerrada 2026-09-17.
 
 ## Sesión en progreso 🔧
-- Sesión 1 — Validación, avatar, monetización y arquitectura: fichas creadas, falta cerrar arquitectura de datos/RLS detallada y confirmar nombre con el usuario.
+- Sesión 2 — Identidad visual: arrancando con LA PREGUNTA DE REFERENCIA (PASO 0 del 54).
 
 ## Próximas sesiones 📋
-- Sesión 1 (cierre): modelo de datos definitivo + RLS + confirmar nombre.
-- Sesión 2: identidad visual (dirección de arte).
+- Sesión 2: identidad visual (dirección de arte) — en curso.
 - Sesión 3: página de ventas.
 
 ## Problemas conocidos ⚠️
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
 
 ## Pendientes del usuario (acciones que el usuario debe hacer)
-- [ ] Confirmar o ajustar el nombre de la app (Respira / otro).
+- [ ] (no bloqueante) Verificar "Respira" en el registro oficial de marcas (SIC/IMPI) antes de comprar dominio.
 
 ## Notas para la próxima sesión
 - El usuario ya trae el RESUMEN FINAL validado — no se debe re-investigar mercado desde cero, solo completar los huecos de fuente+fecha en FICHA-MERCADO.md cuando se fije el precio definitivo.
