@@ -34,7 +34,7 @@
 - 2ª nota `#2E9E6B` (verde — progreso positivo: ahorro, check-ins buenos, éxito) · 3ª nota `#E08A3C` (naranja — racha/hito/estado de alerta leve, NUNCA rojo)
   → las 3 notas responden al "semáforo de calma" ya documentado en Mundo del sujeto: verde=tranquila, naranja=alerta leve, azul=marca/acción — se agregaron a pedido del usuario tras ver el tour ("le veo muchos espacios" + quería más color); siguen la regla 60-30-10 (el azul-lila sigue siendo el dominante de marca, verde y naranja son notas funcionales, no decorativas)
 - Radio 22/16 · Sombra tintada 42·38·32
-- Display **DM Sans** (700) · Body **DM Sans** (400/500) — combinación probada "Bienestar/meditación" de `29-REFERENCIA-VISUAL.md` (Sentient/Switzer se descartó: requiere Fontshare, bloqueado en el entorno de construcción; DM Sans es la misma familia de mood cálido/geométrico, embebible por Google Fonts sin riesgo)
+- Display **Nunito** (700/800) · Body **Nunito** (400/600) — combinación probada "Hábitos/gamificada" de `29-REFERENCIA-VISUAL.md` (redondeada, cálida, amigable). Recorrido de la decisión: Sentient/Switzer (Fontshare) se descartó por bloqueo de red del entorno → se probó DM Sans → el usuario no la sintió cálida → se comparó A) Sora B) Nunito C) Fraunces+Instrument Sans (`tipografia-opciones.html`) → el usuario eligió **Nunito** por sentirse "más amigable y humana".
 - Composición: anillo de respiración centrado + grid 2×2 de señales (racha en naranja, check-ins en azul, ahorro en verde, ánimo en azul) + tarjeta de insight + aviso de racha — pantallas más densas de contenido tras el ajuste del usuario
 - Dispositivo ownable: el anillo que "respira" — mismo gesto que el nombre de la app
 
