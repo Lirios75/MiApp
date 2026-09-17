@@ -109,8 +109,19 @@ export default function Paywall() {
 
   if (fase === 'cargando') {
     return (
-      <div className="flex min-h-dvh flex-col bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
-        <LoadingPlan lineas={lineas} onDone={() => setFase('listo')} onClose={() => router.push('/')} />
+      <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
+        {/* Mismo fondo que el resto del funnel — antes esta fase era un fill
+            plano (0 en el eje de profundidad de craft), un corte brusco justo
+            antes de que aparezca la oferta. */}
+        <FunnelFondo />
+        <LoadingPlan lineas={lineas} onDone={() => setFase('listo')} onClose={salirConfirmando} />
+        <ConfirmSalir
+          abierto={confirmandoSalida}
+          onSeguir={() => setConfirmandoSalida(false)}
+          onSalir={() => router.push('/')}
+          mensaje="Tus respuestas ya están guardadas — puedes volver a esto cuando quieras."
+          labelSalir="Salir"
+        />
       </div>
     );
   }
@@ -122,7 +133,7 @@ export default function Paywall() {
           `isolate` del contenedor padre sigue siendo necesario (ver su
           definición en components/funnel/ui.tsx). */}
       <FunnelFondo />
-      <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-32 pt-4">
+      <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-40 pt-4">
         <div className="flex h-11 items-center justify-between">
           <motion.button
             type="button"
@@ -288,6 +299,8 @@ export default function Paywall() {
         abierto={confirmandoSalida}
         onSeguir={() => setConfirmandoSalida(false)}
         onSalir={() => router.push('/')}
+        mensaje="Tus respuestas ya están guardadas — puedes volver a esto cuando quieras."
+        labelSalir="Salir"
       />
     </div>
   );

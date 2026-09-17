@@ -199,7 +199,7 @@ export default function Onboarding() {
     // ── Paso 6: compromiso (ritual pre-loading, 50 §C3bis) ──
     pantalla = (
       <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
-        <div className="flex flex-1 flex-col items-center justify-center gap-8 text-center">
+        <div className="flex flex-col items-center gap-10 pt-4 text-center">
           {comprometido ? (
             <motion.div
               initial={{ opacity: 0, scale: reduce ? 1 : 0.85 }}

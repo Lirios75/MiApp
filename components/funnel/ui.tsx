@@ -43,7 +43,14 @@ export function FunnelHeader({
             <RespiraMark estatico />
           </a>
         )}
-        <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)]">
+        <div
+          role="progressbar"
+          aria-label="Progreso del cuestionario"
+          aria-valuenow={Math.round(progreso)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          className="h-[3px] flex-1 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)]"
+        >
           <motion.div
             className="h-full rounded-full bg-[var(--accent)]"
             initial={false}
@@ -274,10 +281,18 @@ export function ConfirmSalir({
   abierto,
   onSeguir,
   onSalir,
+  mensaje = 'Perderás las respuestas de tu quiz.',
+  labelSalir = 'Salir sin guardar',
 }: {
   abierto: boolean;
   onSeguir: () => void;
   onSalir: () => void;
+  /** El texto por defecto solo es cierto a mitad del quiz (las respuestas viven
+   * en estado de React hasta el paso de compromiso). En el paywall las
+   * respuestas YA están en localStorage — ahí se pasa un mensaje que no
+   * afirma una pérdida de datos que no ocurre. */
+  mensaje?: string;
+  labelSalir?: string;
 }) {
   const reduce = useReducedMotion();
   return (
@@ -298,13 +313,11 @@ export function ConfirmSalir({
             className="w-full max-w-[340px] rounded-[var(--radius-card)] bg-[var(--surface)] p-6 shadow-[var(--shadow-2)]"
           >
             <h2 className="text-[18px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">¿Salir?</h2>
-            <p className="mt-2 text-[14px] leading-snug text-[var(--text-secondary)]">
-              Perderás las respuestas de tu quiz.
-            </p>
+            <p className="mt-2 text-[14px] leading-snug text-[var(--text-secondary)]">{mensaje}</p>
             <div className="mt-5 flex flex-col gap-2">
               <FunnelButton onClick={onSeguir}>Seguir aquí</FunnelButton>
               <FunnelButton onClick={onSalir} variant="outline">
-                Salir sin guardar
+                {labelSalir}
               </FunnelButton>
             </div>
           </motion.div>
@@ -393,7 +406,8 @@ export function HoldButton({ onCommit, label }: { onCommit: () => void; label: s
         onPointerLeave={soltar}
         onKeyDown={alPresionarTecla}
         onKeyUp={alSoltarTecla}
-        aria-label={label}
+        aria-label={`Mantén presionado (o Enter/Espacio) para: ${label}`}
+        aria-describedby="hold-button-progreso"
         className="relative flex size-28 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
       >
         <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
@@ -416,7 +430,9 @@ export function HoldButton({ onCommit, label }: { onCommit: () => void; label: s
           presionado
         </span>
       </button>
-      <p className="text-[13px] text-[var(--text-secondary)]">{label}</p>
+      <p id="hold-button-progreso" aria-live="polite" className="text-[13px] text-[var(--text-secondary)]">
+        {progreso > 0 && progreso < 100 ? `Sosteniendo… ${Math.round(progreso)}%` : label}
+      </p>
     </div>
   );
 }
