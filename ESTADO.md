@@ -54,7 +54,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Servicios externos: pendiente
 
 ## Puertas de etapa (aprobacion antes de avanzar)
-- Landing: construida, no aprobada — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto del revisor-visual: PENDIENTE (subagente lanzado)
+- Landing: construida, NO aprobada todavía — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto:landing 1ª pasada = NO LISTA (27/40, 13/20), los 5 defectos ya se corrigieron (detalle en "Problemas conocidos") y se relanzó el revisor-visual para la 2ª pasada — resultado aún no aterriza en docs/revisiones/landing-veredicto.md.
 - Onboarding: no iniciada
 - Paywall: no iniciada
 - Login/Auth: no iniciada
