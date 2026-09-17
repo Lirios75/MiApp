@@ -135,9 +135,9 @@ export default function LandingRespira() {
 
       {/* 7. GARANTÍA */}
       <Garantia
-        nombre="la Garantía de los Primeros 7 Días Sin Culpa"
-        condicionMarked="Si en tus primeros 7 días el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas."
-        pisoLegal="Respaldada por la política de reembolso de Hotmart"
+        nombre="la Garantía de los Primeros 14 Días Sin Culpa"
+        condicionMarked="Si en tus primeros 14 días pagados el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas."
+        pisoLegal="7 días de prueba gratis + 14 días de garantía pagada"
       />
 
       {/* 8. FAQ — objeciones de FICHA-AVATAR.md, en orden de fuerza */}
@@ -183,7 +183,7 @@ export default function LandingRespira() {
         ctaLabel={CTA_LABEL}
         ctaHref={CTA_HREF}
         recap="7 días gratis · cancela cuando quieras"
-        psMarked="PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 7 Días Sin Culpa."
+        psMarked="PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 14 Días Sin Culpa."
       />
 
       {/* 10. FOOTER LEGAL */}

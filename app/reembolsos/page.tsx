@@ -13,10 +13,11 @@ export default function Reembolsos() {
       <div className="mt-8 flex flex-col gap-6 text-base leading-relaxed text-[var(--text-secondary)]">
         <section>
           <h2 className="text-lg font-semibold text-[var(--text-primary)]">
-            La Garantía de los Primeros 7 Días Sin Culpa
+            La Garantía de los Primeros 14 Días Sin Culpa
           </h2>
           <p className="mt-2">
-            Si en tus primeros 7 días con Respira el Semáforo del Gasto no te ayuda a notar un
+            Tienes 7 días de prueba gratis para probar Respira sin que se te cobre nada. Si ya
+            pagaste y en tus primeros 14 días con el Semáforo del Gasto no logras notar un
             patrón real, escríbenos a{" "}
             <a href="mailto:hola@respira.app" className="underline underline-offset-4">hola@respira.app</a>{" "}
             y te devolvemos todo. Sin preguntas, sin formularios.

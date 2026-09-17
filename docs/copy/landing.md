@@ -44,9 +44,9 @@
 - Stack: Respira Pro 12 meses ($84) + Guía "Primeros 7 días sin culpa" ($19, mata la objeción "ya probé todo y lo abandono") + Plantilla "Mi primera meta de ahorro" ($15, mata la objeción "no sé por dónde empezar") = $118 tachado → hoy $4.16/mes
 
 ## 7. GARANTÍA
-- nombre: `la Garantía de los Primeros 7 Días Sin Culpa`
-- condición: `Si en tus primeros 7 días el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas.`
-- piso legal: `Respaldada por la política de reembolso de Hotmart` — ⚠️ el plazo exacto se confirma al configurar Hotmart (Sesión 6); no prometer un número de días hasta entonces.
+- nombre: `la Garantía de los Primeros 14 Días Sin Culpa` — 14 > 7 (prueba), cumple la regla dura de 18/FICHA-MERCADO §4
+- condición: `Si en tus primeros 14 días pagados el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas.`
+- piso legal: `7 días de prueba gratis + 14 días de garantía pagada` — ⚠️ decisión del agente mientras Hotmart no está configurado (Sesión 6); si Hotmart no admite 14 días de reembolso, bajar el número aquí PRIMERO y luego en el código.
 
 ## 8. FAQ — objeciones de la ficha, en orden de fuerza
 1. ¿Necesito conectar mi cuenta bancaria? → No. Todo el registro es manual — tú decides qué anotar, sin dar acceso a tu banco.
@@ -60,7 +60,7 @@
 - H2: `Empieza a [acento]respirar[/acento] con tu plata`
 - future pacing: `Imagina revisar tu cuenta sin que se te acelere el pecho, ya sabiendo tu patrón.`
 - recap: `7 días gratis · cancela cuando quieras`
-- PS: `PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 7 Días Sin Culpa.`
+- PS: `PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 14 Días Sin Culpa.`
 
 ## 10. FOOTER LEGAL
 - Enlaces: Privacidad (`/privacidad`) · Términos y Condiciones (`/terminos`) · Reembolsos (`/reembolsos`)

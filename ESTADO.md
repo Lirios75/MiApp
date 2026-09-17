@@ -86,6 +86,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 5: app interna simplificada (ahí se toman los screenshots reales para el carrusel de la landing).
 
 ## Problemas conocidos ⚠️
+- veredicto:landing — el subagente `revisor-visual` fue lanzado (obligatorio: la landing es una de las 4 pantallas del dinero) y está corriendo en paralelo; `docs/revisiones/landing-veredicto.md` todavía no existe. No declarar la landing "lista" hasta que ese archivo tenga Veredicto/Usabilidad/Craft. Se resuelve solo con el resultado del subagente, no autoevaluándose.
 - carrusel "La app por dentro": usa 4 placeholders honestos rotulados (Check-in diario / Metas / Pantalla principal / Reporte semanal) porque la app interna todavía no existe — se reemplazan por screenshots reales al cerrar la Sesión 5 (regla dura de 19 §5). No declarar la landing "100% terminada" hasta ese reemplazo.
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
 - Garantía (footer/reembolsos): el piso legal dice "política de reembolso de Hotmart" SIN número de días porque Hotmart aún no está configurado (Sesión 6) — no prometer un plazo exacto hasta configurarlo.

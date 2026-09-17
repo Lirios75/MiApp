@@ -21,9 +21,10 @@
 - PIX/boleto: no aplica directamente (mercado objetivo es Colombia/México, no Brasil).
 
 ## 4. PRUEBA Y GARANTÍA
-- Plazos que admite Hotmart: se verifica en Sesión 6 antes de publicar cualquier plazo en la landing.
-- Prueba elegida: 7 días (dato del usuario) · Garantía elegida: pendiente de definir (debe ser MAYOR a 7 días, ver regla dura del 18).
-- Comprobación garantía > prueba: pendiente — NO se publica garantía hasta confirmar plazo real de Hotmart y que sea mayor a 7 días.
+- Plazos que admite Hotmart: se verifica en Sesión 6 antes de publicar cualquier plazo en la landing — el número de abajo es la decisión del agente mientras tanto (DECIDE-INFORMA-AVANZA), no un dato de Hotmart verificado todavía.
+- Prueba elegida: 7 · Garantía elegida: 14 (días de suscripción PAGADA, contados desde el primer cobro — no se solapan con los 7 de prueba gratis).
+- Comprobación garantía > prueba: 14 > 7 → SÍ.
+- ⚠️ Antes de vender de verdad (Sesión 6): confirmar que Hotmart admite configurar un reembolso de 14 días sobre el cobro pagado; si el máximo que permite es menor, bajar el número AQUÍ primero y luego en el copy (docs/copy/landing.md, app/page.tsx, app/reembolsos/page.tsx) — nunca al revés.
 
 ## 5. CONVERSIÓN ESPERABLE
 - NO ENCONTRADO — se define umbral de muestra en Sesión 8 (Analítica) con datos propios.
