@@ -185,12 +185,16 @@ export default function Paywall() {
 
           {/* Cards de plan */}
           <Bloque indice={2} reduce={reduce}>
-            <div className="flex flex-col gap-3">
+            <div role="radiogroup" aria-label="Elige tu plan" className="flex flex-col gap-3">
               {/* Hairline degradé (gate binario de conversión, 55): el plan
-                  recomendado es EL elemento de la vista que "esto importa". */}
+                  recomendado es EL elemento de la vista que "esto importa".
+                  Mismo componente en los 2 planes (antes Mensual usaba un
+                  border plano distinto) — solo cambia `emphasis`. */}
               <Hairline emphasis={plan === 'anual'} className="relative">
                 <motion.button
                   type="button"
+                  role="radio"
+                  aria-checked={plan === 'anual'}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setPlan('anual')}
                   className={`w-full rounded-[var(--radius-card)] p-5 text-left transition-colors [touch-action:manipulation] ${
@@ -214,24 +218,28 @@ export default function Paywall() {
                 </motion.button>
               </Hairline>
 
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setPlan('mensual')}
-                className={`rounded-[var(--radius-card)] border p-5 text-left transition-colors [touch-action:manipulation] ${
-                  plan === 'mensual'
-                    ? 'border-2 border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] shadow-[var(--shadow-2)]'
-                    : 'border-[color-mix(in_oklab,var(--text-tertiary)_25%,transparent)] bg-[var(--surface)] shadow-[var(--shadow-1)]'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{PLAN_MENSUAL.nombre}</span>
-                  <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
-                    {PLAN_MENSUAL.precioMes}
-                    <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
-                  </span>
-                </div>
-              </motion.button>
+              <Hairline emphasis={plan === 'mensual'}>
+                <motion.button
+                  type="button"
+                  role="radio"
+                  aria-checked={plan === 'mensual'}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => setPlan('mensual')}
+                  className={`w-full rounded-[var(--radius-card)] p-5 text-left transition-colors [touch-action:manipulation] ${
+                    plan === 'mensual'
+                      ? 'bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] shadow-[var(--shadow-2)]'
+                      : 'bg-[var(--surface)] shadow-[var(--shadow-1)]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[13px] font-semibold text-[var(--text-secondary)]">{PLAN_MENSUAL.nombre}</span>
+                    <span className="text-[20px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
+                      {PLAN_MENSUAL.precioMes}
+                      <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
+                    </span>
+                  </div>
+                </motion.button>
+              </Hairline>
             </div>
           </Bloque>
 

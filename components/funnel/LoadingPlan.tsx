@@ -48,7 +48,7 @@ export function LoadingPlan({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Salir"
+          aria-label="Cerrar"
           className="absolute right-4 top-4 flex size-11 items-center justify-center rounded-full text-[var(--text-secondary)] [touch-action:manipulation]"
         >
           <X size={18} strokeWidth={2.25} aria-hidden="true" />
@@ -71,12 +71,12 @@ export function LoadingPlan({
             transition={{ duration: reduce ? 0 : 0.5, ease: [0.16, 1, 0.3, 1] }}
           />
         </svg>
-        <span className="text-[24px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
+        <span className="text-[28px] font-bold tabular-nums text-[var(--text-primary)] [font-family:var(--font-display)]">
           {porcentaje}%
         </span>
       </div>
 
-      <h1 className="mt-6 text-[22px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">
+      <h1 className="mt-6 text-[20px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">
         Armando tu Semáforo del Gasto…
       </h1>
 

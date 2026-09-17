@@ -422,7 +422,7 @@ export function ConfirmSalir({
             <h2 id="confirm-salir-titulo" className="text-[18px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">
               ¿Salir?
             </h2>
-            <p className="mt-2 text-[14px] leading-snug text-[var(--text-secondary)]">{mensaje}</p>
+            <p className="mt-2 text-[15px] leading-snug text-[var(--text-secondary)]">{mensaje}</p>
             <div className="mt-5 flex flex-col gap-2">
               <FunnelButton ref={botonSeguirRef} onClick={onSeguir}>
                 Seguir aquí
