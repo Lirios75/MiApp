@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import { useState, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Check, Lightbulb, HeartHandshake, Sprout } from 'lucide-react';
-import { ConfirmSalir, FunnelButton, FunnelScreen, HoldButton, OptionChip } from '@/components/funnel/ui';
+import { ConfirmSalir, FunnelButton, FunnelScreen, HoldButton, OptionChip, SemanaPreview, VistaSemaforo } from '@/components/funnel/ui';
 import { OPCIONES_DOLOR, OPCIONES_INTENTO, OPCIONES_META, OPCIONES_MOMENTO, guardarRespuestas, type RespuestasOnboarding } from '@/lib/onboarding';
 
 const TOTAL_PASOS = 6; // 0-indexado: 6 pasos entre el inicio (8%) y el compromiso (100%)
@@ -76,6 +76,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
+        <VistaSemaforo />
       </FunnelScreen>
     );
   } else if (paso === 1) {
@@ -121,6 +122,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
+        <VistaSemaforo />
       </FunnelScreen>
     );
   } else if (paso === 3) {
@@ -143,6 +145,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
+        <VistaSemaforo />
       </FunnelScreen>
     );
   } else if (paso === 4) {
@@ -193,6 +196,7 @@ export default function Onboarding() {
             />
           ))}
         </div>
+        <VistaSemaforo />
       </FunnelScreen>
     );
   } else {
@@ -231,6 +235,7 @@ export default function Onboarding() {
                 </p>
               </div>
               <HoldButton onCommit={comprometerse} label="Me comprometo esta semana" />
+              <SemanaPreview />
             </>
           )}
         </div>

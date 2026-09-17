@@ -183,6 +183,67 @@ export function OptionChip({
   );
 }
 
+/* ── <VistaSemaforo> — preview FUNCIONAL del mecanismo bautizado (no decoración):
+   varias rondas del revisor confirmaron que el tercio inferior de las preguntas
+   cortas quedaba vacío pese a reposicionar/agrandar el fondo — la causa raíz
+   era falta de CONTENIDO, no de posición. Esta card enseña el check-in
+   tranquilo/alerta que la app usa a diario, dándole a esa franja una función
+   real (anticipar el mecanismo) en vez de solo llenar espacio. ── */
+export function VistaSemaforo() {
+  return (
+    <div className="mt-10 flex flex-col items-center gap-4 rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-1)]">
+      <p className="text-[13px] font-medium text-[var(--text-secondary)]">Así se ve tu Semáforo del Gasto</p>
+      <div className="flex items-center gap-8">
+        <span className="flex flex-col items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="flex size-12 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--accent-2)_16%,transparent)] ring-2 ring-[var(--accent-2)]"
+          >
+            <span className="size-4 rounded-full bg-[var(--accent-2)]" />
+          </span>
+          <span className="text-[12px] text-[var(--text-tertiary)]">Día tranquilo</span>
+        </span>
+        <span className="flex flex-col items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="flex size-12 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--accent-3)_16%,transparent)] ring-2 ring-[var(--accent-3)]"
+          >
+            <span className="size-4 rounded-full bg-[var(--accent-3)]" />
+          </span>
+          <span className="text-[12px] text-[var(--text-tertiary)]">Día de alerta</span>
+        </span>
+      </div>
+      <p className="text-center text-[12px] leading-snug text-[var(--text-tertiary)]">
+        Un toque al día — tú eliges cuál te describe hoy.
+      </p>
+    </div>
+  );
+}
+
+/* ── <SemanaPreview> — fila de 7 días (L-D) vacíos, previsualizando el
+   compromiso ("marcarlo todos los días esta semana") con contenido real en
+   vez de dejar el paso de compromiso con un vacío grande bajo el HoldButton. ── */
+export function SemanaPreview() {
+  const dias = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+  return (
+    <div className="flex flex-col items-center gap-3">
+      <p className="text-[12px] font-medium text-[var(--text-tertiary)]">Tu semana de compromiso</p>
+      <div className="flex items-center gap-3">
+        {dias.map((dia, i) => (
+          <span key={i} className="flex flex-col items-center gap-1.5">
+            <span
+              aria-hidden="true"
+              className="flex size-8 items-center justify-center rounded-full border-2 border-[color-mix(in_oklab,var(--accent)_30%,transparent)] text-[11px] font-semibold text-[var(--text-tertiary)]"
+            >
+              {dia}
+            </span>
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 /* ── <FunnelFondo> — mesh + anillo decorativo compartido por TODAS las pantallas
    del funnel (onboarding vía FunnelScreen, y paywall directo — antes duplicado
    en los dos archivos, con el mismo bug arreglándose dos veces). Un solo lugar
@@ -431,7 +492,9 @@ export function HoldButton({ onCommit, label }: { onCommit: () => void; label: s
         </span>
       </button>
       <p id="hold-button-progreso" aria-live="polite" className="text-[13px] text-[var(--text-secondary)]">
-        {progreso > 0 && progreso < 100 ? `Sosteniendo… ${Math.round(progreso)}%` : label}
+        {/* Redondeado a pasos de 20% — a 60fps el aria-live actualizaría ~54
+            veces en 900ms, saturando un lector de pantalla real. */}
+        {progreso > 0 && progreso < 100 ? `Sosteniendo… ${Math.round(progreso / 20) * 20}%` : label}
       </p>
     </div>
   );
