@@ -1,7 +1,7 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Última acción completada: usuario no sintió la tipografía (DM Sans); se compararon A) Sora B) Nunito C) Fraunces+Instrument Sans y el usuario eligió **Nunito**; tour re-renderizado con Nunito, sin desbordes. / Siguiente acción exacta: mostrar el tour final y esperar 1/2/3 (me encanta / ajustar otro detalle / repensar). Si aprueba → cerrar FICHA-ARTE.md (fecha + aprobada:SÍ), volcar tokens a globals.css y arrancar Sesión 3 (página de ventas).
+⏸️ CHECKPOINT — Última acción completada: usuario aprobó el tour final (Nunito + verde/naranja) — FICHA-ARTE.md cerrada (aprobada: SÍ, 2026-09-17). Sesión 2 completa. / Siguiente acción exacta: arrancar Sesión 3 — página de ventas (19-PAGINA-DE-VENTAS.md + 52 + 55 + 02C + 47 + FICHA-AVATAR.md), esperando el OK del usuario.
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -16,12 +16,12 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Brecha LATAM confirmada: sí — money mindset en español activo solo en formato estático (cursos/journals), sin competidor app dedicado a este cruce dinero+emoción.
 - Precio de referencia del mercado: journals digitales $8.99 (pago único) · apps de finanzas $5.99-13/mes (sin fuente propia con fecha — ver FICHA-MERCADO.md, pendiente de verificación propia).
 
-## Dirección de Arte (Sesión 2 — en curso, falta aprobar el tour)
-- FICHA-ARTE.md: creada, opción **B "Respira en calma"** elegida — falta la aprobación del TOUR DE LA APP para cerrarla como cosa juzgada.
+## Dirección de Arte (Sesión 2 — CERRADA, cosa juzgada)
+- FICHA-ARTE.md: APROBADA el 2026-09-17. Dirección elegida: **B "Respira en calma"**.
 - ¿Hubo referencia visual del usuario?: NO — eligió que el agente proponga (opción 1 de LA PREGUNTA DE REFERENCIA).
-- Brand kit de B: fondo `#FAF6EF` · acento primario `#5468D4` (azul-lila) + verde `#2E9E6B` (progreso) + naranja `#E08A3C` (racha/hito) · Nunito (una sola familia, redondeada y cálida) · radio 22/16 · dispositivo ownable: anillo de respiración.
+- Brand kit: fondo `#FAF6EF` · acento primario `#5468D4` (azul-lila) + verde `#2E9E6B` (progreso) + naranja `#E08A3C` (racha/hito) · **Nunito** (una sola familia, redondeada y cálida — elegida por el usuario tras comparar con Sora y Fraunces+Instrument Sans) · radio 22/16 · dispositivo ownable: anillo de respiración.
 - Modo: claro (derivado — rompe con el fintech oscuro institucional).
-- Nota técnica: Sentient/Switzer (Fontshare) se descartó por bloqueo de red del entorno de construcción — se usó DM Sans (Google Fonts), misma familia de mood, sin cambiar la paleta ni la composición elegida.
+- Detalle completo, tabla de líderes y trazabilidad de las 2 rondas de ajuste: ver `FICHA-ARTE.md`.
 
 ## Avatar y venta (Sesión 1 — ficha creada, pendiente de completar con VoC real)
 - FICHA-AVATAR.md: creada a partir del RESUMEN FINAL del usuario — estado BORRADOR (faltan ≥10 frases VoC con fuente verificable; las 5 dadas por el usuario cuentan como base pero sin fuente citable todavía).
@@ -73,13 +73,14 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 
 ## Sesiones completadas ✅
 - Sesión 1 — Validación, avatar, monetización, arquitectura y nombre — cerrada 2026-09-17.
+- Sesión 2 — Identidad visual (FICHA-ARTE.md aprobada, dirección B "Respira en calma") — cerrada 2026-09-17.
 
 ## Sesión en progreso 🔧
-- Sesión 2 — Identidad visual: arrancando con LA PREGUNTA DE REFERENCIA (PASO 0 del 54).
+(ninguna — esperando OK del usuario para arrancar Sesión 3)
 
 ## Próximas sesiones 📋
-- Sesión 2: identidad visual (dirección de arte) — en curso.
 - Sesión 3: página de ventas.
+- Sesión 4: onboarding, paywall y login.
 
 ## Problemas conocidos ⚠️
 - vista-previa-app.html: pospuesto a propósito — el TOUR DE LA APP (54) se construye DESPUÉS de que el usuario elija entre las opciones A/B/C de `direcciones-abc.html` (elección aún pendiente, ver checkpoint). Generarlo ahora sería tematizar un frame con una dirección que el usuario todavía no aprobó. En cuanto elija, se construye vista-previa-app.html con esa dirección y se presenta la pregunta del tour (me encanta / ajustar / repensar) antes de cerrar FICHA-ARTE.md.

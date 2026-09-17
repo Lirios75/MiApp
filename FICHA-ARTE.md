@@ -11,45 +11,31 @@
   | Habitica | redondeada multicolor | claro/oscuro, colores de RPG | cards redondeadas | bottom-tabs | racha + celebración visual de hitos | la racha como elemento central, sin culpa al romperla |
   | Finch (gigante admirado, self-care) | redondeada cálida | pastel cálido, check-in de humor en 1 toque | cards suaves | bottom-tabs | mascota que crece con la racha | check-in emocional de un solo toque ANTES de cualquier dato |
   | Cleo (gigante admirado, fintech conversacional) | sans con personalidad | tono cercano, tarjetas de insight en lenguaje humano | chat-cards | conversacional | mensajes con humor | insight en lenguaje coloquial, cero jerga financiera |
-- Combinación tipográfica probada usada: fila "Finanzas" (Archivo/Instrument Sans) en A · mood "Cálido/bienestar" (Sentient/Switzer) en B · fila "Hábitos/gamificada" (Nunito) en C — las 3 validadas contra la tabla de líderes.
+- Combinación tipográfica usada: fila "Hábitos/gamificada" de `29-REFERENCIA-VISUAL.md` (Nunito, redondeada, una sola familia) — validada contra la tabla de líderes (Habitica/Finch ya usan redondeada cálida).
 - Arquetipo: Cuidador (con un toque de Inocente — permiso, sin culpa).
-- Mundo del sujeto (0.45): respirar (inhalar/exhalar → anillo que se expande) · el bolsillo/monedero (formas redondeadas, no tarjetas duras) · la libreta emocional (textura cálida de papel) · el semáforo de calma (verde=tranquila, ámbar=alerta leve, NUNCA rojo punitivo) · la técnica de respiración 4-7-8 (motion lento, sin rebote).
-- Dirección del banco 54 usada para el DISPOSITIVO OWNABLE: ninguna de las 12 se ajustaba al mundo "respirar" — se derivó un dispositivo propio compatible con los líderes (anillo de progreso, ya usado por Fintonic/Revolut) · Líder de origen de la paleta: fila "Finanzas personales" y matriz "Fintech — femenina, control de gastos" de `29-REFERENCIA-VISUAL.md`, tomada tal cual (traducida a modo claro conservando el hue, según regla del propio 29).
+- Mundo del sujeto (0.45): respirar (inhalar/exhalar → anillo que se expande) · el bolsillo/monedero (formas redondeadas, no tarjetas duras) · la libreta emocional (textura cálida) · el semáforo de calma (verde=tranquila, naranja=alerta leve, NUNCA rojo punitivo) · la técnica de respiración 4-7-8 (motion lento, sin rebote).
+- Dispositivo ownable: el anillo de respiración (propio, compatible con los líderes — Fintonic/Revolut ya usan anillos de progreso) · Líder de origen de la paleta: matriz "Fintech — femenina, control de gastos" de `29-REFERENCIA-VISUAL.md`, traducida a modo claro conservando el hue.
 
 ## Personalidad compilada
 - 3 adjetivos de personalidad: calmada, permisiva, clara.
-- Compilación: spring casi sin rebote (0-0.1) · duración base 300-380ms · exclamaciones máx 1/pantalla · celebración nivel medio (sin confeti, sí un cambio de color + micro-mensaje) · radio tendencial 18-22px.
+- Compilación: spring casi sin rebote (0–0.1) · duración base 300–380ms · exclamaciones máx 1/pantalla · celebración nivel medio (cambio de color + micro-mensaje, sin confeti) · radio tendencial 20–22px.
 
-## Brand kit — TRES OPCIONES presentadas, esperando elección del usuario
-
-### Opción A — "Claridad templada"
-- Fondo `#F8F6F0` · Superficie `#FEFDF9` · Texto 1º/2º `#1D222B` / `#79808F`
-- Acento `#178A54` (verde dinero, SOLO en progreso/CTA) · Radio 16/12 · Sombra tintada 29·34·43
-- Display **Archivo** · Body **Instrument Sans**
-- Composición: héroe-dato (meta de ahorro grande) + cards apiladas (check-in, racha)
-
-### Opción B — "Respira en calma" (elegida por el usuario, ajustada tras el tour — ver Trazabilidad)
-- Fondo `#FAF6EF` · Superficie `#FFFDF8` · Texto 1º/2º `#2A2620` / `#8C8172`
-- Acento primario `#5468D4` (azul-lila calmo — SOLO en el anillo/CTA/marca)
-- 2ª nota `#2E9E6B` (verde — progreso positivo: ahorro, check-ins buenos, éxito) · 3ª nota `#E08A3C` (naranja — racha/hito/estado de alerta leve, NUNCA rojo)
-  → las 3 notas responden al "semáforo de calma" ya documentado en Mundo del sujeto: verde=tranquila, naranja=alerta leve, azul=marca/acción — se agregaron a pedido del usuario tras ver el tour ("le veo muchos espacios" + quería más color); siguen la regla 60-30-10 (el azul-lila sigue siendo el dominante de marca, verde y naranja son notas funcionales, no decorativas)
-- Radio 22/16 · Sombra tintada 42·38·32
-- Display **Nunito** (700/800) · Body **Nunito** (400/600) — combinación probada "Hábitos/gamificada" de `29-REFERENCIA-VISUAL.md` (redondeada, cálida, amigable). Recorrido de la decisión: Sentient/Switzer (Fontshare) se descartó por bloqueo de red del entorno → se probó DM Sans → el usuario no la sintió cálida → se comparó A) Sora B) Nunito C) Fraunces+Instrument Sans (`tipografia-opciones.html`) → el usuario eligió **Nunito** por sentirse "más amigable y humana".
-- Composición: anillo de respiración centrado + grid 2×2 de señales (racha en naranja, check-ins en azul, ahorro en verde, ánimo en azul) + tarjeta de insight + aviso de racha — pantallas más densas de contenido tras el ajuste del usuario
-- Dispositivo ownable: el anillo que "respira" — mismo gesto que el nombre de la app
-
-### Opción C — "Diario del dinero"
-- Fondo `#FAF6EF` · Superficie `#FFFDF8` · Texto 1º/2º `#28221B` / `#8C8172`
-- Acento `#2E9E6B` (verde victoria) + hito `#F0A05A` (SOLO en el día destacado de la racha) · Radio 18/14 · Sombra tintada 40·34·27
-- Display + Body **Nunito** (una sola familia, redondeada, cálida)
-- Composición: timeline editorial — un registro por día de la semana
+## Brand kit final (los valores que viven en globals.css/@theme)
+- Fondo: `#FAF6EF` · Superficie: `#FFFDF8` · Hundido: `#F1EADC` (inputs, campos) · Texto 1º/2º: `#2A2620` / `#8C8172`
+- Acento primario: `#5468D4` (azul-lila — SOLO en marca, anillo, CTA y selección)
+- 2ª nota: `#2E9E6B` (verde — progreso positivo: ahorro, check-ins, celebración) · 3ª nota: `#E08A3C` (naranja — racha, hitos, alerta leve — nunca rojo)
+- Semánticos: éxito `#2E9E6B` (comparte la 2ª nota) · error `#C15B4A` (terracota apagado, siempre con ícono — nunca solo color) · aviso `#E08A3C` (comparte la 3ª nota)
+- Display: **Nunito** (pesos 700/800) · Body: **Nunito** (pesos 400/600) · Escala: display 34px / title 19px / body 15px / label 12px
+- Radio: 22px cards / 16px botones · Profundidad: sombras suaves tintadas (RGB 42·38·32) + hairline sutil en elementos clave (nunca borde duro gris) · Espaciado base: escala 4·8·12·16·24·32·48·64
+- Dispositivo ownable: el anillo de respiración — se expande/llena como avance de meta o racha, mismo gesto que el nombre de la app
+- Motion signature: ease-out suave, sin bounce (spring 0–0.1) · stagger 70–90ms · duración base 300–380ms · firma: "respirar" — fades amplios, nada abrupto
 
 ## Trazabilidad y vetos
 - Ruta de diseño (PREGUNTA DE REFERENCIA del 54): propuesta propia (el usuario eligió opción 1).
-- Protocolo A/B/C: página comparativa en `direcciones-abc.html` (raíz del proyecto) · screenshot en `docs/revisiones/direcciones-abc-full.png` · opción elegida: **B "Respira en calma"** · descartadas: A "Claridad templada" (dato-héroe estilo Fintonic, más frío/numérico) y C "Diario del dinero" (formato bitácora, más narrativo/lento para el check-in diario).
-- Tour de la app: `vista-previa-app.html` (raíz del proyecto) · screenshot en `docs/revisiones/vista-previa-app-full.png` · 5 vistas: principal (M0/anillo), onboarding, paywall, check-in (mecanismo), celebración de racha (resultado) · aprobado por el usuario: PENDIENTE (mostrado en este mismo turno).
-- Paleta derivada de: matriz "Fintech — femenina, control de gastos" de `29-REFERENCIA-VISUAL.md`, traducida a modo claro sin desafinar el hue.
-- Registro anti-repetición: paleta (azul-lila #5468D4 sobre crema cálida) y par tipográfico (DM Sans, una sola familia) — vetados para el próximo proyecto del SO.
+- Protocolo A/B/C: página comparativa en `direcciones-abc.html` · screenshot en `docs/revisiones/direcciones-abc-full.png` · opción elegida: **B "Respira en calma"** · descartadas: A "Claridad templada" (dato-héroe estilo Fintonic, más frío/numérico) y C "Diario del dinero" (formato bitácora, más narrativo/lento para el check-in diario).
+- Tour de la app: `vista-previa-app.html` · screenshot final en `docs/revisiones/vista-previa-app-full.png` · 5 vistas (principal/M0, onboarding, paywall, check-in, celebración) · **APROBADO por el usuario el 2026-09-17**, tras 2 rondas de ajuste: (1) más color funcional (verde=progreso, naranja=racha/hito) y pantallas más llenas, (2) cambio de tipografía de DM Sans → Nunito (comparada en `tipografia-opciones.html` contra Sora y Fraunces+Instrument Sans).
+- Paleta derivada de: matriz "Fintech — femenina, control de gastos" de `29-REFERENCIA-VISUAL.md`, traducida a modo claro sin desafinar el hue; 2ª y 3ª nota (verde/naranja) responden al "semáforo de calma" ya documentado en Mundo del sujeto.
+- Registro anti-repetición: paleta (azul-lila `#5468D4` + verde `#2E9E6B` + naranja `#E08A3C` sobre crema cálida) y tipografía (Nunito, una sola familia) — quedan VETADOS para el próximo proyecto del SO.
 - Modo: CLARO — derivado porque el nicho (hábitos/bienestar + finanzas personales) gana en claro (confianza cotidiana, "victoria visible", ritual diurno) y rompe con el fintech oscuro institucional que el avatar asocia a "el banco de mis papás".
 
-## Idioma UI: Español LATAM neutro · Fecha de cierre de la ficha: PENDIENTE (falta aprobación del tour) · Aprobada por el usuario: NO
+## Idioma UI: Español LATAM neutro · Fecha de cierre de la ficha: 2026-09-17 · Aprobada por el usuario: SÍ
