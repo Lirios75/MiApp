@@ -81,6 +81,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 3: página de ventas.
 
 ## Problemas conocidos ⚠️
+- vista-previa-app.html: pospuesto a propósito — el TOUR DE LA APP (54) se construye DESPUÉS de que el usuario elija entre las opciones A/B/C de `direcciones-abc.html` (elección aún pendiente, ver checkpoint). Generarlo ahora sería tematizar un frame con una dirección que el usuario todavía no aprobó. En cuanto elija, se construye vista-previa-app.html con esa dirección y se presenta la pregunta del tour (me encanta / ajustar / repensar) antes de cerrar FICHA-ARTE.md.
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
 
 ## Pendientes del usuario (acciones que el usuario debe hacer)
