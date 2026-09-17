@@ -6,13 +6,23 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 
 const INTERVALO_MS = 1100;
 const PAUSA_FINAL_MS = 400;
 const CIRC = 2 * Math.PI * 44; // r=44 en un viewBox de 100
 
-export function LoadingPlan({ lineas, onDone }: { lineas: string[]; onDone: () => void }) {
+export function LoadingPlan({
+  lineas,
+  onDone,
+  onClose,
+}: {
+  lineas: string[];
+  onDone: () => void;
+  /** Salida durante la carga — sin esto no hay forma de salir en los ~4.4s
+   * que dura esta pantalla (heurística 3: control y libertad). */
+  onClose?: () => void;
+}) {
   const reduce = useReducedMotion();
   const [activa, setActiva] = useState(0);
 
@@ -33,7 +43,18 @@ export function LoadingPlan({ lineas, onDone }: { lineas: string[]; onDone: () =
   const porcentaje = Math.round((Math.min(activa, lineas.length) / lineas.length) * 100);
 
   return (
-    <div className="mx-auto flex w-full max-w-[420px] flex-1 flex-col items-center justify-center px-4 text-center">
+    <div className="relative flex min-h-dvh flex-col">
+      {onClose && (
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Salir"
+          className="absolute right-4 top-4 flex size-11 items-center justify-center rounded-full text-[var(--text-secondary)] [touch-action:manipulation]"
+        >
+          <X size={18} strokeWidth={2.25} aria-hidden="true" />
+        </button>
+      )}
+      <div className="mx-auto flex w-full max-w-[420px] flex-1 flex-col items-center justify-center px-4 text-center">
       <div className="relative flex size-28 items-center justify-center">
         <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
           <circle cx="50" cy="50" r="44" fill="none" stroke="color-mix(in oklab, var(--accent) 14%, transparent)" strokeWidth="9" />
@@ -97,6 +118,7 @@ export function LoadingPlan({ lineas, onDone }: { lineas: string[]; onDone: () =
           );
         })}
       </ul>
+      </div>
     </div>
   );
 }

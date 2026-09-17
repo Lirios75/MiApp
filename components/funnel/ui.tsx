@@ -5,7 +5,7 @@
 // el kit de landing (components/landing/tokens.css, ya global vía globals.css) —
 // cero valores nuevos de marca aquí, solo estructura y comportamiento.
 
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { ChevronLeft, Check, X } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -74,14 +74,19 @@ export function FunnelButton({
   onClick,
   variant = 'solid',
   disabled = false,
+  cargando = false,
   type = 'button',
 }: {
   children: ReactNode;
   onClick?: () => void;
   variant?: 'solid' | 'outline';
   disabled?: boolean;
+  /** Muestra un anillo girando junto al texto — sin esto, "disabled" a secas
+   * se lee como congelado, no como "trabajando" (heurística 1). */
+  cargando?: boolean;
   type?: 'button' | 'submit';
 }) {
+  const reduce = useReducedMotion();
   const estilo =
     variant === 'outline'
       ? 'border border-[color-mix(in_oklab,var(--accent)_45%,transparent)] text-[var(--accent)] hover:bg-[var(--chip-bg)]'
@@ -92,8 +97,16 @@ export function FunnelButton({
       whileTap={disabled ? undefined : { scale: 0.97 }}
       onClick={onClick}
       disabled={disabled}
-      className={`flex h-[52px] w-full items-center justify-center rounded-[var(--radius-button)] px-8 text-[17px] font-semibold transition-colors duration-150 [touch-action:manipulation] disabled:opacity-40 ${estilo}`}
+      className={`flex h-[52px] w-full items-center justify-center gap-2 rounded-[var(--radius-button)] px-8 text-[17px] font-semibold transition-colors duration-150 [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)] disabled:opacity-40 ${estilo}`}
     >
+      {cargando && (
+        <motion.span
+          aria-hidden="true"
+          className="inline-flex size-4 shrink-0 rounded-full border-2 border-current border-t-transparent"
+          animate={reduce ? undefined : { rotate: 360 }}
+          transition={reduce ? undefined : { duration: 0.7, repeat: Infinity, ease: 'linear' }}
+        />
+      )}
       {children}
     </motion.button>
   );
@@ -246,7 +259,7 @@ export function FunnelScreen({
         initial={{ opacity: 0, x: reduce ? 0 : 40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: reduce ? 0.2 : 0.3, ease: [0.16, 1, 0.3, 1] }}
-        className="mx-auto flex w-full max-w-[500px] flex-1 flex-col justify-center px-4 pb-8 pt-8"
+        className="mx-auto flex w-full max-w-[500px] flex-1 flex-col px-4 pb-8 pt-8"
       >
         {children}
       </motion.div>
@@ -307,22 +320,36 @@ export function HoldButton({ onCommit, label }: { onCommit: () => void; label: s
   const reduce = useReducedMotion();
   const [progreso, setProgreso] = useState(0);
   const rafRef = useRef<number | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const inicioRef = useRef(0);
+  const presionandoRef = useRef(false);
   const DURACION = 900;
+  const PASO_REDUCE = 150; // reduced-motion: progreso en pasos discretos, no un tween continuo
 
   function limpiar() {
     if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
     rafRef.current = null;
-    if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
-    timeoutRef.current = null;
+    if (intervalRef.current !== null) clearInterval(intervalRef.current);
+    intervalRef.current = null;
   }
 
   function empezar() {
+    if (presionandoRef.current) return; // evita reinicios por key-repeat del teclado
+    presionandoRef.current = true;
     if (reduce) {
-      // Sin animación, pero el ritual de "sostener" se mantiene: un solo tap
-      // ya no dispara el compromiso, hay que sostenerlo la misma duración.
-      timeoutRef.current = setTimeout(onCommit, DURACION);
+      // Sin tween, pero SÍ con feedback: el anillo avanza en pasos discretos
+      // cada 150ms — antes quedaba inmóvil al 0% los 900ms completos, sin
+      // ninguna señal de que el gesto se estaba registrando.
+      inicioRef.current = performance.now();
+      intervalRef.current = setInterval(() => {
+        const t = Math.min(1, (performance.now() - inicioRef.current) / DURACION);
+        setProgreso(t * 100);
+        if (t >= 1) {
+          limpiar();
+          presionandoRef.current = false;
+          onCommit();
+        }
+      }, PASO_REDUCE);
       return;
     }
     inicioRef.current = performance.now();
@@ -330,6 +357,7 @@ export function HoldButton({ onCommit, label }: { onCommit: () => void; label: s
       const t = Math.min(1, (ahora - inicioRef.current) / DURACION);
       setProgreso(t * 100);
       if (t >= 1) {
+        presionandoRef.current = false;
         onCommit();
         return;
       }
@@ -340,7 +368,18 @@ export function HoldButton({ onCommit, label }: { onCommit: () => void; label: s
 
   function soltar() {
     limpiar();
+    presionandoRef.current = false;
     setProgreso(0);
+  }
+
+  function alSoltarTecla(e: KeyboardEvent<HTMLButtonElement>) {
+    if (e.key === 'Enter' || e.key === ' ') soltar();
+  }
+  function alPresionarTecla(e: KeyboardEvent<HTMLButtonElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault(); // Space no debe scrollear la página
+      empezar();
+    }
   }
 
   useEffect(() => limpiar, []);
@@ -352,8 +391,10 @@ export function HoldButton({ onCommit, label }: { onCommit: () => void; label: s
         onPointerDown={empezar}
         onPointerUp={soltar}
         onPointerLeave={soltar}
+        onKeyDown={alPresionarTecla}
+        onKeyUp={alSoltarTecla}
         aria-label={label}
-        className="relative flex size-28 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] [touch-action:manipulation]"
+        className="relative flex size-28 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] [touch-action:manipulation] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg)]"
       >
         <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
           <circle cx="50" cy="50" r="44" fill="none" stroke="color-mix(in oklab, var(--accent) 18%, transparent)" strokeWidth="6" />

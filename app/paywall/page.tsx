@@ -110,7 +110,7 @@ export default function Paywall() {
   if (fase === 'cargando') {
     return (
       <div className="flex min-h-dvh flex-col bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
-        <LoadingPlan lineas={lineas} onDone={() => setFase('listo')} />
+        <LoadingPlan lineas={lineas} onDone={() => setFase('listo')} onClose={() => router.push('/')} />
       </div>
     );
   }
@@ -122,7 +122,7 @@ export default function Paywall() {
           `isolate` del contenedor padre sigue siendo necesario (ver su
           definición en components/funnel/ui.tsx). */}
       <FunnelFondo />
-      <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-10 pt-4">
+      <div className="mx-auto flex w-full max-w-[500px] flex-col px-4 pb-32 pt-4">
         <div className="flex h-11 items-center justify-between">
           <motion.button
             type="button"
@@ -245,22 +245,7 @@ export default function Paywall() {
             </div>
           </Bloque>
 
-          <Bloque indice={4} reduce={reduce}>
-            <FunnelButton onClick={empezarPrueba} disabled={avanzando}>
-              {avanzando ? 'Un momento…' : `Empezar mis ${TRIAL_DIAS} días gratis`}
-            </FunnelButton>
-            {errorAvance && (
-              <p className="mt-2 text-center text-[13px] text-[var(--text-secondary)]">
-                Esto está tardando más de lo normal. Vuelve a intentarlo — si sigue sin avanzar, revisa tu conexión.
-              </p>
-            )}
-          </Bloque>
-
-          <Bloque indice={5} reduce={reduce} className="flex flex-col items-center gap-4">
-            <p className="-mt-2 text-center text-[13px] text-[var(--text-secondary)]">
-              Cancela cuando quieras · te avisamos antes del cobro
-            </p>
-
+          <Bloque indice={4} reduce={reduce} className="flex flex-col items-center gap-4">
             <motion.button
               type="button"
               whileTap={{ scale: 0.96 }}
@@ -275,10 +260,28 @@ export default function Paywall() {
                 <Lock size={14} strokeWidth={2} aria-hidden="true" /> Pago seguro
               </span>
               <span className="inline-flex items-center gap-1">
-                <ShieldCheck size={14} strokeWidth={2} aria-hidden="true" /> Garantía de {GARANTIA_DIAS} días sin culpa
+                <ShieldCheck size={14} strokeWidth={2} aria-hidden="true" /> Garantía de los Primeros {GARANTIA_DIAS} Días Sin Culpa
               </span>
             </p>
           </Bloque>
+        </div>
+      </div>
+
+      {/* CTA fijo al fondo (no en el flujo del scroll): la 7ª pasada del revisor
+          midió que el botón principal quedaba a ~88% del alto de la página sin
+          ninguna forma de alcanzarlo sin desplazarse — en la pantalla que más
+          dinero decide, la acción primaria no puede depender de que alguien
+          llegue hasta el final. */}
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[color-mix(in_oklab,var(--text-tertiary)_15%,transparent)] bg-[var(--bg)] px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 shadow-[var(--shadow-2)]">
+        <div className="mx-auto w-full max-w-[500px]">
+          <FunnelButton onClick={empezarPrueba} disabled={avanzando} cargando={avanzando}>
+            {avanzando ? 'Un momento…' : `Empezar mis ${TRIAL_DIAS} días gratis`}
+          </FunnelButton>
+          {errorAvance && (
+            <p className="mt-2 text-center text-[13px] text-[var(--text-secondary)]">
+              Esto está tardando más de lo normal. Vuelve a intentarlo — si sigue sin avanzar, revisa tu conexión.
+            </p>
+          )}
         </div>
       </div>
       <ConfirmSalir
