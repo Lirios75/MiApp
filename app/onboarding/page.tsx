@@ -48,6 +48,7 @@ export default function Onboarding() {
         <h1 className="text-balance text-[28px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)]">
           ¿Qué te pasa más seguido?
         </h1>
+        <p className="mt-2 text-[14px] text-[var(--text-secondary)]">Así armamos tu Semáforo del Gasto a tu medida.</p>
         <div className="mt-8 flex flex-col gap-3">
           {OPCIONES_DOLOR.map((o, i) => (
             <OptionChip

@@ -135,13 +135,14 @@ export default function Paywall() {
           {/* Cards de plan */}
           <Bloque indice={2} reduce={reduce}>
             <div className="flex flex-col gap-3">
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setPlan('anual')}
-                className={`relative rounded-[var(--radius-card)] border p-5 text-left shadow-[var(--shadow-1)] transition-colors ${
+                className={`relative rounded-[var(--radius-card)] border p-5 text-left transition-colors [touch-action:manipulation] ${
                   plan === 'anual'
-                    ? 'border-2 border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)]'
-                    : 'border-[color-mix(in_oklab,var(--text-tertiary)_25%,transparent)] bg-[var(--surface)]'
+                    ? 'border-2 border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] shadow-[var(--shadow-2)]'
+                    : 'border-[color-mix(in_oklab,var(--text-tertiary)_25%,transparent)] bg-[var(--surface)] shadow-[var(--shadow-1)]'
                 }`}
               >
                 <span className="absolute -top-[10px] left-5 rounded-full bg-[var(--accent)] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[var(--bg)]">
@@ -156,15 +157,16 @@ export default function Paywall() {
                 </div>
                 <p className="mt-1 text-[13px] text-[var(--text-secondary)]">{PLAN_ANUAL.totalAnual}</p>
                 <p className="mt-1 text-[13px] font-semibold text-[var(--accent)]">{PLAN_ANUAL.ahorro}</p>
-              </button>
+              </motion.button>
 
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setPlan('mensual')}
-                className={`rounded-[var(--radius-card)] border p-5 text-left shadow-[var(--shadow-1)] transition-colors ${
+                className={`rounded-[var(--radius-card)] border p-5 text-left transition-colors [touch-action:manipulation] ${
                   plan === 'mensual'
-                    ? 'border-2 border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)]'
-                    : 'border-[color-mix(in_oklab,var(--text-tertiary)_25%,transparent)] bg-[var(--surface)]'
+                    ? 'border-2 border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_6%,transparent)] shadow-[var(--shadow-2)]'
+                    : 'border-[color-mix(in_oklab,var(--text-tertiary)_25%,transparent)] bg-[var(--surface)] shadow-[var(--shadow-1)]'
                 }`}
               >
                 <div className="flex items-center justify-between gap-3">
@@ -174,7 +176,7 @@ export default function Paywall() {
                     <span className="text-[13px] font-normal text-[var(--text-secondary)]">/mes</span>
                   </span>
                 </div>
-              </button>
+              </motion.button>
             </div>
           </Bloque>
 

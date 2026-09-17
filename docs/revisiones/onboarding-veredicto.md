@@ -1,16 +1,9 @@
 # VEREDICTO revisor-visual — onboarding
-Fecha: 2026-09-17 12:00
+Fecha: 2026-09-17 00:00
 Screenshot: docs/revisiones/onboarding-375.png
-Usabilidad: 27/40
-Craft: 12/20
+Usabilidad: 30/40
+Craft: 13/20
 Copy (si vende): N-A
 Fidelidad (si hubo referencia): N-A
 Veredicto: NO LISTA
-Top defectos:
-1. [Composición general, mitad superior de la pantalla] ~35-40% del alto (entre la barra de progreso y el título) queda vacío sin ningún elemento, fondo plano puro — un usuario cualquiera lo nota sin buscarlo → cambiar `justify-center` por `justify-start` con padding fijo, o llenar ese espacio con un elemento de contexto (no dejarlo como resultado accidental del centrado vertical).
-2. [Las 4 opciones de respuesta] Aparecen todas juntas en un único bloque animado (mismo `stepKey` en FunnelScreen, sin stagger por ítem) — viola la animación baseline obligatoria "stagger de entrada 50-80ms" exigida para toda pantalla, y esta es la primera de su tipo en el proyecto → envolver el `.map(OPCIONES_DOLOR)` con delay incremental por índice (framer/motion `staggerChildren` o `delay: i * 0.06`) en app/onboarding/page.tsx u OptionChip.
-3. [Header, esquina superior izquierda] `RespiraMark` anima su anillo de 0%→75% en 900ms al entrar; en un frame estático (como el capturado) se lee como un spinner de carga, ambigüedad de "¿se colgó?" → acortar a <400ms o encadenarlo al mismo stagger de entrada para no dejar un frame parecido a loading.
-4. [Chips de opción vs. fondo] La superficie de los chips (#FFFDF8) y el fondo (#FAF6EF) son casi idénticos a la vista; solo se distinguen por un borde fino, sin la sombra tintada que exige FICHA-ARTE.md ("sombras suaves tintadas... nunca borde duro gris") → aplicar box-shadow sutil tintado (rgb 42,38,32 según ficha) a OptionChip en components/funnel/ui.tsx.
-5. [Opción "Empiezo un presupuesto y lo dejo"] Usa la palabra "presupuesto", listada explícitamente como vetada en FICHA-AVATAR.md ("jerga financiera técnica... el ángulo es emocional, no contable"); aunque ecoa la cita literal del dolor #3 de la propia ficha, hay una contradicción sin resolver entre el veto y el copy → reescribir en registro emocional (ej. "Intento organizarme y lo dejo a la semana") o resolver la contradicción en la ficha misma.
-
-Nota de método (no cuenta como defecto de diseño): el screenshot incluye el ícono de dev tools de Next.js (círculo negro "N", esquina inferior izquierda) — recapturar en modo producción o recortando ese overlay antes de la próxima revisión, para no contaminar el juicio visual.
+Top defectos: 1) Logo (header, esquina sup. izq.) sigue leyéndose como spinner de carga: la forma en reposo (anillo al 75%, arco incompleto) es idéntica a un loader a medio camino; el fix solo aceleró la animación (0.9s→0.35s) sin cambiar la forma que causa la confusión, y queda pegado a una barra de progreso real que refuerza la lectura de "algo está cargando". 2) El vacío muerto no se eliminó, se trasladó: los 4 chips terminan en ~60% de la altura y el ~40% inferior queda cream sólido sin ningún elemento — mismo síntoma (aire muerto) en otra posición. 3) Fondo de un solo fill plano (#FAF6EF) sin el mesh/tinte de profundidad que pide FICHA-ARTE; solo existe un nivel (chip elevado con shadow-1), falta base con textura y no hay nivel hundido — eje profundidad no pasa el gate. 4) Inconsistencia de ayuda contextual entre pasos: el paso 2 explica por qué se pregunta ("Así ajustamos cuándo te recordamos...") pero el paso 0 (esta pantalla) no da ningún contexto de por qué se pregunta esto primero. 5) La ficha que sustenta la excepción de "presupuesto" (FICHA-AVATAR.md) sigue en estado BORRADOR / "Aprobada por el usuario: NO" — la traza de copy de esta pantalla descansa sobre una ficha no cerrada.

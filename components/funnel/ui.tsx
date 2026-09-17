@@ -35,7 +35,7 @@ export function FunnelHeader({
           </button>
         ) : (
           <a href="/" className="flex size-11 shrink-0 items-center justify-center [touch-action:manipulation]">
-            <RespiraMark duracionS={0.35} />
+            <RespiraMark estatico />
           </a>
         )}
         <div className="h-[3px] flex-1 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)]">
@@ -163,7 +163,22 @@ export function FunnelScreen({
 }) {
   const reduce = useReducedMotion();
   return (
-    <div className="flex min-h-dvh flex-col bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
+    <div className="relative flex min-h-dvh flex-col overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
+      {/* Fondo con profundidad (FICHA-ARTE: "sombras suaves tintadas") — mesh sutil
+          + eco del anillo de marca a baja opacidad, para que ningún paso corto
+          quede en un plano vacío. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-10"
+        style={{
+          background:
+            'radial-gradient(760px 480px at 50% -10%, color-mix(in oklab, var(--accent) 7%, transparent) 0%, transparent 60%), ' +
+            'radial-gradient(560px 420px at 100% 100%, color-mix(in oklab, var(--accent-2) 6%, transparent) 0%, transparent 55%)',
+        }}
+      />
+      <svg aria-hidden="true" viewBox="0 0 200 200" className="pointer-events-none absolute -bottom-24 -right-16 -z-10 size-[320px] opacity-[0.08]">
+        <circle cx="100" cy="100" r="86" fill="none" stroke="var(--accent)" strokeWidth="14" />
+      </svg>
       <FunnelHeader progreso={progreso} onBack={onBack} />
       <motion.div
         key={stepKey}
