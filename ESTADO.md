@@ -1,10 +1,39 @@
 # ESTADO — Respira
-Última actualización: 2026-09-17 | Sesión actual: 1
+Última actualización: 2026-09-18 | Sesión actual: 5
 
-⏸️ CHECKPOINT — Sesión 4 CERRADA (2026-09-18). PAYWALL CERTIFICADO ✅ (37/40 · 20/20 · 19/20). ONBOARDING APROBADO POR LA USUARIA EN SUSTANCIA (16ª pasada del revisor: 29/40 usabilidad · 17/20 craft, no alcanza el gate — la usuaria vio capturas reales en vivo a 375px, entendió los 5 pendientes en simple y decidió avanzar sin seguir iterando; detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"). LOGIN ya estaba construido (pantalla secundaria, sin revisor obligatorio). Siguiente paso: Sesión 5 — app interna simplificada.
-ONBOARDING — la familia de bugs de timer/rutas de escape (rondas 13-16: logo navegable → timer sin cancelar → dead-end en "Seguir aquí" → mensaje impreciso) quedó CERRADA y VERIFICADA por el revisor en la ronda 16 — no volver a tocar esto salvo que reaparezca. Quedan 5 pendientes conocidos, NO bloqueantes (aprobados así por la usuaria): (1) botón "Salir sin guardar" no cambia a "Salir" cuando ya se comprometió; (2) las 2 pantallas del compromiso (antes de sostener y celebración) tienen casi la mitad de la pantalla vacía arriba; (3) sostener el botón es un punto sin retorno a las preguntas anteriores y nada lo avisa antes; (4) la barra de progreso llega a 100% antes de completar el gesto de sostener; (5) el botón "Seguir aquí" en realidad navega a planes cuando ya se comprometió. No re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
-NOTA METODOLÓGICA (sigue vigente): commitear SIEMPRE antes de lanzar el revisor-visual; verificar fixes de "control y libertad" con prueba automatizada end-to-end antes de relanzar el revisor, no solo leer el código.
-Siguiente acción exacta: arrancar Sesión 5 (app interna simplificada) — leer docs/sistema/SECUENCIA-MAESTRA-CONSTRUCCION.md antes de construir.
+⏸️ CHECKPOINT — Sesión 5 EN CURSO (app interna). Las 4 pantallas construidas y verificadas
+(tsc ✓ · build ✓ · capturas reales a 375px con datos de ejemplo en docs/revisiones/vivo/):
+Hoy (`/app`), Semana (`/app/semana`), Tu meta (`/app/meta`), Cuenta (`/app/cuenta`).
+Persistencia local (localStorage vía `lib/app.ts`) — Supabase real es Sesión 6.
+Paso actual: construida, PENDIENTE de que la usuaria vea las capturas y decida si pide la
+revisión automática del revisor-visual en "Hoy" (pantalla principal, una de las 4 del dinero)
+o avanza así, siguiendo el mismo criterio que aplicó en onboarding (Sesión 4).
+Pantallas creadas: Hoy · Semana · Tu meta · Cuenta.
+Protagonista de cada pantalla: Hoy = marcar el Semáforo del día · Semana = tendencia de los
+últimos días/semanas · Tu meta = avance de la meta elegida en el onboarding · Cuenta = plan y
+prueba gratis.
+Acción primaria: Hoy = elegir "día tranquilo/alerta" · Semana = navegar entre semanas ·
+Tu meta = registrar avance (o crear la meta la primera vez) · Cuenta = cerrar sesión.
+Qué NO se construyó aún: servicios externos (Supabase/auth real), notificaciones push reales
+(el toggle de Cuenta es solo preferencia visual), historial de avances de la meta (solo el
+número acumulado, sin log de cada registro).
+Riesgos/pendientes: la continuidad entre el "compromiso" del onboarding y el primer check-in
+real de Hoy es deliberadamente independiente (el onboarding no fuerza un estado de ánimo) —
+ver nota en Problemas conocidos si se quiere revisar. Faltan estados de error/offline explícitos
+en los formularios de Meta (validación mínima con `required`/`min`, sin mensaje de error propio).
+Siguiente paso exacto: mostrarle las capturas a la usuaria y esperar su decisión (revisor-visual
+en Hoy, o avanzar a Sesión 6 — servicios externos).
+
+## Sesiones anteriores (resumen)
+Sesión 4 CERRADA (2026-09-18). Paywall CERTIFICADO ✅ (37/40 · 20/20 · 19/20). Onboarding
+APROBADO POR LA USUARIA EN SUSTANCIA (16ª pasada del revisor: 29/40 usabilidad · 17/20 craft —
+la usuaria vio capturas reales en vivo a 375px, entendió los 5 pendientes en simple y decidió
+avanzar sin seguir iterando; detalle en docs/revisiones/onboarding-veredicto.md, sección
+"Decisión de la usuaria"). La familia de bugs de timer/rutas de escape (rondas 13-16) quedó
+CERRADA y VERIFICADA — no volver a tocar salvo que reaparezca. Quedan 5 pendientes conocidos NO
+bloqueantes en onboarding (ver Problemas conocidos). Login construido (pantalla secundaria).
+NOTA METODOLÓGICA (sigue vigente): commitear SIEMPRE antes de lanzar el revisor-visual;
+verificar fixes de "control y libertad" con prueba automatizada end-to-end antes de relanzar.
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -53,7 +82,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Onboarding: construida y APROBADA POR LA USUARIA EN SUSTANCIA (Sesión 4, cerrada 2026-09-18)
 - Paywall: CERTIFICADA ✅ por el revisor-visual (Sesión 4, cerrada 2026-09-18)
 - Login/Auth: construida (UI completa, magic link SIMULADO — Supabase Auth real se conecta en Sesión 6), no requiere revisor obligatorio
-- App interna: pendiente (Sesión 5)
+- App interna: 4 pantallas construidas (Hoy, Semana, Tu meta, Cuenta) — PENDIENTE de que la usuaria vea las capturas y decida sobre la revisión del revisor-visual en Hoy (la pantalla principal). Persistencia local (Supabase real en Sesión 6).
 - Servicios externos: pendiente
 
 ## Puertas de etapa (aprobacion antes de avanzar)
@@ -61,15 +90,16 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (2026-09-18) — evidencia: tsc ✓ build ✓ · flujo completo probado en navegador · 16 pasadas del revisor-visual (última: usabilidad 29/40, craft 17/20 — craft sí pasa, usabilidad no alcanza el gate ≥36/40) · veredicto en docs/revisiones/onboarding-veredicto.md · capturas en vivo a 375px en docs/revisiones/vivo/. La usuaria vio las capturas reales, entendió los 5 pendientes conocidos (ver Problemas conocidos) y decidió avanzar sin seguir iterando — no re-abrir sin que ella lo pida.
 - Paywall: CERTIFICADA ✅ (12ª pasada del revisor-visual, 2026-09-18) — usabilidad 37/40 · craft 20/20 · copy 19/20 (gate ≥36/40, ≥16/20, ≥16/20 sin ejes ≤2, todos superados). Evidencia: tsc ✓ build ✓ · screenshot docs/revisiones/paywall-375.png (+ paywall-cargando-375.png) · veredicto en docs/revisiones/paywall-veredicto.md = LISTA. Historial: 12 rondas, empezando en 29/40 (ronda 4-ish) hasta cerrar con fixes de accesibilidad (ARIA en selector de plan, aria-label unificado, hairline consistente entre planes, escala tipográfica de 4 niveles). Quedan 4 notas de refinamiento fino no bloqueantes (ver veredicto): tamaño de ícono X levemente distinto entre fases, aria-label "Cerrar" del paywall no se propagó al "Salir" de FunnelHeader (onboarding) — no bloqueante, no re-abrir sin pedido del usuario.
 - Login/Auth: construida — evidencia: tsc ✓ build ✓ · estados idle/enviando/enviado probados en navegador · screenshot docs/revisiones/entrar-375.png · sin revisor (pantalla secundaria, no es de las 4 del dinero) · magic link SIMULADO, sin backend real todavía (Sesión 6)
-- App interna: no iniciada
+- App interna: construida (Hoy, Semana, Tu meta, Cuenta), PENDIENTE de decisión de la usuaria — evidencia: tsc ✓ build ✓ · capturas reales a 375px con datos de ejemplo en docs/revisiones/vivo/ (+ copias canónicas: pantalla-principal-375.png, semana-375.png, meta-375.png, cuenta-375.png) · flujo probado (marcar Semáforo, navegar semanas, crear/registrar meta en ambos modos, cerrar sesión) · revisor-visual AÚN NO lanzado en Hoy (pantalla principal) — pendiente de que la usuaria decida si lo pide, mismo criterio que se usó en onboarding.
 - Servicios externos: bloqueados
 
 ## Decisiones técnicas (NO re-discutir sin pedirlo el usuario)
 - Framework: Next.js 16 App Router (React 19, Turbopack) — landing con SEO/contenido orgánico + API routes para webhook de Hotmart, y duda entre Vite/Next resuelta por la regla del stack a favor de Next. Scaffold hecho el 2026-09-17 según 51-STACK-PINEADO.md.
 - `next.config.ts`: `agentRules: false` — Next 16 auto-genera un bloque de reglas dentro de AGENTS.md al correr `next dev`/`build`; como AGENTS.md de este proyecto es el archivo de reglas del SO, se desactivó esa función para que no lo modifique.
 - Auth: Supabase Auth, passwordless (magic link) — sin fricción para audiencia no técnica y escéptica. (Aún no instalado — se conecta en Sesión 6.)
-- Modelo de datos (borrador): `usuarios`, `checkins_diarios` (emoción + nota corta + fecha), `metas` (tipo ahorro/deuda, monto objetivo, monto actual), `rachas` (contador + última fecha activa) — todas con RLS por `(select auth.uid())`.
-- Features del MVP (del usuario): (1) check-in diario emoción/dinero, (2) 1-2 metas de ahorro/deuda con registro manual, (3) racha/progreso visual, (4) tip/reflexión corta diaria. Fuera del MVP: conexión bancaria, metas múltiples simultáneas, comunidad/social, gamificación compleja.
+- Modelo de datos (borrador, a migrar a Supabase en Sesión 6): `usuarios`, `checkins_diarios` (estado tranquilo/alerta + fecha, sin nota libre — se simplificó: el "tip" es contenido del sistema, no un campo del usuario), `metas` (tipo, modo monto/hábito, objetivo, actual) — todas con RLS por `(select auth.uid())`. La racha NO es una tabla propia: se DERIVA de `checkins_diarios` contando días consecutivos hacia atrás (ver `calcularRacha` en `lib/app.ts`) — más simple y sin riesgo de desincronizarse; mantener esta decisión al diseñar el esquema real.
+- Sesión 5 implementó esto en local (localStorage, `lib/app.ts`) como prototipo de UX — la migración 1:1 a Supabase queda para Sesión 6.
+- Features del MVP (del usuario): (1) check-in diario emoción/dinero, (2) 1 meta activa de ahorro/deuda/hábito con registro manual, (3) racha/progreso visual, (4) tip/reflexión corta diaria. Fuera del MVP: conexión bancaria, metas múltiples simultáneas, comunidad/social, gamificación compleja.
 - Idioma UI: español LATAM neutro, mono-idioma.
 - Kit de landing: `plantillas-codigo/landing/` copiado a `components/landing/` sin modificar los `.tsx` — solo se tematizó `tokens.css` (Nunito, azul-lila `#5468D4`, verde `#2E9E6B`, crema `#FAF6EF`, radios 22/16). Copy marcado en `docs/copy/landing.md`.
 
@@ -84,10 +114,10 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 4 — Onboarding, paywall y login — cerrada 2026-09-18. Paywall CERTIFICADO ✅ por el revisor-visual (37/40 · 20/20 · 19/20). Onboarding APROBADO POR LA USUARIA EN SUSTANCIA tras 16 pasadas (29/40 usabilidad, techo no bloqueante — ver Problemas conocidos) — la usuaria vio capturas reales del estado actual y decidió avanzar sin seguir iterando. Login construido como pantalla secundaria.
 
 ## Sesión en progreso 🔧
-- Ninguna — lista para arrancar Sesión 5.
+- Sesión 5 (código construido y verificado, PENDIENTE de la decisión de la usuaria) — app interna: Hoy, Semana, Tu meta, Cuenta.
 
 ## Próximas sesiones 📋
-- Sesión 5: app interna simplificada (ahí se toman los screenshots reales para el carrusel de la landing).
+- Sesión 6: servicios externos (GitHub ya está, falta Supabase real, IA si aplica, Vercel, Resend, dominio, Hotmart) — ahí se reemplazan los placeholders del carrusel de la landing por screenshots reales de la app.
 
 ## Problemas conocidos ⚠️
 - onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (ver "Puertas de etapa") tras 16 pasadas del revisor-visual. Quedan 5 pendientes conocidos, NO bloqueantes, aceptados así por la usuaria el 2026-09-18 (detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"):
