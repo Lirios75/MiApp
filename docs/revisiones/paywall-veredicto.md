@@ -26,6 +26,11 @@ de opción múltiple en esa pantalla). Diff revisado línea por línea (`git dif
 cambios en cualquier componente que el paywall importe. Certificación LISTA sigue vigente, sin necesidad
 de recapturar ni relanzar el revisor.
 
+## Tercera re-verificación (2026-09-18, commit 4c42d00)
+Solo cambió `app/onboarding/page.tsx` (nueva función `seguirAqui()` + mensaje condicional del modal de
+salida durante la celebración) — archivo exclusivo del onboarding, el paywall no lo importa. Cero cambios
+en `components/funnel/ui.tsx` esta vez. Certificación LISTA sigue vigente sin necesidad de nueva pasada.
+
 ## Verificación de los 5 fixes de la ronda 12 (línea por línea, código real)
 
 1. aria-label unificado del botón X — RESUELTO. `app/paywall/page.tsx` línea 148: `aria-label="Cerrar"` (fase "listo"). `components/funnel/LoadingPlan.tsx` línea 51: `aria-label="Cerrar"` (fase "cargando"). Mismo texto en ambas fases del paywall.
