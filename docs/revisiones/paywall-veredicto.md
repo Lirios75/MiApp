@@ -7,6 +7,17 @@ Copy (si vende): 19/20
 Fidelidad (si hubo referencia): N-A
 Veredicto: LISTA
 
+## Re-verificación post-certificación (2026-09-18, sin nueva pasada del revisor)
+Commits posteriores a esta certificación tocaron `components/funnel/ui.tsx` (compartido con onboarding),
+agregando la prop opcional `logoBloqueado` a `FunnelHeader`/`FunnelScreen` y bajando `bounce` en
+`OptionChip`/`SemanaPreview` — ninguno de estos tres componentes lo usa el paywall (que arma su propio
+header y no usa `FunnelScreen`), y `logoBloqueado` tiene default `false`. Diff completo revisado
+(`git diff 576a137..HEAD -- components/funnel/ui.tsx`): cero cambios en `ConfirmSalir`, `FunnelButton`,
+`FunnelFondo` o cualquier ruta que el paywall ejecute. Se recapturó el screenshot igualmente: el único
+cambio es la fecha del timeline ("22 sept" → "23 sept", por el cambio de día real), pixel-idéntico en
+todo lo demás. La certificación LISTA sigue vigente — no se relanza el revisor-visual completo por un
+diff sin impacto verificado.
+
 ## Verificación de los 5 fixes de la ronda 12 (línea por línea, código real)
 
 1. aria-label unificado del botón X — RESUELTO. `app/paywall/page.tsx` línea 148: `aria-label="Cerrar"` (fase "listo"). `components/funnel/LoadingPlan.tsx` línea 51: `aria-label="Cerrar"` (fase "cargando"). Mismo texto en ambas fases del paywall.
