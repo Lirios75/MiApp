@@ -1,10 +1,10 @@
 # ESTADO — Respira
 Última actualización: 2026-09-17 | Sesión actual: 1
 
-⏸️ CHECKPOINT — Sesión 4 CASI CERRADA. PAYWALL CERTIFICADO ✅ (37/40 · 20/20 · 19/20, 12ª pasada, 2026-09-18 — re-verificado 3 veces tras cambios compartidos en ui.tsx sin impacto, ver docs/revisiones/paywall-veredicto.md). ONBOARDING: 16ª pasada del revisor leída — 29/40 usabilidad · 17/20 craft, NO LISTA — pero la USUARIA pidió PARAR el ciclo de rondas automáticas: quiere ver ella misma capturas reales del estado actual y decidir si se sigue puliendo o se avanza. Se le mostraron capturas en vivo (navegador real a 375px) + explicación en simple de lo que falta; queda pendiente su respuesta.
-ONBOARDING — la familia de bugs de timer/rutas de escape (rondas 13-16: logo navegable → timer sin cancelar → dead-end en "Seguir aquí" → mensaje impreciso) quedó CERRADA y VERIFICADA por el revisor en la ronda 16 (revisó código a mano, sin hallar una 4ª puerta) — no volver a tocar esto salvo que reaparezca. Defectos NUEVOS que sí quedan (ninguno de la familia timer): (1) botón "Salir sin guardar" no cambia a "Salir" cuando ya se comprometió, contradice el mensaje de arriba; (2) las 2 pantallas del compromiso (antes de sostener y la de celebración) tienen casi la mitad de la pantalla vacía arriba — confirmado visualmente con capturas en vivo; (3) sostener el botón es un punto sin retorno a las preguntas anteriores y nada lo avisa antes; (4) la barra de progreso llega a 100% antes de completar el gesto de sostener; (5) el botón "Seguir aquí" en realidad navega a planes cuando ya se comprometió, el texto no calza con la acción.
+⏸️ CHECKPOINT — Sesión 4 CERRADA (2026-09-18). PAYWALL CERTIFICADO ✅ (37/40 · 20/20 · 19/20). ONBOARDING APROBADO POR LA USUARIA EN SUSTANCIA (16ª pasada del revisor: 29/40 usabilidad · 17/20 craft, no alcanza el gate — la usuaria vio capturas reales en vivo a 375px, entendió los 5 pendientes en simple y decidió avanzar sin seguir iterando; detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"). LOGIN ya estaba construido (pantalla secundaria, sin revisor obligatorio). Siguiente paso: Sesión 5 — app interna simplificada.
+ONBOARDING — la familia de bugs de timer/rutas de escape (rondas 13-16: logo navegable → timer sin cancelar → dead-end en "Seguir aquí" → mensaje impreciso) quedó CERRADA y VERIFICADA por el revisor en la ronda 16 — no volver a tocar esto salvo que reaparezca. Quedan 5 pendientes conocidos, NO bloqueantes (aprobados así por la usuaria): (1) botón "Salir sin guardar" no cambia a "Salir" cuando ya se comprometió; (2) las 2 pantallas del compromiso (antes de sostener y celebración) tienen casi la mitad de la pantalla vacía arriba; (3) sostener el botón es un punto sin retorno a las preguntas anteriores y nada lo avisa antes; (4) la barra de progreso llega a 100% antes de completar el gesto de sostener; (5) el botón "Seguir aquí" en realidad navega a planes cuando ya se comprometió. No re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
 NOTA METODOLÓGICA (sigue vigente): commitear SIEMPRE antes de lanzar el revisor-visual; verificar fixes de "control y libertad" con prueba automatizada end-to-end antes de relanzar el revisor, no solo leer el código.
-Siguiente acción exacta: esperar la decisión de la usuaria (seguir corrigiendo los 5 puntos de arriba, o avanzar a Sesión 5 dejándolos anotados como pendientes).
+Siguiente acción exacta: arrancar Sesión 5 (app interna simplificada) — leer docs/sistema/SECUENCIA-MAESTRA-CONSTRUCCION.md antes de construir.
 
 ## Qué es esta app (3 líneas máximo)
 App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por ansiedad: check-in emocional diario + seguimiento simple de 1-2 metas de ahorro/deuda, sin conectar cuenta bancaria. Freemium con suscripción mensual/anual.
@@ -47,18 +47,18 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Primera victoria (<5 min): primer check-in + primera meta con progreso visible.
 
 ## Secuencia maestra de construcción (NO saltar)
-- Estado de la secuencia: Landing construida, PENDIENTE de certificación formal (Sesión 3 — ver Problemas conocidos). Resto pendiente.
+- Estado de la secuencia: Landing, Onboarding, Paywall y Login construidos y aprobados (ver Puertas de etapa). Siguiente: App interna (Sesión 5).
 - Ruta aprobada: `/` → `/onboarding` → `/paywall` → `/login` → `/app`
 - Landing: construida y aprobada por el usuario en sustancia, PENDIENTE de certificación formal del revisor-visual hasta la Sesión 5 — protagonista: el Semáforo del Gasto — CTA primario: "Quiero mi primer registro" → `/onboarding` (hoy es un placeholder honesto "en construcción"; la Sesión 4 la reemplaza por el flujo real)
-- Onboarding: construida, PENDIENTE de verificación del revisor-visual (Sesión 4, en curso)
-- Paywall: construida, PENDIENTE de verificación del revisor-visual (Sesión 4, en curso)
+- Onboarding: construida y APROBADA POR LA USUARIA EN SUSTANCIA (Sesión 4, cerrada 2026-09-18)
+- Paywall: CERTIFICADA ✅ por el revisor-visual (Sesión 4, cerrada 2026-09-18)
 - Login/Auth: construida (UI completa, magic link SIMULADO — Supabase Auth real se conecta en Sesión 6), no requiere revisor obligatorio
-- App interna: pendiente
+- App interna: pendiente (Sesión 5)
 - Servicios externos: pendiente
 
 ## Puertas de etapa (aprobacion antes de avanzar)
 - Landing: APROBADA POR EL USUARIO EN SUSTANCIA, PENDIENTE de certificación formal del revisor-visual — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto actual en docs/revisiones/landing-veredicto.md = NO LISTA (usabilidad 31/40 · craft 15/20 · copy 19/20, 7ª pasada). El techo restante es estructural (2 excepciones de identidad que el usuario decidió mantener + placeholders de app real que no existe hasta la Sesión 5) — el usuario, informado del detalle exacto, decidió avanzar así. No re-abrir esta decisión sin que el usuario lo pida.
-- Onboarding: construida, PENDIENTE — evidencia: tsc ✓ build ✓ · flujo completo probado en navegador (4 preguntas + 2 reconocimientos + compromiso, con lógica condicional verificada) · screenshot docs/revisiones/onboarding-375.png · veredicto en curso (1ª pasada del revisor-visual, obligatoria por ser plantilla nueva)
+- Onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (2026-09-18) — evidencia: tsc ✓ build ✓ · flujo completo probado en navegador · 16 pasadas del revisor-visual (última: usabilidad 29/40, craft 17/20 — craft sí pasa, usabilidad no alcanza el gate ≥36/40) · veredicto en docs/revisiones/onboarding-veredicto.md · capturas en vivo a 375px en docs/revisiones/vivo/. La usuaria vio las capturas reales, entendió los 5 pendientes conocidos (ver Problemas conocidos) y decidió avanzar sin seguir iterando — no re-abrir sin que ella lo pida.
 - Paywall: CERTIFICADA ✅ (12ª pasada del revisor-visual, 2026-09-18) — usabilidad 37/40 · craft 20/20 · copy 19/20 (gate ≥36/40, ≥16/20, ≥16/20 sin ejes ≤2, todos superados). Evidencia: tsc ✓ build ✓ · screenshot docs/revisiones/paywall-375.png (+ paywall-cargando-375.png) · veredicto en docs/revisiones/paywall-veredicto.md = LISTA. Historial: 12 rondas, empezando en 29/40 (ronda 4-ish) hasta cerrar con fixes de accesibilidad (ARIA en selector de plan, aria-label unificado, hairline consistente entre planes, escala tipográfica de 4 niveles). Quedan 4 notas de refinamiento fino no bloqueantes (ver veredicto): tamaño de ícono X levemente distinto entre fases, aria-label "Cerrar" del paywall no se propagó al "Salir" de FunnelHeader (onboarding) — no bloqueante, no re-abrir sin pedido del usuario.
 - Login/Auth: construida — evidencia: tsc ✓ build ✓ · estados idle/enviando/enviado probados en navegador · screenshot docs/revisiones/entrar-375.png · sin revisor (pantalla secundaria, no es de las 4 del dinero) · magic link SIMULADO, sin backend real todavía (Sesión 6)
 - App interna: no iniciada
@@ -81,18 +81,23 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 1 — Validación, avatar, monetización, arquitectura y nombre — cerrada 2026-09-17.
 - Sesión 2 — Identidad visual (FICHA-ARTE.md aprobada, dirección B "Respira en calma") — cerrada 2026-09-17.
 - Sesión 3 — Página de ventas (10 secciones) — cerrada 2026-09-17. Nota: tras el cierre, el usuario pidió 5 ajustes (registro/emojis/colores/garantía) que reabrieron 7 pasadas de revisión; el veredicto final quedó NO LISTA por un techo estructural (ver Problemas conocidos) que el usuario decidió aceptar en vez de seguir corrigiendo.
+- Sesión 4 — Onboarding, paywall y login — cerrada 2026-09-18. Paywall CERTIFICADO ✅ por el revisor-visual (37/40 · 20/20 · 19/20). Onboarding APROBADO POR LA USUARIA EN SUSTANCIA tras 16 pasadas (29/40 usabilidad, techo no bloqueante — ver Problemas conocidos) — la usuaria vio capturas reales del estado actual y decidió avanzar sin seguir iterando. Login construido como pantalla secundaria.
 
 ## Sesión en progreso 🔧
-- Sesión 4 (código listo, certificación PENDIENTE) — onboarding, paywall y login. Código construido y verificado; esperando veredicto del revisor-visual antes de cerrar.
+- Ninguna — lista para arrancar Sesión 5.
 
 ## Próximas sesiones 📋
-- Sesión 4: onboarding, paywall y login.
 - Sesión 5: app interna simplificada (ahí se toman los screenshots reales para el carrusel de la landing).
 
 ## Problemas conocidos ⚠️
-- veredicto onboarding PENDIENTE de certificación formal (Sesión 4, en construcción) — última pasada leída (12ª): usabilidad 31/40, craft 14/20 — gate exige ≥36/40 y ≥16/20, sigue NO LISTA tras 12 rondas. Se corrigieron los 3 defectos de esa pasada (celebración seguía siendo el tramo más vacío pese a la frase de refuerzo → ahora centrada con flex-1+justify-center; condición de carrera real con "Atrás" activo durante los 700ms de comprometido=true → quitado onBack en ese estado; bounce 0.15 seguía excediendo el rango 0-0.1 de FICHA-ARTE → bajado a 0.1) y se relanzó una 13ª pasada, resultado aún no leído. El hallazgo de contraste de --text-secondary de esa ronda citaba un valor viejo (#8c8172) — el token actual (#6b6152, ~5.6-6:1) ya está corregido, falso positivo confirmado contra tokens.css.
+- onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (ver "Puertas de etapa") tras 16 pasadas del revisor-visual. Quedan 5 pendientes conocidos, NO bloqueantes, aceptados así por la usuaria el 2026-09-18 (detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"):
+  1. Botón "Salir sin guardar" del aviso de salida no cambia a "Salir" cuando ya te comprometiste — contradice el mensaje de arriba ("tu compromiso ya quedó guardado").
+  2. Las 2 pantallas del compromiso (antes de sostener el botón, y la de "¡Listo, quedó registrado!") tienen casi la mitad de la pantalla vacía arriba del título — confirmado con capturas reales en docs/revisiones/vivo/.
+  3. Sostener el botón para comprometerse es un punto sin retorno a las preguntas anteriores, y nada lo avisa antes de soltar el dedo.
+  4. La barra de progreso llega a 100% antes de completar el gesto de sostener — comunica "ya terminaste" cuando falta el paso más importante.
+  5. El botón "Seguir aquí" del aviso de salida, cuando ya te comprometiste, en realidad te lleva a la pantalla de planes — el texto no calza con la acción.
+  No re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
 - veredicto paywall: CERTIFICADO ✅ — ver "Puertas de etapa". Ya no es un problema pendiente.
-Ambas pantallas llevan 12 y 6 rondas respectivamente — si la próxima pasada de cualquiera no aporta defectos nuevos y accionables (solo refinamiento subjetivo), evaluar cierre o disyuntiva en vez de seguir indefinidamente. No declarar ninguna "lista" hasta que su veredicto diga LISTA o el usuario acepte una disyuntiva explícita.
 - veredicto landing PENDIENTE de certificación formal (7ª pasada del revisor-visual: usabilidad 31/40, craft 15/20 — gate exige ≥36/40 y ≥16/20; copy 19/20 sí pasa) — DECISIÓN FINAL DEL USUARIO (2026-09-17): se le presentó la disyuntiva completa (mantener "check-in diario" en Oferta + emojis a color en "¿Te suena?" vs. revertirlos para subir la nota) y respondió "dejar todo como está". Landing queda APROBADA POR EL USUARIO EN SUSTANCIA, la certificación formal queda PENDIENTE hasta la Sesión 5. Detalle de por qué el techo es estructural (para no repetir el análisis si se vuelve a tocar esta pantalla):
   - "Check-in diario" (excepción del usuario en Oferta) le cuesta a USABILIDAD ~2 puntos (heurística de lenguaje consistente).
   - Los emojis a color de "¿Te suena?" (excepción del usuario) le cuestan a CRAFT el punto exacto que separa 15/20 de 16/20 (el umbral) — es la única razón por la que craft no pasa.
