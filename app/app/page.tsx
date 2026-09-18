@@ -7,21 +7,21 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { Check, Pencil, Smile, AlertCircle } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, Pencil, Smile, AlertCircle, Target } from 'lucide-react';
 import {
   asegurarInicioTrial,
   calcularRacha,
   checkInDeHoy,
   hoyISO,
   leerEstadoApp,
+  localStorageDisponible,
   metaSincronizada,
   reflexionDeHoy,
   registrarCheckIn,
   type EstadoApp,
   type EstadoSemaforo,
 } from '@/lib/app';
-import { formatearFechaLarga, inicialDia, RachaBadge } from '@/components/app/ui';
-import { ArrowRight, Target } from 'lucide-react';
+import { AnilloProgreso, formatearFechaLarga, inicialDia, RachaBadge } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -37,15 +37,18 @@ function useVariantes(): { contenedor: Variants; item: Variants } {
 export default function Hoy() {
   const [estado, setEstado] = useState<EstadoApp | null>(null);
   const [editando, setEditando] = useState(false);
+  const [avisoGuardado, setAvisoGuardado] = useState(false);
   const { contenedor, item } = useVariantes();
 
   useEffect(() => {
     setEstado(asegurarInicioTrial());
+    setAvisoGuardado(!localStorageDisponible());
   }, []);
 
   function marcar(valor: EstadoSemaforo) {
     setEstado(registrarCheckIn(valor));
     setEditando(false);
+    setAvisoGuardado(!localStorageDisponible());
   }
 
   if (!estado) {
@@ -76,11 +79,25 @@ export default function Hoy() {
         <RachaBadge dias={racha} />
       </motion.header>
 
+      {avisoGuardado && (
+        <motion.div
+          variants={item}
+          role="status"
+          className="flex items-start gap-2.5 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-3)_14%,transparent)] p-3"
+        >
+          <AlertTriangle size={16} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" className="mt-0.5 shrink-0" />
+          <p className="text-[13px] leading-snug text-[var(--accent-3-text)]">
+            Tu navegador no está guardando tus registros — funcionan mientras tengas esta pestaña abierta, pero se
+            pierden si la cierras.
+          </p>
+        </motion.div>
+      )}
+
       <motion.section variants={item}>
         {!checkin || editando ? (
           <SelectorSemaforo checkin={checkin} onElegir={marcar} />
         ) : (
-          <ConfirmacionDia estado={checkin.estado} onCambiar={() => setEditando(true)} />
+          <ConfirmacionDia estado={checkin.estado} racha={racha} onCambiar={() => setEditando(true)} />
         )}
       </motion.section>
 
@@ -115,7 +132,7 @@ export default function Hoy() {
                   />
                 )}
               </span>
-              <span className="text-[11px] font-medium text-[var(--text-tertiary)]">{inicialDia(i)}</span>
+              <span className="text-[12px] font-medium text-[var(--text-tertiary)]">{inicialDia(i)}</span>
             </div>
           ))}
         </div>
@@ -173,15 +190,10 @@ function VistaPreviaMeta({ estado }: { estado: EstadoApp }) {
         </span>
       </div>
       <div className="flex items-center gap-3">
-        <div className="h-2 flex-1 overflow-hidden rounded-full bg-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)]">
-          <motion.div
-            className="h-full rounded-full bg-[var(--accent)]"
-            initial={{ width: 0 }}
-            animate={{ width: `${porcentaje}%` }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          />
-        </div>
-        <span className="shrink-0 text-[13px] font-semibold text-[var(--text-primary)]">
+        <AnilloProgreso porcentaje={porcentaje} tamano={40} grosor={5}>
+          <span className="text-[12px] font-bold [font-variant-numeric:tabular-nums] text-[var(--accent)]">{porcentaje}%</span>
+        </AnilloProgreso>
+        <span className="text-[13px] font-semibold text-[var(--text-primary)]">
           {meta.modo === 'monto' ? `$${meta.actual}` : `${meta.actual}${unidad}`} / {meta.modo === 'monto' ? '$' : ''}
           {meta.objetivo}
           {unidad}
@@ -227,9 +239,11 @@ function SelectorSemaforo({
           aria-pressed={checkin?.estado === 'tranquilo'}
           className="flex h-[104px] flex-col items-center justify-center gap-2 rounded-[var(--radius-button)] [touch-action:manipulation]"
           style={{
-            background: 'color-mix(in oklab, var(--accent-2) 12%, transparent)',
+            background: 'color-mix(in oklab, var(--accent-2) 22%, transparent)',
             border:
-              checkin?.estado === 'tranquilo' ? '2px solid var(--accent-2)' : '2px solid transparent',
+              checkin?.estado === 'tranquilo'
+                ? '2px solid var(--accent-2)'
+                : '2px solid color-mix(in oklab, var(--accent-2) 35%, transparent)',
           }}
         >
           <Smile size={26} strokeWidth={2} color="var(--accent-2)" aria-hidden="true" />
@@ -242,8 +256,11 @@ function SelectorSemaforo({
           aria-pressed={checkin?.estado === 'alerta'}
           className="flex h-[104px] flex-col items-center justify-center gap-2 rounded-[var(--radius-button)] [touch-action:manipulation]"
           style={{
-            background: 'color-mix(in oklab, var(--accent-3) 12%, transparent)',
-            border: checkin?.estado === 'alerta' ? '2px solid var(--accent-3)' : '2px solid transparent',
+            background: 'color-mix(in oklab, var(--accent-3) 22%, transparent)',
+            border:
+              checkin?.estado === 'alerta'
+                ? '2px solid var(--accent-3)'
+                : '2px solid color-mix(in oklab, var(--accent-3) 35%, transparent)',
           }}
         >
           <AlertCircle size={26} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" />
@@ -254,7 +271,15 @@ function SelectorSemaforo({
   );
 }
 
-function ConfirmacionDia({ estado, onCambiar }: { estado: EstadoSemaforo; onCambiar: () => void }) {
+function ConfirmacionDia({
+  estado,
+  racha,
+  onCambiar,
+}: {
+  estado: EstadoSemaforo;
+  racha: number;
+  onCambiar: () => void;
+}) {
   const tranquilo = estado === 'tranquilo';
   return (
     <div className="flex items-center gap-4 rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]">
@@ -266,13 +291,16 @@ function ConfirmacionDia({ estado, onCambiar }: { estado: EstadoSemaforo; onCamb
         <Check size={24} strokeWidth={2.5} color={tranquilo ? 'var(--accent-2)' : 'var(--accent-3)'} aria-hidden="true" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[17px] font-bold [font-family:var(--font-display)]">
+        <p className="text-[19px] font-bold [font-family:var(--font-display)]">
           Marcaste: {tranquilo ? 'día tranquilo' : 'día de alerta'}
+        </p>
+        <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">
+          {racha <= 1 ? 'Tu primer día registrado.' : `Llevas ${racha} días seguidos marcando tu Semáforo.`}
         </p>
         <button
           type="button"
           onClick={onCambiar}
-          className="mt-1 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)]"
+          className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)]"
         >
           <Pencil size={13} strokeWidth={2} aria-hidden="true" /> Cambiar
         </button>

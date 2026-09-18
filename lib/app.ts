@@ -57,6 +57,22 @@ function guardarEstadoApp(estado: EstadoApp): EstadoApp {
   return estado;
 }
 
+/** Prueba real de escritura (no solo `typeof window`): en navegación privada
+ * o con storage bloqueado, `localStorage` existe pero cada `setItem` lanza.
+ * Hoy la usa para avisar que un check-in NO quedó guardado de verdad —
+ * revisor-visual ronda 1: mostrar la confirmación igual sería mentirle al
+ * usuario sobre si su registro sobrevive a cerrar la pestaña. */
+export function localStorageDisponible(): boolean {
+  try {
+    const clave = '__respira_test__';
+    window.localStorage.setItem(clave, '1');
+    window.localStorage.removeItem(clave);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Se llama una vez al entrar a la app interna: marca el inicio de la prueba
  * gratis (para Cuenta) si es la primera vez, sin tocar nada más. */
 export function asegurarInicioTrial(): EstadoApp {
