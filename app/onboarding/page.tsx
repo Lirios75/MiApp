@@ -202,7 +202,13 @@ export default function Onboarding() {
   } else {
     // ── Paso 6: compromiso (ritual pre-loading, 50 §C3bis) ──
     pantalla = (
-      <FunnelScreen progreso={progreso} onBack={comprometido ? undefined : retroceder} onClose={salir} stepKey={paso}>
+      <FunnelScreen
+        progreso={progreso}
+        onBack={comprometido ? undefined : retroceder}
+        onClose={salir}
+        logoBloqueado={comprometido}
+        stepKey={paso}
+      >
         {comprometido ? (
           <motion.div
             initial={{ opacity: 0, scale: reduce ? 1 : 0.85 }}

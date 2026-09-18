@@ -17,6 +17,7 @@ export function FunnelHeader({
   progreso,
   onBack,
   onClose,
+  logoBloqueado = false,
 }: {
   /** 0-100. */
   progreso: number;
@@ -24,6 +25,11 @@ export function FunnelHeader({
   /** Salida explícita del funnel — SIEMPRE visible, no solo en el primer paso
    * (sin esto, salir a mitad del quiz exige retroceder paso a paso). */
   onClose?: () => void;
+  /** Sin onBack, el logo es un <a href="/"> que navega directo — un tap ahí
+   * durante una transición automática (ej. los 700ms tras comprometerse())
+   * salta el mismo `onClose`/confirmación que sí protege a la X. true lo
+   * vuelve un logo estático sin navegación durante esos tramos cortos. */
+  logoBloqueado?: boolean;
 }) {
   return (
     <div className="mx-auto w-full max-w-[500px] px-4 pt-4">
@@ -38,6 +44,10 @@ export function FunnelHeader({
           >
             <ChevronLeft size={22} strokeWidth={2.5} aria-hidden="true" />
           </motion.button>
+        ) : logoBloqueado ? (
+          <span className="flex size-11 shrink-0 items-center justify-center" aria-hidden="true">
+            <RespiraMark estatico />
+          </span>
         ) : (
           <a href="/" className="flex size-11 shrink-0 items-center justify-center [touch-action:manipulation]">
             <RespiraMark estatico />
@@ -326,6 +336,7 @@ export function FunnelScreen({
   progreso,
   onBack,
   onClose,
+  logoBloqueado,
   children,
   stepKey,
 }: {
@@ -333,6 +344,8 @@ export function FunnelScreen({
   onBack?: () => void;
   /** Salida explícita del funnel, visible en todos los pasos (no solo el primero). */
   onClose?: () => void;
+  /** Ver FunnelHeader — bloquea el logo durante transiciones automáticas. */
+  logoBloqueado?: boolean;
   children: ReactNode;
   /** Cambia con cada pantalla para disparar la transición de entrada. */
   stepKey: string | number;
@@ -341,7 +354,7 @@ export function FunnelScreen({
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-[var(--bg)] text-[var(--text-primary)] [font-family:var(--font-body)]">
       <FunnelFondo />
-      <FunnelHeader progreso={progreso} onBack={onBack} onClose={onClose} />
+      <FunnelHeader progreso={progreso} onBack={onBack} onClose={onClose} logoBloqueado={logoBloqueado} />
       <motion.div
         key={stepKey}
         initial={{ opacity: 0, x: reduce ? 0 : 40 }}

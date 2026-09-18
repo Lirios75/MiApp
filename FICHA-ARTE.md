@@ -21,7 +21,7 @@
 - Compilación: spring casi sin rebote (0–0.1) · duración base 300–380ms · exclamaciones máx 1/pantalla · celebración nivel medio (cambio de color + micro-mensaje, sin confeti) · radio tendencial 20–22px.
 
 ## Brand kit final (los valores que viven en globals.css/@theme)
-- Fondo: `#FAF6EF` · Superficie: `#FFFDF8` · Hundido: `#F1EADC` (inputs, campos) · Texto 1º/2º: `#2A2620` / `#8C8172`
+- Fondo: `#FAF6EF` · Superficie: `#FFFDF8` · Hundido: `#F1EADC` (inputs, campos) · Texto 1º/2º/3º: `#2A2620` / `#6B6152` / `#5C5446` (corregido: el valor anterior de texto 2º, `#8C8172`, daba 3.55:1 sobre el fondo — bajo AA — y ya no existe en el código; `components/landing/tokens.css` es la fuente de verdad)
 - Acento primario: `#5468D4` (azul-lila — SOLO en marca, anillo, CTA y selección)
 - 2ª nota: `#2E9E6B` (verde — progreso positivo: ahorro, check-ins, celebración) · 3ª nota: `#E08A3C` (naranja — racha, hitos, alerta leve — nunca rojo)
 - Semánticos: éxito `#2E9E6B` (comparte la 2ª nota) · error `#C15B4A` (terracota apagado, siempre con ícono — nunca solo color) · aviso `#E08A3C` (comparte la 3ª nota)
