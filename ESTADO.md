@@ -5,9 +5,16 @@
 (tsc ✓ · build ✓ · capturas reales a 375px con datos de ejemplo en docs/revisiones/vivo/):
 Hoy (`/app`), Semana (`/app/semana`), Tu meta (`/app/meta`), Cuenta (`/app/cuenta`).
 Persistencia local (localStorage vía `lib/app.ts`) — Supabase real es Sesión 6.
-Paso actual: construida, PENDIENTE de que la usuaria vea las capturas y decida si pide la
-revisión automática del revisor-visual en "Hoy" (pantalla principal, una de las 4 del dinero)
-o avanza así, siguiendo el mismo criterio que aplicó en onboarding (Sesión 4).
+"Hoy" pasó 2 rondas del revisor-visual (límite puesto por la usuaria: máximo 2, sin
+reintentar sola después). Ronda 1: 32/40 · 12/20 (con un screenshot que resultó no coincidir
+con el estado descrito — error de proceso mío, no del código). Ronda 2 (screenshot correcto,
+ya confirmado con racha de 5 días): 27/40 · 14/20, NO LISTA — mejoró el craft (anillo de
+progreso visible) pero encontró un vacío muerto nuevo (~150px bajo la tarjeta de la meta) y
+un texto del aviso de guardado impreciso, entre otros. Detalle completo en
+docs/revisiones/pantalla-principal-veredicto.md. Cumplida la instrucción de la usuaria: NO se
+lanza una 3ª ronda — le corresponde a ella ver el estado y decidir.
+Paso actual: mostrarle a la usuaria las capturas reales + los pendientes concretos en simple,
+y esperar su decisión (seguir corrigiendo, o avanzar a Sesión 6 dejándolos anotados).
 Pantallas creadas: Hoy · Semana · Tu meta · Cuenta.
 Protagonista de cada pantalla: Hoy = marcar el Semáforo del día · Semana = tendencia de los
 últimos días/semanas · Tu meta = avance de la meta elegida en el onboarding · Cuenta = plan y
