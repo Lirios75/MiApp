@@ -18,6 +18,14 @@ cambio es la fecha del timeline ("22 sept" → "23 sept", por el cambio de día 
 todo lo demás. La certificación LISTA sigue vigente — no se relanza el revisor-visual completo por un
 diff sin impacto verificado.
 
+## Segunda re-verificación (2026-09-18, commit 90128b0)
+Ronda de fixes de onboarding agregó un `useRef`+cleanup de timer en `app/onboarding/page.tsx`
+(`comprometerse()`/`salir()`, ese archivo no lo usa el paywall en absoluto) y el mismo patrón en
+`OptionChip` (components/funnel/ui.tsx) — componente que el paywall nunca renderiza (no hay preguntas
+de opción múltiple en esa pantalla). Diff revisado línea por línea (`git diff ca6c6f0..HEAD`): cero
+cambios en cualquier componente que el paywall importe. Certificación LISTA sigue vigente, sin necesidad
+de recapturar ni relanzar el revisor.
+
 ## Verificación de los 5 fixes de la ronda 12 (línea por línea, código real)
 
 1. aria-label unificado del botón X — RESUELTO. `app/paywall/page.tsx` línea 148: `aria-label="Cerrar"` (fase "listo"). `components/funnel/LoadingPlan.tsx` línea 51: `aria-label="Cerrar"` (fase "cargando"). Mismo texto en ambas fases del paywall.
