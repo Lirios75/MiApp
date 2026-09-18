@@ -117,3 +117,11 @@ El commit toca `app/app/page.tsx` y `lib/app.ts` (aviso de guardado, anillo en l
 de la meta, contraste de los botones del semáforo, racha en la confirmación) — ninguno de los
 dos archivos lo importa `app/paywall/page.tsx` ni `components/funnel/ui.tsx` (verificado por
 grep). Misma independencia de rutas que la cuarta re-verificación. Cero impacto en el paywall.
+
+## Sexta re-verificación (2026-09-18, commit ef55a1b — fixes de ronda 2 en Hoy)
+
+El commit toca de nuevo `app/app/page.tsx` (texto del aviso, ícono en reflexión, quitar el
+`flex-1` sobrante, botón Cancelar) y `FICHA-ARTE.md` (documentar la escala tipográfica ya en
+uso). Ninguno lo importa el paywall (mismo grep que las rondas anteriores) y el cambio en
+FICHA-ARTE es solo un comentario descriptivo, no toca ningún token real de `tokens.css`. Cero
+impacto en el paywall.
