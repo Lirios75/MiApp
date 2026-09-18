@@ -110,3 +110,10 @@ completamente independientes (`/app`, `/app/semana`, `/app/meta`, `/app/cuenta` 
 sin componentes ni tokens compartidos más allá de `components/landing/tokens.css` (que no cambió
 en este commit). Cero impacto en el código o el comportamiento del paywall — la certificación
 LISTA sigue vigente.
+
+## Quinta re-verificación (2026-09-18, commit a5f0b08 — fixes de ronda 1 en Hoy)
+
+El commit toca `app/app/page.tsx` y `lib/app.ts` (aviso de guardado, anillo en la vista previa
+de la meta, contraste de los botones del semáforo, racha en la confirmación) — ninguno de los
+dos archivos lo importa `app/paywall/page.tsx` ni `components/funnel/ui.tsx` (verificado por
+grep). Misma independencia de rutas que la cuarta re-verificación. Cero impacto en el paywall.
