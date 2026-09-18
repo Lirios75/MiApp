@@ -67,6 +67,16 @@ export default function Onboarding() {
     router.push('/');
   }
 
+  // Durante la celebración, "Seguir aquí" no puede solo cerrar el modal: al
+  // cancelar el timer de comprometerse() para que no la pisotee, dejaba la
+  // pantalla sin ninguna forma de continuar (ni auto-avance ni botón). Acá
+  // "seguir aquí" significa seguir con el flujo que ya eligió, no quedarse
+  // varada en la celebración.
+  function seguirAqui() {
+    setConfirmandoSalida(false);
+    if (comprometido) router.push('/paywall');
+  }
+
   const progreso = progresoDePaso(paso);
   let pantalla: ReactNode;
 
@@ -268,7 +278,16 @@ export default function Onboarding() {
   return (
     <>
       {pantalla}
-      <ConfirmSalir abierto={confirmandoSalida} onSeguir={() => setConfirmandoSalida(false)} onSalir={() => router.push('/')} />
+      <ConfirmSalir
+        abierto={confirmandoSalida}
+        onSeguir={seguirAqui}
+        onSalir={() => router.push('/')}
+        mensaje={
+          comprometido
+            ? 'Tu compromiso ya quedó guardado — puedes seguir a tu plan cuando quieras.'
+            : 'Perderás las respuestas de tu quiz.'
+        }
+      />
     </>
   );
 }
