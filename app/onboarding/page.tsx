@@ -202,47 +202,45 @@ export default function Onboarding() {
   } else {
     // ── Paso 6: compromiso (ritual pre-loading, 50 §C3bis) ──
     pantalla = (
-      <FunnelScreen progreso={progreso} onBack={retroceder} onClose={salir} stepKey={paso}>
-        <div className="flex flex-col items-center gap-10 pt-4 text-center">
-          {comprometido ? (
-            <motion.div
-              initial={{ opacity: 0, scale: reduce ? 1 : 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: reduce ? 0.15 : 0.45, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col items-center gap-4"
+      <FunnelScreen progreso={progreso} onBack={comprometido ? undefined : retroceder} onClose={salir} stepKey={paso}>
+        {comprometido ? (
+          <motion.div
+            initial={{ opacity: 0, scale: reduce ? 1 : 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: reduce ? 0.15 : 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="flex flex-1 flex-col items-center justify-center gap-4 text-center"
+          >
+            <motion.span
+              aria-hidden="true"
+              initial={{ scale: reduce ? 1 : 0.6 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: reduce ? 0.1 : 0.4, type: 'spring', bounce: 0.1 }}
+              className="inline-flex size-16 items-center justify-center rounded-full bg-[var(--accent)]"
             >
-              <motion.span
-                aria-hidden="true"
-                initial={{ scale: reduce ? 1 : 0.6 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: reduce ? 0.1 : 0.4, type: 'spring', bounce: 0.15 }}
-                className="inline-flex size-16 items-center justify-center rounded-full bg-[var(--accent)]"
-              >
-                <Check size={30} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
-              </motion.span>
+              <Check size={30} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
+            </motion.span>
+            <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
+              ¡Listo, quedó registrado!
+            </h2>
+            <SemanaPreview diaCompletado={(new Date().getDay() + 6) % 7} />
+            <p className="max-w-[30ch] text-[13px] text-[var(--text-tertiary)]">
+              Repite esto 6 días más y tendrás tu primera semana completa.
+            </p>
+          </motion.div>
+        ) : (
+          <div className="flex flex-col items-center gap-10 pt-4 text-center">
+            <div>
               <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
-                ¡Listo, quedó registrado!
+                ¿Lista para tu primer Semáforo?
               </h2>
-              <SemanaPreview diaCompletado={(new Date().getDay() + 6) % 7} />
-              <p className="max-w-[30ch] text-[13px] text-[var(--text-tertiary)]">
-                Repite esto 6 días más y tendrás tu primera semana completa.
+              <p className="mt-2 max-w-[34ch] text-[15px] text-[var(--text-secondary)]">
+                Mantén presionado para comprometerte a marcarlo todos los días esta semana.
               </p>
-            </motion.div>
-          ) : (
-            <>
-              <div>
-                <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
-                  ¿Lista para tu primer Semáforo?
-                </h2>
-                <p className="mt-2 max-w-[34ch] text-[15px] text-[var(--text-secondary)]">
-                  Mantén presionado para comprometerte a marcarlo todos los días esta semana.
-                </p>
-              </div>
-              <HoldButton onCommit={comprometerse} label="Me comprometo esta semana" />
-              <SemanaPreview />
-            </>
-          )}
-        </div>
+            </div>
+            <HoldButton onCommit={comprometerse} label="Me comprometo esta semana" />
+            <SemanaPreview />
+          </div>
+        )}
       </FunnelScreen>
     );
   }
