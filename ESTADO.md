@@ -6,15 +6,20 @@
 Hoy (`/app`), Semana (`/app/semana`), Tu meta (`/app/meta`), Cuenta (`/app/cuenta`).
 Persistencia local (localStorage vía `lib/app.ts`) — Supabase real es Sesión 6.
 "Hoy" pasó 2 rondas del revisor-visual (límite puesto por la usuaria: máximo 2, sin
-reintentar sola después). Ronda 1: 32/40 · 12/20 (con un screenshot que resultó no coincidir
-con el estado descrito — error de proceso mío, no del código). Ronda 2 (screenshot correcto,
-ya confirmado con racha de 5 días): 27/40 · 14/20, NO LISTA — mejoró el craft (anillo de
-progreso visible) pero encontró un vacío muerto nuevo (~150px bajo la tarjeta de la meta) y
-un texto del aviso de guardado impreciso, entre otros. Detalle completo en
-docs/revisiones/pantalla-principal-veredicto.md. Cumplida la instrucción de la usuaria: NO se
-lanza una 3ª ronda — le corresponde a ella ver el estado y decidir.
-Paso actual: mostrarle a la usuaria las capturas reales + los pendientes concretos en simple,
-y esperar su decisión (seguir corrigiendo, o avanzar a Sesión 6 dejándolos anotados).
+reintentar sola después). Ronda 1: 32/40 · 12/20. Ronda 2: 27/40 · 14/20, NO LISTA. Detalle
+completo en docs/revisiones/pantalla-principal-veredicto.md. Tras ver las capturas y los 5
+pendientes en simple, la usuaria eligió CORREGIRLOS (no una 3ª ronda automática) — se
+corrigieron los 5: (1) aviso de guardado con texto preciso ("no se guarda de forma permanente"
+en vez de prometer solo hasta cerrar pestaña), (2) tarjeta de reflexión con ícono chip como las
+demás tarjetas, (3) hueco vacío reducido quitando el `flex-1` mal aplicado en la vista previa de
+la meta + más contenido real (racha en la confirmación), (4) botón "Cancelar" (X) al tocar
+"Cambiar" — verificado con prueba automatizada que vuelve a la confirmación sin alterar el
+valor, (5) FICHA-ARTE.md actualizada para documentar la escala tipográfica realmente en uso
+(19-22px título, 12-13px label) en vez de re-litigar tamaños ya consistentes en paywall/
+onboarding. tsc ✓ build ✓ · capturas regeneradas. NO se relanzó el revisor una 3ª vez (respeta
+el límite de la usuaria) — queda pendiente que ELLA vea el resultado y decida si esto ya cierra
+la pantalla o prefiere una verificación más.
+Paso actual: mostrarle a la usuaria las capturas actualizadas y esperar su decisión.
 Pantallas creadas: Hoy · Semana · Tu meta · Cuenta.
 Protagonista de cada pantalla: Hoy = marcar el Semáforo del día · Semana = tendencia de los
 últimos días/semanas · Tu meta = avance de la meta elegida en el onboarding · Cuenta = plan y

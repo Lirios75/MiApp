@@ -7,7 +7,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { AlertTriangle, ArrowRight, Check, Pencil, Smile, AlertCircle, Target } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, Lightbulb, Pencil, Smile, AlertCircle, Target, X } from 'lucide-react';
 import {
   asegurarInicioTrial,
   calcularRacha,
@@ -87,15 +87,19 @@ export default function Hoy() {
         >
           <AlertTriangle size={16} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" className="mt-0.5 shrink-0" />
           <p className="text-[13px] leading-snug text-[var(--accent-3-text)]">
-            Tu navegador no está guardando tus registros — funcionan mientras tengas esta pestaña abierta, pero se
-            pierden si la cierras.
+            Tu navegador no está guardando tus registros de forma permanente — pueden perderse al cambiar de
+            sección o cerrar esta pestaña.
           </p>
         </motion.div>
       )}
 
       <motion.section variants={item}>
         {!checkin || editando ? (
-          <SelectorSemaforo checkin={checkin} onElegir={marcar} />
+          <SelectorSemaforo
+            checkin={checkin}
+            onElegir={marcar}
+            onCancelar={checkin ? () => setEditando(false) : undefined}
+          />
         ) : (
           <ConfirmacionDia estado={checkin.estado} racha={racha} onCambiar={() => setEditando(true)} />
         )}
@@ -140,12 +144,18 @@ export default function Hoy() {
 
       <motion.section
         variants={item}
-        className="rounded-[var(--radius-card)] border border-[color-mix(in_oklab,var(--accent)_18%,transparent)] bg-[var(--surface)] p-4"
+        className="flex items-start gap-3 rounded-[var(--radius-card)] border border-[color-mix(in_oklab,var(--accent)_18%,transparent)] bg-[var(--surface)] p-4"
       >
+        <span
+          aria-hidden="true"
+          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[var(--chip-bg)]"
+        >
+          <Lightbulb size={16} strokeWidth={2} color="var(--accent)" aria-hidden="true" />
+        </span>
         <p className="text-[15px] leading-relaxed text-[var(--text-primary)]">{reflexionDeHoy()}</p>
       </motion.section>
 
-      <motion.section variants={item} className="flex-1">
+      <motion.section variants={item}>
         <VistaPreviaMeta estado={estado} />
       </motion.section>
     </motion.main>
@@ -221,15 +231,29 @@ function diasEstaSemana(estado: EstadoApp): { iso: string; estadoDia: EstadoSema
 function SelectorSemaforo({
   checkin,
   onElegir,
+  onCancelar,
 }: {
   checkin: { estado: EstadoSemaforo } | undefined;
   onElegir: (v: EstadoSemaforo) => void;
+  onCancelar?: () => void;
 }) {
   return (
     <div className="rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]">
-      <h2 className="text-[19px] font-bold leading-[1.25] [font-family:var(--font-display)]">
-        ¿Cómo te sientes con tu gasto hoy?
-      </h2>
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-[19px] font-bold leading-[1.25] [font-family:var(--font-display)]">
+          ¿Cómo te sientes con tu gasto hoy?
+        </h2>
+        {onCancelar && (
+          <button
+            type="button"
+            onClick={onCancelar}
+            aria-label="Cancelar y volver"
+            className="shrink-0 rounded-full p-1 text-[var(--text-tertiary)] [touch-action:manipulation]"
+          >
+            <X size={20} strokeWidth={2} aria-hidden="true" />
+          </button>
+        )}
+      </div>
       <p className="mt-1 text-[13px] text-[var(--text-secondary)]">Un toque basta. Puedes cambiarlo después.</p>
       <div className="mt-4 grid grid-cols-2 gap-3">
         <motion.button

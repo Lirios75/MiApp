@@ -25,7 +25,7 @@
 - Acento primario: `#5468D4` (azul-lila — SOLO en marca, anillo, CTA y selección)
 - 2ª nota: `#2E9E6B` (verde — progreso positivo: ahorro, check-ins, celebración) · 3ª nota: `#E08A3C` (naranja — racha, hitos, alerta leve — nunca rojo)
 - Semánticos: éxito `#2E9E6B` (comparte la 2ª nota) · error `#C15B4A` (terracota apagado, siempre con ícono — nunca solo color) · aviso `#E08A3C` (comparte la 3ª nota)
-- Display: **Nunito** (pesos 700/800) · Body: **Nunito** (pesos 400/600) · Escala: display 34px / title 19px / body 15px / label 12px
+- Display: **Nunito** (pesos 700/800) · Body: **Nunito** (pesos 400/600) · Escala: display 28-34px / title 19-22px (22px para el h1 de cada sección de la app interna y del funnel) / body 15px / label 12-13px (documentado así el 2026-09-18 tras la revisión de "Hoy": estos rangos son los que ya usan de forma consistente paywall, onboarding y la app interna — no se re-litiga)
 - Radio: 22px cards / 16px botones · Profundidad: sombras suaves tintadas (RGB 42·38·32) + hairline sutil en elementos clave (nunca borde duro gris) · Espaciado base: escala 4·8·12·16·24·32·48·64
 - Dispositivo ownable: el anillo de respiración — se expande/llena como avance de meta o racha, mismo gesto que el nombre de la app
 - Motion signature: ease-out suave, sin bounce (spring 0–0.1) · stagger 70–90ms · duración base 300–380ms · firma: "respirar" — fades amplios, nada abrupto
