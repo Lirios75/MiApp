@@ -99,3 +99,14 @@ Sub-checks binarios: garantía nombrada con plazo cerca del CTA de compra — CU
 2. [components/funnel/ui.tsx:66] `FunnelHeader` (onboarding) sigue usando `aria-label="Salir"` para el mismo control que en el paywall ahora dice "Cerrar" (`page.tsx:148`, `LoadingPlan.tsx:51`) → unificar el término en las 3 pantallas del funnel, no solo dentro del paywall.
 3. [app/paywall/page.tsx:188-243] `role="radiogroup"`+`role="radio"` sobre `<button>` nativos sin `tabIndex` gestionado: ambos botones quedan tabulables y las flechas no mueven la selección (patrón ARIA de radiogroup incompleto, aunque Tab+Enter sigue funcionando) → opcional: roving tabindex + flechas si se busca el patrón completo.
 4. (subjetivo/fino) [app/paywall/page.tsx:221] Card "Mensual" no seleccionada con hairline al 40%/1px, apenas distinguible de `--bg` en el screenshot → subir levemente el mix si se busca más definición del borde en estado no-seleccionado.
+
+## Cuarta re-verificación (2026-09-18, commit 9395387 — Sesión 5, app interna)
+
+El commit que agrega la app interna (Hoy, Semana, Tu meta, Cuenta) crea únicamente archivos
+nuevos bajo `app/app/*`, `components/app/ui.tsx` y `lib/app.ts` — ninguno existía antes ni el
+paywall los importa (verificado: `grep` de `app/app` y `components/app/ui`/`lib/app` dentro de
+`app/paywall/page.tsx` y `components/funnel/ui.tsx` no encuentra coincidencias). Son rutas
+completamente independientes (`/app`, `/app/semana`, `/app/meta`, `/app/cuenta` vs `/paywall`),
+sin componentes ni tokens compartidos más allá de `components/landing/tokens.css` (que no cambió
+en este commit). Cero impacto en el código o el comportamiento del paywall — la certificación
+LISTA sigue vigente.
