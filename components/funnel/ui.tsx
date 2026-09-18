@@ -145,11 +145,18 @@ export function OptionChip({
   const reduce = useReducedMotion();
   const [marcando, setMarcando] = useState(false);
   const bloqueado = marcando || seleccionado;
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   function handleTap() {
     if (bloqueado) return;
     setMarcando(true);
-    setTimeout(onSelect, 300);
+    timeoutRef.current = setTimeout(onSelect, 300);
   }
 
   const activo = seleccionado || marcando;

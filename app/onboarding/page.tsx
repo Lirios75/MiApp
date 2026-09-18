@@ -6,7 +6,7 @@
 // todavía — Sesión 6 conecta Supabase) y se leen en /paywall para personalizar.
 
 import { useRouter } from 'next/navigation';
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Check, Lightbulb, HeartHandshake, Sprout } from 'lucide-react';
 import { ConfirmSalir, FunnelButton, FunnelScreen, HoldButton, OptionChip, SemanaPreview, VistaSemaforo } from '@/components/funnel/ui';
@@ -26,6 +26,13 @@ export default function Onboarding() {
   const [comprometido, setComprometido] = useState(false);
   const [confirmandoSalida, setConfirmandoSalida] = useState(false);
   const reduce = useReducedMotion();
+  const navegacionPendienteRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (navegacionPendienteRef.current !== null) clearTimeout(navegacionPendienteRef.current);
+    };
+  }, []);
 
   function avanzar() {
     setPaso((p) => p + 1);
@@ -41,12 +48,19 @@ export default function Onboarding() {
   function comprometerse() {
     guardarRespuestas({ ...respuestas, comprometido: true });
     setComprometido(true);
-    setTimeout(() => router.push('/paywall'), 700);
+    navegacionPendienteRef.current = setTimeout(() => router.push('/paywall'), 700);
   }
 
   function salir() {
     const hayRespuestas = Object.keys(respuestas).length > 0;
     if (hayRespuestas) {
+      // La navegación automática a /paywall tras comprometerse() no debe
+      // "pisotear" lo que el usuario decida acá — sea seguir o salir, el
+      // temporizador pendiente se cancela apenas abre esta confirmación.
+      if (navegacionPendienteRef.current !== null) {
+        clearTimeout(navegacionPendienteRef.current);
+        navegacionPendienteRef.current = null;
+      }
       setConfirmandoSalida(true);
       return;
     }
@@ -234,7 +248,7 @@ export default function Onboarding() {
             </p>
           </motion.div>
         ) : (
-          <div className="flex flex-col items-center gap-10 pt-4 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center gap-10 text-center">
             <div>
               <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
                 ¿Lista para tu primer Semáforo?
