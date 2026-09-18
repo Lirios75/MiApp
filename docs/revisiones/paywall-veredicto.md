@@ -125,3 +125,9 @@ El commit toca de nuevo `app/app/page.tsx` (texto del aviso, ícono en reflexió
 uso). Ninguno lo importa el paywall (mismo grep que las rondas anteriores) y el cambio en
 FICHA-ARTE es solo un comentario descriptivo, no toca ningún token real de `tokens.css`. Cero
 impacto en el paywall.
+
+## Séptima re-verificación (2026-09-18, commit eb0af4e — menú "isla flotante")
+
+El commit toca `components/app/ui.tsx` (rediseño de `BottomNav`, usado solo por las 4 pantallas
+de la app interna) — el paywall no importa ese archivo ni ese componente (usa su propio header y
+no tiene bottom-nav). Mismo grep verificado. Cero impacto en el paywall.
