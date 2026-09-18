@@ -36,37 +36,42 @@ const DESTINOS: { href: string; label: string; icon: LucideIcon }[] = [
 ];
 
 /* ── <BottomNav> — 4 destinos (regla de 3-5), activo con chip de fondo +
-   ícono/label en acento (nunca del mismo color que su contenedor). ── */
+   ícono/label en acento (nunca del mismo color que su contenedor). "Isla
+   flotante": la barra se despega de los bordes y del fondo con margen
+   visible alrededor y sombra propia — elegida por la usuaria el 2026-09-18
+   entre 3 variantes de relieve (ver docs/revisiones/vivo/nav-variante-*.png). ── */
 export function BottomNav() {
   const ruta = usePathname();
   return (
-    <nav
-      aria-label="Navegación principal"
-      className="sticky bottom-0 z-20 flex h-16 items-stretch border-t border-[color-mix(in_oklab,var(--text-tertiary)_16%,transparent)] bg-[var(--surface)] pb-[env(safe-area-inset-bottom)]"
-    >
-      {DESTINOS.map(({ href, label, icon: Icono }) => {
-        const activo = href === '/app' ? ruta === '/app' : ruta.startsWith(href);
-        return (
-          <Link
-            key={href}
-            href={href}
-            aria-current={activo ? 'page' : undefined}
-            className="flex flex-1 flex-col items-center justify-center gap-1 [touch-action:manipulation]"
-          >
-            <span
-              className={`flex size-9 items-center justify-center rounded-[var(--radius-button)] ${
-                activo ? 'bg-[var(--chip-bg)]' : ''
-              }`}
+    <div className="px-4 pb-[max(12px,env(safe-area-inset-bottom))]">
+      <nav
+        aria-label="Navegación principal"
+        className="flex h-16 items-stretch rounded-[var(--radius-card)] bg-[var(--surface)] px-1 shadow-[var(--shadow-2)]"
+      >
+        {DESTINOS.map(({ href, label, icon: Icono }) => {
+          const activo = href === '/app' ? ruta === '/app' : ruta.startsWith(href);
+          return (
+            <Link
+              key={href}
+              href={href}
+              aria-current={activo ? 'page' : undefined}
+              className="flex flex-1 flex-col items-center justify-center gap-1 [touch-action:manipulation]"
             >
-              <Icono size={20} strokeWidth={activo ? 2.25 : 2} color={activo ? 'var(--accent)' : 'var(--text-tertiary)'} aria-hidden="true" />
-            </span>
-            <span className={`text-[11px] font-medium ${activo ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'}`}>
-              {label}
-            </span>
-          </Link>
-        );
-      })}
-    </nav>
+              <span
+                className={`flex size-9 items-center justify-center rounded-[var(--radius-button)] ${
+                  activo ? 'bg-[var(--chip-bg)]' : ''
+                }`}
+              >
+                <Icono size={20} strokeWidth={activo ? 2.25 : 2} color={activo ? 'var(--accent)' : 'var(--text-tertiary)'} aria-hidden="true" />
+              </span>
+              <span className={`text-[11px] font-medium ${activo ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]'}`}>
+                {label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </div>
   );
 }
 

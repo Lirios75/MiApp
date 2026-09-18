@@ -17,9 +17,17 @@ la meta + más contenido real (racha en la confirmación), (4) botón "Cancelar"
 valor, (5) FICHA-ARTE.md actualizada para documentar la escala tipográfica realmente en uso
 (19-22px título, 12-13px label) en vez de re-litigar tamaños ya consistentes en paywall/
 onboarding. tsc ✓ build ✓ · capturas regeneradas. NO se relanzó el revisor una 3ª vez (respeta
-el límite de la usuaria) — queda pendiente que ELLA vea el resultado y decida si esto ya cierra
-la pantalla o prefiere una verificación más.
-Paso actual: mostrarle a la usuaria las capturas actualizadas y esperar su decisión.
+el límite de la usuaria). La usuaria decidió AVANZAR A SESIÓN 6 con este resultado (sin pedir
+una verificación más de "Hoy").
+Antes de avanzar, pidió un ajuste visual: el menú inferior (Hoy/Semana/Meta/Cuenta) con efecto
+de relieve/3D. Se mostraron 3 variantes reales (docs/revisiones/vivo/nav-variante-A/B/C.png):
+A "Isla flotante" (barra despegada de los bordes, con margen y sombra propia), B "Puente
+elevado" (ancho completo, esquinas superiores redondeadas, sombra hacia arriba), C "Cápsula
+activa" (barra plana, solo el ítem activo se levanta). Eligió **A**. Implementada en
+`components/app/ui.tsx` (`BottomNav`) como la única versión — el código de comparación
+(`?nav=A|B|C`) se quitó, no queda como opción oculta. tsc ✓ build ✓ · capturas regeneradas con
+el menú nuevo en las 4 pantallas.
+Paso actual: Sesión 5 CERRADA. Arrancar Sesión 6 (servicios externos).
 Pantallas creadas: Hoy · Semana · Tu meta · Cuenta.
 Protagonista de cada pantalla: Hoy = marcar el Semáforo del día · Semana = tendencia de los
 últimos días/semanas · Tu meta = avance de la meta elegida en el onboarding · Cuenta = plan y
@@ -94,16 +102,16 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Onboarding: construida y APROBADA POR LA USUARIA EN SUSTANCIA (Sesión 4, cerrada 2026-09-18)
 - Paywall: CERTIFICADA ✅ por el revisor-visual (Sesión 4, cerrada 2026-09-18)
 - Login/Auth: construida (UI completa, magic link SIMULADO — Supabase Auth real se conecta en Sesión 6), no requiere revisor obligatorio
-- App interna: 4 pantallas construidas (Hoy, Semana, Tu meta, Cuenta) — PENDIENTE de que la usuaria vea las capturas y decida sobre la revisión del revisor-visual en Hoy (la pantalla principal). Persistencia local (Supabase real en Sesión 6).
-- Servicios externos: pendiente
+- App interna: 4 pantallas construidas y APROBADAS POR LA USUARIA (Hoy, Semana, Tu meta, Cuenta) — Sesión 5 cerrada 2026-09-18. Persistencia local (Supabase real en Sesión 6).
+- Servicios externos: pendiente (Sesión 6, en curso)
 
 ## Puertas de etapa (aprobacion antes de avanzar)
 - Landing: APROBADA POR EL USUARIO EN SUSTANCIA, PENDIENTE de certificación formal del revisor-visual — evidencia: tsc ✓ build ✓ dev ✓ · screenshot docs/revisiones/landing-375.png · veredicto actual en docs/revisiones/landing-veredicto.md = NO LISTA (usabilidad 31/40 · craft 15/20 · copy 19/20, 7ª pasada). El techo restante es estructural (2 excepciones de identidad que el usuario decidió mantener + placeholders de app real que no existe hasta la Sesión 5) — el usuario, informado del detalle exacto, decidió avanzar así. No re-abrir esta decisión sin que el usuario lo pida.
 - Onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (2026-09-18) — evidencia: tsc ✓ build ✓ · flujo completo probado en navegador · 16 pasadas del revisor-visual (última: usabilidad 29/40, craft 17/20 — craft sí pasa, usabilidad no alcanza el gate ≥36/40) · veredicto en docs/revisiones/onboarding-veredicto.md · capturas en vivo a 375px en docs/revisiones/vivo/. La usuaria vio las capturas reales, entendió los 5 pendientes conocidos (ver Problemas conocidos) y decidió avanzar sin seguir iterando — no re-abrir sin que ella lo pida.
 - Paywall: CERTIFICADA ✅ (12ª pasada del revisor-visual, 2026-09-18) — usabilidad 37/40 · craft 20/20 · copy 19/20 (gate ≥36/40, ≥16/20, ≥16/20 sin ejes ≤2, todos superados). Evidencia: tsc ✓ build ✓ · screenshot docs/revisiones/paywall-375.png (+ paywall-cargando-375.png) · veredicto en docs/revisiones/paywall-veredicto.md = LISTA. Historial: 12 rondas, empezando en 29/40 (ronda 4-ish) hasta cerrar con fixes de accesibilidad (ARIA en selector de plan, aria-label unificado, hairline consistente entre planes, escala tipográfica de 4 niveles). Quedan 4 notas de refinamiento fino no bloqueantes (ver veredicto): tamaño de ícono X levemente distinto entre fases, aria-label "Cerrar" del paywall no se propagó al "Salir" de FunnelHeader (onboarding) — no bloqueante, no re-abrir sin pedido del usuario.
 - Login/Auth: construida — evidencia: tsc ✓ build ✓ · estados idle/enviando/enviado probados en navegador · screenshot docs/revisiones/entrar-375.png · sin revisor (pantalla secundaria, no es de las 4 del dinero) · magic link SIMULADO, sin backend real todavía (Sesión 6)
-- App interna: construida (Hoy, Semana, Tu meta, Cuenta), PENDIENTE de decisión de la usuaria — evidencia: tsc ✓ build ✓ · capturas reales a 375px con datos de ejemplo en docs/revisiones/vivo/ (+ copias canónicas: pantalla-principal-375.png, semana-375.png, meta-375.png, cuenta-375.png) · flujo probado (marcar Semáforo, navegar semanas, crear/registrar meta en ambos modos, cerrar sesión) · revisor-visual AÚN NO lanzado en Hoy (pantalla principal) — pendiente de que la usuaria decida si lo pide, mismo criterio que se usó en onboarding.
-- Servicios externos: bloqueados
+- App interna: APROBADA POR LA USUARIA (2026-09-18) — evidencia: tsc ✓ build ✓ · capturas reales a 375px en docs/revisiones/vivo/ (+ canónicas: pantalla-principal-375.png, semana-375.png, meta-375.png, cuenta-375.png) · flujo probado (marcar Semáforo, cancelar edición, navegar semanas, crear/registrar meta en ambos modos, cerrar sesión) · "Hoy" pasó 2 rondas del revisor-visual (32/40·12/20 → 27/40·14/20, no llegó al gate ≥36/40) y la usuaria decidió avanzar tras corregir los 5 pendientes concretos que encontró, sin pedir una 3ª ronda. Menú inferior con relieve ("isla flotante") elegido por la usuaria entre 3 variantes.
+- Servicios externos: en curso (Sesión 6)
 
 ## Decisiones técnicas (NO re-discutir sin pedirlo el usuario)
 - Framework: Next.js 16 App Router (React 19, Turbopack) — landing con SEO/contenido orgánico + API routes para webhook de Hotmart, y duda entre Vite/Next resuelta por la regla del stack a favor de Next. Scaffold hecho el 2026-09-17 según 51-STACK-PINEADO.md.
@@ -124,9 +132,10 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 2 — Identidad visual (FICHA-ARTE.md aprobada, dirección B "Respira en calma") — cerrada 2026-09-17.
 - Sesión 3 — Página de ventas (10 secciones) — cerrada 2026-09-17. Nota: tras el cierre, el usuario pidió 5 ajustes (registro/emojis/colores/garantía) que reabrieron 7 pasadas de revisión; el veredicto final quedó NO LISTA por un techo estructural (ver Problemas conocidos) que el usuario decidió aceptar en vez de seguir corrigiendo.
 - Sesión 4 — Onboarding, paywall y login — cerrada 2026-09-18. Paywall CERTIFICADO ✅ por el revisor-visual (37/40 · 20/20 · 19/20). Onboarding APROBADO POR LA USUARIA EN SUSTANCIA tras 16 pasadas (29/40 usabilidad, techo no bloqueante — ver Problemas conocidos) — la usuaria vio capturas reales del estado actual y decidió avanzar sin seguir iterando. Login construido como pantalla secundaria.
+- Sesión 5 — App interna (Hoy, Semana, Tu meta, Cuenta) — cerrada 2026-09-18. "Hoy" hizo 2 rondas del revisor-visual (límite puesto por la usuaria); tras verlas, la usuaria eligió corregir los 5 pendientes concretos en vez de una 3ª ronda automática, y luego decidió avanzar. Menú inferior con relieve ("isla flotante") elegido entre 3 variantes.
 
 ## Sesión en progreso 🔧
-- Sesión 5 (código construido y verificado, PENDIENTE de la decisión de la usuaria) — app interna: Hoy, Semana, Tu meta, Cuenta.
+- Ninguna — lista para arrancar Sesión 6.
 
 ## Próximas sesiones 📋
 - Sesión 6: servicios externos (GitHub ya está, falta Supabase real, IA si aplica, Vercel, Resend, dominio, Hotmart) — ahí se reemplazan los placeholders del carrusel de la landing por screenshots reales de la app.
@@ -140,6 +149,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
   5. El botón "Seguir aquí" del aviso de salida, cuando ya te comprometiste, en realidad te lleva a la pantalla de planes — el texto no calza con la acción.
   No re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
 - veredicto paywall: CERTIFICADO ✅ — ver "Puertas de etapa". Ya no es un problema pendiente.
+- veredicto pantalla-principal ("Hoy", app interna): APROBADO POR LA USUARIA (2026-09-18) tras 2 rondas del revisor-visual (32/40·12/20 → 27/40·14/20 — nunca alcanzó el gate ≥36/40, ≥16/20). Detalle completo en docs/revisiones/pantalla-principal-veredicto.md. Se corrigieron los 5 defectos concretos de la ronda 2 (aviso de guardado impreciso, tarjeta de reflexión sin tratamiento visual, hueco vacío bajo la meta, sin forma de cancelar al editar el día, tipografía fuera de la escala documentada) y la usuaria decidió avanzar a Sesión 6 sin pedir una 3ª ronda — no re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
 - veredicto landing PENDIENTE de certificación formal (7ª pasada del revisor-visual: usabilidad 31/40, craft 15/20 — gate exige ≥36/40 y ≥16/20; copy 19/20 sí pasa) — DECISIÓN FINAL DEL USUARIO (2026-09-17): se le presentó la disyuntiva completa (mantener "check-in diario" en Oferta + emojis a color en "¿Te suena?" vs. revertirlos para subir la nota) y respondió "dejar todo como está". Landing queda APROBADA POR EL USUARIO EN SUSTANCIA, la certificación formal queda PENDIENTE hasta la Sesión 5. Detalle de por qué el techo es estructural (para no repetir el análisis si se vuelve a tocar esta pantalla):
   - "Check-in diario" (excepción del usuario en Oferta) le cuesta a USABILIDAD ~2 puntos (heurística de lenguaje consistente).
   - Los emojis a color de "¿Te suena?" (excepción del usuario) le cuestan a CRAFT el punto exacto que separa 15/20 de 16/20 (el umbral) — es la única razón por la que craft no pasa.
