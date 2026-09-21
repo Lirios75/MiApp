@@ -31,7 +31,22 @@ export default function LandingRespira() {
         ctaLabel={CTA_LABEL}
         ctaHref={CTA_HREF}
         socialProof={<span>Sin conectar tu banco · cancela cuando quieras</span>}
-        visualPlaceholderSugerencia="captura de tu pantalla principal con el anillo de tu meta y tu racha"
+        visual={
+          <div className="flex justify-center bg-[var(--surface-2)] py-8">
+            <div
+              className="relative aspect-[9/19.5] w-[250px] overflow-hidden rounded-[30px] border-[5px] shadow-[var(--shadow-2)]"
+              style={{ borderColor: 'color-mix(in oklab, var(--text-primary) 90%, var(--accent))' }}
+            >
+              <img
+                src="/images/app-por-dentro/pantalla-principal.png"
+                alt="Pantalla principal de Respira: racha de días seguidos y resumen de tu meta de ahorro"
+                width={250}
+                height={542}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+        }
       />
 
       {/* 2. PROBLEMA */}
