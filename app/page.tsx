@@ -78,14 +78,14 @@ export default function LandingRespira() {
         }}
       />
 
-      {/* 5. LA APP POR DENTRO — placeholders honestos (app interna: Sesión 5) */}
+      {/* 5. LA APP POR DENTRO — capturas reales (app interna cerrada en Sesión 5) */}
       <AppPorDentro
         tituloMarked="Tu semana, [acento]sin culpa[/acento]"
         frames={[
-          { label: "Tu registro de 30 segundos", nombrePantalla: "Registro diario" },
-          { label: "Tu meta de ahorro creciendo", nombrePantalla: "Metas" },
-          { label: "Tu racha de la semana", nombrePantalla: "Pantalla principal" },
-          { label: "Tu semana, explicada", nombrePantalla: "Reporte semanal" },
+          { label: "Tu registro de 30 segundos", src: "/images/app-por-dentro/registro-diario.png", alt: "Pantalla Hoy: marca si tu día fue tranquilo o de alerta" },
+          { label: "Tu meta de ahorro creciendo", src: "/images/app-por-dentro/metas.png", alt: "Pantalla Tu meta: anillo de progreso de ahorro" },
+          { label: "Tu racha de la semana", src: "/images/app-por-dentro/pantalla-principal.png", alt: "Pantalla Hoy: racha de días seguidos y resumen de la semana" },
+          { label: "Tu semana, explicada", src: "/images/app-por-dentro/reporte-semanal.png", alt: "Pantalla Semana: tendencia de los últimos días" },
         ]}
         ctaLabel={CTA_LABEL}
         ctaHref={CTA_HREF}
