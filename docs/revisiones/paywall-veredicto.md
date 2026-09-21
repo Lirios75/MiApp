@@ -137,3 +137,10 @@ no tiene bottom-nav). Mismo grep verificado. Cero impacto en el paywall.
 El commit toca `app/page.tsx` (landing): solo reemplaza los `src`/`alt` de los 4 frames del
 carrusel "La app por dentro" por capturas reales — no toca ningún componente del paywall ni
 comparte código con él (rutas y árboles de componentes independientes). Cero impacto.
+
+## Novena re-verificación (2026-09-21, commit ce88cb5 — captura real en el `visual` del Hero)
+
+El commit toca `app/page.tsx` (landing): agrega el prop `visual` al `<Hero>` con una captura
+real dentro de un marco de teléfono (mismo patrón que `AppPorDentro.tsx`). No toca
+`app/paywall/page.tsx` ni `components/funnel/ui.tsx`, ni ningún componente que el paywall
+importe — verificado por grep. Cero impacto en el paywall.
