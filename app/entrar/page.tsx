@@ -1,16 +1,18 @@
 'use client';
 
 // LOGIN — magic link por email (50-DISENO-ONBOARDING-PAYWALL.md §E, 26-AUTH-MODERNO.md).
-// Supabase Auth aún no está conectado (Sesión 6, ver ESTADO.md): el envío se simula
-// localmente — nunca se le hace creer al usuario que ya tiene una cuenta real creada
-// hasta que la conexión exista de verdad.
+// Usa Supabase Auth real en cuanto NEXT_PUBLIC_SUPABASE_URL está configurada (Sesión 6).
+// Mientras no lo esté, el envío se simula localmente — nunca se le hace creer al usuario
+// que ya tiene una cuenta real creada hasta que la conexión exista de verdad.
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { Lock, Mail } from 'lucide-react';
 import { FunnelButton } from '@/components/funnel/ui';
 import { RespiraMark } from '@/components/RespiraMark';
+import { crearClienteSupabase } from '@/lib/supabase/client';
 
 const RATE_LIMIT_S = 60;
+const SUPABASE_CONFIGURADO = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 type Estado = 'idle' | 'enviando' | 'enviado' | 'error';
 
@@ -26,15 +28,31 @@ export default function Entrar() {
     return () => clearTimeout(t);
   }, [segundos]);
 
-  function enviarEnlace(e: FormEvent) {
+  async function enviarEnlace(e: FormEvent) {
     e.preventDefault();
     if (!correo.includes('@') || estado === 'enviando') return;
     setEstado('enviando');
-    // Simulación local (sin backend todavía) — Sesión 6 lo cambia por Supabase Auth real.
-    setTimeout(() => {
-      setEstado('enviado');
-      setSegundos(RATE_LIMIT_S);
-    }, 900);
+
+    if (!SUPABASE_CONFIGURADO) {
+      // Sin backend todavía (pendiente de conectar Supabase) — simulación honesta.
+      setTimeout(() => {
+        setEstado('enviado');
+        setSegundos(RATE_LIMIT_S);
+      }, 900);
+      return;
+    }
+
+    const supabase = crearClienteSupabase();
+    const { error } = await supabase.auth.signInWithOtp({
+      email: correo,
+      options: { emailRedirectTo: `${window.location.origin}/auth/confirm?next=/app` },
+    });
+    if (error) {
+      setEstado('error');
+      return;
+    }
+    setEstado('enviado');
+    setSegundos(RATE_LIMIT_S);
   }
 
   if (estado === 'enviado') {

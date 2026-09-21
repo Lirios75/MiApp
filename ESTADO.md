@@ -30,8 +30,39 @@ mecánico de diseño (`post-edit-diseno.sh`) marca esos valores como "fuera de l
 — es un falso positivo conocido (mismo patrón que el CADUCADO del paywall): esa escala rige
 espaciado, no las medidas fijas de un marco de teléfono ya establecido y reusado en el proyecto.
 Faltaba pushear a ambas ramas (`claude/awesome-brown-rq2dqc` y `main`) — hecho a continuación.
-Después de esto, retomar
-el plan original: guiarla paso a paso por Supabase → Resend → dominio → Hotmart.
+
+⏸️ CHECKPOINT (2026-09-21, noche) — Sesión 6, conectando Supabase. Preparado TODO el código que
+no depende de una cuenta (protocolo 62-PUBLICACION-SEGURA-Y-CONTINUA.md, P0-P1 + parte de P3-P4):
+- `.env.example` creado (solo nombres, sin valores) + `.gitignore` ajustado para permitirlo.
+- Instalado `@supabase/supabase-js` + `@supabase/ssr`.
+- `lib/supabase/client.ts` (navegador), `lib/supabase/server.ts` (Server Components/Actions),
+  `lib/supabase/middleware.ts` + `proxy.ts` en la raíz (Next 16 renombró "middleware.ts" a
+  "proxy.ts" — usado el nombre nuevo directamente, sin deuda). `proxy.ts` no hace nada mientras
+  `NEXT_PUBLIC_SUPABASE_URL` no exista, así que el sitio sigue funcionando igual hasta que se
+  conecte de verdad — verificado: tsc ✓ build ✓ (sin warning de deprecación) · dev ✓ · probado en
+  navegador headless que `/entrar` sigue con la simulación honesta intacta
+  (`docs/revisiones/vivo/entrar-simulado-post-envio.png`).
+- `app/entrar/page.tsx`: ahora intenta Supabase Auth real (enlace mágico por correo) SI está
+  configurado; si no, cae a la simulación de siempre. Nunca miente sobre tener cuenta real.
+- `app/auth/confirm/route.ts`: recibe el clic del enlace del correo y crea la sesión real.
+- `supabase/migrations/20260921120000_init.sql`: esquema completo (tablas `perfiles`, `checkins`,
+  `metas` — mismo modelo que `lib/app.ts`) con RLS por `(select auth.uid())` en las 3 tablas,
+  igual que exige `25-BASE-DE-DATOS.md`. Este sandbox NO tiene acceso de red a Supabase (mismo
+  bloqueo que con Vercel), así que esta migración no se pudo aplicar por CLI — se aplica pegándola
+  en el SQL Editor del panel de Supabase (dashboard, la usuaria).
+- **Decisiones técnicas (DECIDE-INFORMA-AVANZA, no se le preguntan a la usuaria):** método de auth
+  = enlace mágico por correo (ya diseñado en la pantalla, coherente con 26-AUTH-MODERNO.md);
+  modelo de datos = 3 tablas (perfiles/checkins/metas) 1:1 o 1:N con `auth.users`, sin tabla
+  aparte para plan/trial más allá de `fecha_inicio_trial` en `perfiles`; arquitectura síncrona
+  (no hay IA en esta app, no aplica 30-INTEGRACION-IA.md).
+- Migrar las 4 pantallas de la app interna (Hoy/Semana/Meta/Cuenta) de `localStorage` a Supabase
+  real es EL SIGUIENTE paso de código, pendiente de que exista un proyecto Supabase real contra el
+  que probar — no se puede verificar en falso.
+Siguiente paso exacto: la usuaria debe crear su cuenta/proyecto de Supabase (single acción, P3 del
+protocolo) — instrucciones dadas a continuación en el chat. Cuando confirme, seguir con: aplicar
+la migración SQL, guiarla a copiar la URL + clave publicable (públicas, no secretas) y pegarlas en
+Vercel, verificar `configured:true`, y recién ahí migrar las 4 pantallas a datos reales. Después:
+Resend → dominio → Hotmart.
 
 ## Sesiones anteriores — Sesión 5 (resumen, cerrada 2026-09-18)
 Sesión 5 EN CURSO (app interna). Las 4 pantallas construidas y verificadas
