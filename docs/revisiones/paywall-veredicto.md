@@ -144,3 +144,11 @@ El commit toca `app/page.tsx` (landing): agrega el prop `visual` al `<Hero>` con
 real dentro de un marco de teléfono (mismo patrón que `AppPorDentro.tsx`). No toca
 `app/paywall/page.tsx` ni `components/funnel/ui.tsx`, ni ningún componente que el paywall
 importe — verificado por grep. Cero impacto en el paywall.
+
+## Décima re-verificación (2026-09-21, commit 5b9ef15 — preparación de Supabase)
+
+El commit toca `app/entrar/page.tsx` (login) además de crear archivos nuevos de Supabase
+(`lib/supabase/*`, `proxy.ts`, `app/auth/confirm/route.ts`). `app/entrar/page.tsx` sigue
+importando `FunnelButton` desde `components/funnel/ui.tsx` (import preexistente, sin cambios),
+pero ese archivo compartido NO fue modificado — solo cambió la lógica interna de `entrar`. El
+paywall no importa nada de `app/entrar/`, `lib/supabase/` ni `proxy.ts`. Cero impacto.
