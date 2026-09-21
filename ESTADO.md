@@ -1,7 +1,26 @@
 # ESTADO — Respira
-Última actualización: 2026-09-18 | Sesión actual: 5
+Última actualización: 2026-09-21 | Sesión actual: 6
 
-⏸️ CHECKPOINT — Sesión 5 EN CURSO (app interna). Las 4 pantallas construidas y verificadas
+⏸️ CHECKPOINT SESIÓN 6 (servicios externos, en curso) — GitHub ya conectado desde antes.
+Paso actual: publicando en Vercel. La usuaria creó su cuenta de Vercel y conectó el repositorio
+`Lirios75/MiApp` vía GitHub. Antes de que diera "Deploy" se detectó y corrigió un problema real:
+todo el código de Respira vivía solo en la rama de trabajo `claude/awesome-brown-rq2dqc` — la
+rama `main` (la que Vercel usa por defecto) seguía con únicamente el commit inicial vacío. Se
+hizo fast-forward de `main` a la punta de esa rama (con permiso explícito de la usuaria,
+2026-09-21) para que Vercel publique la app real. Verificado: `origin/main` ahora en el mismo
+commit que nuestro trabajo (b4c9077).
+⚠️ Nota aparte (no bloqueante): en el mismo repositorio existe una pull request sin fusionar
+(#2, rama `codex/construir-aplicativo-crm-para-lirios`, y otra rama relacionada
+`codex/construir-aplicacion-web-tipo-crm-para-lirios`) de un proyecto DISTINTO de la usuaria —
+un CRM en HTML/CSS/JS plano para "LIRIOS Agencia de Vida", hecho con otra herramienta (ChatGPT
+Codex). No tiene relación con Respira, no se tocó, y sigue sin fusionarse a `main`. Si la
+usuaria confirma que también es su proyecto, recomendar moverlo a un repositorio propio para no
+mezclar los dos productos — no tomar esa decisión sin que ella lo pida.
+Siguiente paso exacto: esperar a que la usuaria termine el deploy en Vercel y comparta el link
+público (`*.vercel.app`) para verificar que carga la app real.
+
+## Sesiones anteriores — Sesión 5 (resumen, cerrada 2026-09-18)
+Sesión 5 EN CURSO (app interna). Las 4 pantallas construidas y verificadas
 (tsc ✓ · build ✓ · capturas reales a 375px con datos de ejemplo en docs/revisiones/vivo/):
 Hoy (`/app`), Semana (`/app/semana`), Tu meta (`/app/meta`), Cuenta (`/app/cuenta`).
 Persistencia local (localStorage vía `lib/app.ts`) — Supabase real es Sesión 6.
