@@ -131,3 +131,9 @@ impacto en el paywall.
 El commit toca `components/app/ui.tsx` (rediseño de `BottomNav`, usado solo por las 4 pantallas
 de la app interna) — el paywall no importa ese archivo ni ese componente (usa su propio header y
 no tiene bottom-nav). Mismo grep verificado. Cero impacto en el paywall.
+
+## Octava re-verificación (2026-09-21, commit 8f2a50c — capturas reales en el carrusel de la landing)
+
+El commit toca `app/page.tsx` (landing): solo reemplaza los `src`/`alt` de los 4 frames del
+carrusel "La app por dentro" por capturas reales — no toca ningún componente del paywall ni
+comparte código con él (rutas y árboles de componentes independientes). Cero impacto.
