@@ -44,25 +44,45 @@ no depende de una cuenta (protocolo 62-PUBLICACION-SEGURA-Y-CONTINUA.md, P0-P1 +
   (`docs/revisiones/vivo/entrar-simulado-post-envio.png`).
 - `app/entrar/page.tsx`: ahora intenta Supabase Auth real (enlace mágico por correo) SI está
   configurado; si no, cae a la simulación de siempre. Nunca miente sobre tener cuenta real.
-- `app/auth/confirm/route.ts`: recibe el clic del enlace del correo y crea la sesión real.
+- `app/auth/confirm/page.tsx`: recibe el clic del enlace del correo y crea la sesión real.
+  **IMPORTANTE (corregido 2026-10-11):** NO es una ruta de servidor (`route.ts`) — las plantillas
+  de correo POR DEFECTO de Supabase (sin SMTP propio) redirigen con la sesión en el fragmento de
+  la URL (`#access_token=...`), que el servidor nunca ve. Por eso es una página de cliente
+  (`'use client'`) que deja que el SDK de Supabase detecte la sesión al cargar (`getSession()`) y
+  recién entonces redirige a `/app`. Si se customiza el SMTP (Resend) y se cambian las plantillas
+  a formato `token_hash`, este archivo tendría que revisarse — por ahora funciona con las
+  plantillas default.
 - `supabase/migrations/20260921120000_init.sql`: esquema completo (tablas `perfiles`, `checkins`,
   `metas` — mismo modelo que `lib/app.ts`) con RLS por `(select auth.uid())` en las 3 tablas,
-  igual que exige `25-BASE-DE-DATOS.md`. Este sandbox NO tiene acceso de red a Supabase (mismo
-  bloqueo que con Vercel), así que esta migración no se pudo aplicar por CLI — se aplica pegándola
-  en el SQL Editor del panel de Supabase (dashboard, la usuaria).
+  igual que exige `25-BASE-DE-DATOS.md`. **YA APLICADA** en el proyecto real de la usuaria (pegada
+  en el SQL Editor del dashboard, ella misma — este sandbox no tiene acceso de red a Supabase).
 - **Decisiones técnicas (DECIDE-INFORMA-AVANZA, no se le preguntan a la usuaria):** método de auth
   = enlace mágico por correo (ya diseñado en la pantalla, coherente con 26-AUTH-MODERNO.md);
   modelo de datos = 3 tablas (perfiles/checkins/metas) 1:1 o 1:N con `auth.users`, sin tabla
   aparte para plan/trial más allá de `fecha_inicio_trial` en `perfiles`; arquitectura síncrona
   (no hay IA en esta app, no aplica 30-INTEGRACION-IA.md).
 - Migrar las 4 pantallas de la app interna (Hoy/Semana/Meta/Cuenta) de `localStorage` a Supabase
-  real es EL SIGUIENTE paso de código, pendiente de que exista un proyecto Supabase real contra el
-  que probar — no se puede verificar en falso.
-Siguiente paso exacto: la usuaria debe crear su cuenta/proyecto de Supabase (single acción, P3 del
-protocolo) — instrucciones dadas a continuación en el chat. Cuando confirme, seguir con: aplicar
-la migración SQL, guiarla a copiar la URL + clave publicable (públicas, no secretas) y pegarlas en
-Vercel, verificar `configured:true`, y recién ahí migrar las 4 pantallas a datos reales. Después:
-Resend → dominio → Hotmart.
+  real sigue pendiente — es el próximo paso de código tras cerrar Resend.
+
+✅ CHECKPOINT (2026-10-11): Supabase ya está conectado y FUNCIONANDO de verdad en producción.
+Proyecto real: `Respira` (org "Lirios75's Org", project-ref `wtkxpmzkbglyjsernrwy`, región São
+Paulo/sa-east-1, plan gratis). Datos públicos ya guardados en Vercel como variables de entorno
+(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, tipo "Config" porque no son
+secretas) en los 3 ambientes, con un redeploy ya hecho. Las 3 tablas (perfiles/checkins/metas)
+existen y tienen RLS activo. El login con enlace mágico se probó de principio a fin en el sitio
+real (`mi-app-olive.vercel.app/entrar`) y funcionó — llegó el correo real de Supabase, el enlace
+llevó a la sesión real. También se corrigió en Supabase Auth → Configuración de URL: "URL del
+sitio" = `https://mi-app-olive.vercel.app` (antes decía `localhost:3000`, rompía los enlaces) +
+redirect URL `https://mi-app-olive.vercel.app/**`.
+⚠️ Límite esperado: el correo de prueba por defecto de Supabase tiene un límite muy bajo (~pocos
+por hora) — ya se topó en pruebas (`429 over_email_send_rate_limit`, visible en Authentication →
+Logs). Es exactamente la razón por la que la usuaria decidió conectar Resend AHORA (eligió la
+opción 2 de "esperar 1h" vs "conectar Resend ya") en vez de esperar al orden original de la
+secuencia — Resend se vuelve el paso INMEDIATO siguiente, antes de dominio/Hotmart.
+Siguiente paso exacto: conectar Resend como servidor SMTP personalizado de Supabase Auth (para
+quitar el límite de correos) — guiar a la usuaria a crear su cuenta de Resend, verificar/usar un
+dominio, generar una API key, y pegarla en Supabase Auth → Configuración SMTP. Después: probar de
+nuevo el login real sin el límite, migrar las 4 pantallas a Supabase, dominio propio, Hotmart.
 
 ## Sesiones anteriores — Sesión 5 (resumen, cerrada 2026-09-18)
 Sesión 5 EN CURSO (app interna). Las 4 pantallas construidas y verificadas
