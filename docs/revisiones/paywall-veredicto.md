@@ -152,3 +152,9 @@ El commit toca `app/entrar/page.tsx` (login) además de crear archivos nuevos de
 importando `FunnelButton` desde `components/funnel/ui.tsx` (import preexistente, sin cambios),
 pero ese archivo compartido NO fue modificado — solo cambió la lógica interna de `entrar`. El
 paywall no importa nada de `app/entrar/`, `lib/supabase/` ni `proxy.ts`. Cero impacto.
+
+## Undécima re-verificación (2026-10-11, commit 6ff67d9 — fix de /auth/confirm)
+
+El commit reemplaza `app/auth/confirm/route.ts` por `app/auth/confirm/page.tsx` (corrige el
+enlace del correo de Supabase con las plantillas por defecto). No toca `app/paywall/page.tsx`
+ni ningún componente que el paywall importe. Cero impacto.
