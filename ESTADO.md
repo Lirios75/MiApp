@@ -1,27 +1,26 @@
 # ESTADO — Respira
 Última actualización: 2026-10-14 | Sesión actual: 6
 
-⏸️ CHECKPOINT (2026-10-14): conectando Resend (reemplaza el correo de prueba de Supabase, que
-llegó a su límite de envíos — 429 over_email_send_rate_limit). Cuenta Resend creada (org
-"ikigaihumano", vía GitHub OAuth). Dominio de envío elegido: `mail.ikigaihumano.com` (subdominio
-dedicado — el dominio raíz `ikigaihumano.com` ya tiene su propio correo normal en Hostinger, no
-se toca). Los 3 registros DNS que pidió Resend (TXT `resend._domainkey.mail` con el DKIM, CNAME
-`rsend.mail` → `rsend-sae1.forge.rmta.net`, CNAME `send.mail` → `send.forge.rmta.net`) ya están
-agregados en Hostinger (hpanel.hostinger.com, dominio ikigaihumano.com → DNS/Nameservers →
-Registros DNS) — verificados visualmente, todos correctos. Resend está verificando ahora mismo
-(puede tardar horas por la propagación de DNS).
-⚠️ Nota operativa (para no repetir el error): la traducción automática de Chrome ROMPE texto que
-el usuario escribe en paneles como Hostinger y Supabase — tradujo "resend" a "reenviar" una vez.
-Si se reabren estos paneles en una sesión nueva, recordarle a la usuaria apagar la traducción
-automática del sitio ANTES de escribir nombres de registros DNS o claves.
-Siguiente paso exacto (cuando Resend confirme el dominio verificado): clave API de Resend ya
-generada (ella la tiene copiada, no se compartió en el chat) → pegarla en Supabase Auth →
-Authentication → Correos electrónicos → Configuración SMTP: Host `smtp.resend.com`, Puerto 465,
-Usuario `resend`, Contraseña = la API key, Sender email = algo como `respira@mail.ikigaihumano.com`
-(ajustar cuando el dominio esté verificado — antes de eso usar `onboarding@resend.dev` como
-alternativa temporal), Sender name `Respira`. Guardar cambios. Luego volver a probar el login real
-en `mi-app-olive.vercel.app/entrar` sin el límite de correos. Después: migrar las 4 pantallas de
-`localStorage` a Supabase, dominio propio para la app, Hotmart.
+✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
+end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
+`resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→
+`send.forge.rmta.net`). Supabase Auth → Configuración SMTP: Host `smtp.resend.com`, Puerto 465,
+Usuario `resend`, Contraseña = clave API de Resend (nombre "Supabase" en Resend; la primera clave
+que se probó, "Onboarding", dio `535 Authentication credentials invalid` — se resolvió generando
+una clave nueva y pegándola de nuevo, con cuidado de no dejar que el autocompletar de contraseñas
+de Chrome interfiriera), Sender email `notificaciones@mail.ikigaihumano.com`, Sender name
+`Respira`. Probado real: `mi-app-olive.vercel.app/entrar` → correo real llegó desde
+"Respira <notificaciones@mail.ikigaihumano.com>" (cayó en Spam la primera vez — normal en un
+dominio nuevo, mejora solo con el tiempo, no bloqueante) → clic en el enlace → sesión real creada
+→ aterrizó en `/app` con datos. **Supabase Auth + Resend quedan 100% cerrados.**
+⚠️ Nota operativa (para no repetir el error, por si se reabren estos paneles en otra sesión): la
+traducción automática de Chrome ROMPE texto que el usuario escribe en paneles como Hostinger y
+Supabase — tradujo "resend" a "reenviar" una vez. Apagar la traducción automática del sitio ANTES
+de escribir nombres de registros DNS o claves.
+Siguiente paso exacto: migrar las 4 pantallas de la app interna (Hoy/Semana/Meta/Cuenta) de
+`localStorage` a datos reales de Supabase (las tablas `perfiles`/`checkins`/`metas` ya existen
+con RLS, ver migración en `supabase/migrations/`) — ahora sí se puede probar contra el proyecto
+real. Después: dominio propio para la app (hoy vive en `*.vercel.app`), Hotmart.
 
 ⏸️ CHECKPOINT SESIÓN 6 (servicios externos, en curso) — GitHub ya conectado desde antes.
 Paso actual: publicando en Vercel. La usuaria creó su cuenta de Vercel y conectó el repositorio
