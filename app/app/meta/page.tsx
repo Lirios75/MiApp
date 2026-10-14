@@ -10,15 +10,12 @@ import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { Plus } from 'lucide-react';
 import {
   calcularRacha,
-  crearMetaHabito,
-  crearMetaMonto,
-  leerEstadoApp,
   metaInicialDesdeOnboarding,
   metaSincronizada,
-  registrarAvanceMeta,
   type EstadoApp,
   type Meta,
 } from '@/lib/app';
+import { crearMetaHabitoSupabase, crearMetaMontoSupabase, obtenerEstadoApp, registrarAvanceMetaSupabase } from '@/lib/supabase/datos';
 import { AnilloProgreso, ConteoAnimado } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
@@ -48,7 +45,7 @@ export default function MetaPage() {
   const { contenedor, item } = useVariantes();
 
   useEffect(() => {
-    setEstado(leerEstadoApp());
+    obtenerEstadoApp().then(setEstado);
   }, []);
 
   if (!estado) {
@@ -70,9 +67,9 @@ export default function MetaPage() {
 
       <motion.section variants={item}>
         {meta ? (
-          <ProgresoMeta meta={meta} onActualizar={() => setEstado(leerEstadoApp())} />
+          <ProgresoMeta meta={meta} onActualizar={setEstado} />
         ) : (
-          <ConfigurarMeta onCreada={() => setEstado(leerEstadoApp())} />
+          <ConfigurarMeta checkins={estado.checkins} onCreada={setEstado} />
         )}
       </motion.section>
 
@@ -112,21 +109,33 @@ function TuConstancia({ estado }: { estado: EstadoApp }) {
   );
 }
 
-function ConfigurarMeta({ onCreada }: { onCreada: () => void }) {
+function ConfigurarMeta({
+  checkins,
+  onCreada,
+}: {
+  checkins: EstadoApp['checkins'];
+  onCreada: (estado: EstadoApp) => void;
+}) {
   const inicial = metaInicialDesdeOnboarding();
   const [monto, setMonto] = useState('');
+  const [guardando, setGuardando] = useState(false);
   const esHabito = inicial.modo === 'habito';
 
-  function confirmar(e: FormEvent) {
+  async function confirmar(e: FormEvent) {
     e.preventDefault();
-    if (esHabito) {
-      crearMetaHabito(inicial.tipo, inicial.nombre);
-    } else {
-      const objetivo = Number(monto);
-      if (!objetivo || objetivo <= 0) return;
-      crearMetaMonto(inicial.tipo, inicial.nombre, objetivo, 0);
+    if (guardando) return;
+    setGuardando(true);
+    try {
+      if (esHabito) {
+        onCreada(await crearMetaHabitoSupabase(inicial.tipo, inicial.nombre, checkins));
+      } else {
+        const objetivo = Number(monto);
+        if (!objetivo || objetivo <= 0) return;
+        onCreada(await crearMetaMontoSupabase(inicial.tipo, inicial.nombre, objetivo, 0));
+      }
+    } finally {
+      setGuardando(false);
     }
-    onCreada();
   }
 
   return (
@@ -157,28 +166,40 @@ function ConfigurarMeta({ onCreada }: { onCreada: () => void }) {
       )}
       <motion.button
         type="submit"
+        disabled={guardando}
         whileTap={{ scale: 0.97 }}
-        className="mt-4 flex h-[52px] w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] text-[16px] font-semibold text-[var(--bg)] [touch-action:manipulation]"
+        className="mt-4 flex h-[52px] w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] text-[16px] font-semibold text-[var(--bg)] disabled:opacity-60 [touch-action:manipulation]"
       >
-        Guardar meta
+        {guardando ? 'Guardando…' : 'Guardar meta'}
       </motion.button>
     </form>
   );
 }
 
-function ProgresoMeta({ meta, onActualizar }: { meta: Meta; onActualizar: () => void }) {
+function ProgresoMeta({
+  meta,
+  onActualizar,
+}: {
+  meta: Meta;
+  onActualizar: (estado: EstadoApp) => void;
+}) {
   const [avance, setAvance] = useState('');
+  const [guardando, setGuardando] = useState(false);
   const porcentaje = Math.min(100, Math.round((meta.actual / meta.objetivo) * 100));
   const unidad = meta.modo === 'habito' ? 'días' : '$';
   const copy = COPY_TIPO[meta.tipo]?.motivacion(meta) ?? `Vas en el ${porcentaje}% de tu meta.`;
 
-  function registrar(e: FormEvent) {
+  async function registrar(e: FormEvent) {
     e.preventDefault();
     const delta = Number(avance);
-    if (!delta || delta <= 0) return;
-    registrarAvanceMeta(delta);
-    setAvance('');
-    onActualizar();
+    if (!delta || delta <= 0 || guardando) return;
+    setGuardando(true);
+    try {
+      onActualizar(await registrarAvanceMetaSupabase(delta));
+      setAvance('');
+    } finally {
+      setGuardando(false);
+    }
   }
 
   return (
@@ -216,9 +237,10 @@ function ProgresoMeta({ meta, onActualizar }: { meta: Meta; onActualizar: () => 
           />
           <motion.button
             type="submit"
+            disabled={guardando}
             whileTap={{ scale: 0.97 }}
             aria-label="Sumar a la meta"
-            className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] [touch-action:manipulation]"
+            className="flex size-12 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] disabled:opacity-60 [touch-action:manipulation]"
           >
             <Plus size={20} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
           </motion.button>

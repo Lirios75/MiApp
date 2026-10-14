@@ -9,18 +9,15 @@ import { useEffect, useState } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { AlertTriangle, ArrowRight, Check, Lightbulb, Pencil, Smile, AlertCircle, Target, X } from 'lucide-react';
 import {
-  asegurarInicioTrial,
   calcularRacha,
   checkInDeHoy,
   hoyISO,
-  leerEstadoApp,
-  localStorageDisponible,
   metaSincronizada,
   reflexionDeHoy,
-  registrarCheckIn,
   type EstadoApp,
   type EstadoSemaforo,
 } from '@/lib/app';
+import { obtenerEstadoApp, registrarCheckInSupabase } from '@/lib/supabase/datos';
 import { AnilloProgreso, formatearFechaLarga, inicialDia, RachaBadge } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
@@ -41,14 +38,19 @@ export default function Hoy() {
   const { contenedor, item } = useVariantes();
 
   useEffect(() => {
-    setEstado(asegurarInicioTrial());
-    setAvisoGuardado(!localStorageDisponible());
+    obtenerEstadoApp()
+      .then(setEstado)
+      .catch(() => setAvisoGuardado(true));
   }, []);
 
-  function marcar(valor: EstadoSemaforo) {
-    setEstado(registrarCheckIn(valor));
+  async function marcar(valor: EstadoSemaforo) {
     setEditando(false);
-    setAvisoGuardado(!localStorageDisponible());
+    try {
+      setEstado(await registrarCheckInSupabase(valor));
+      setAvisoGuardado(false);
+    } catch {
+      setAvisoGuardado(true);
+    }
   }
 
   if (!estado) {
@@ -87,8 +89,7 @@ export default function Hoy() {
         >
           <AlertTriangle size={16} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" className="mt-0.5 shrink-0" />
           <p className="text-[13px] leading-snug text-[var(--accent-3-text)]">
-            Tu navegador no está guardando tus registros de forma permanente — pueden perderse al cambiar de
-            sección o cerrar esta pestaña.
+            No pudimos guardar tu registro — revisa tu conexión e inténtalo de nuevo.
           </p>
         </motion.div>
       )}

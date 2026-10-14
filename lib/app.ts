@@ -1,5 +1,5 @@
-// Datos y lógica de la app interna (Sesión 5) — Semáforo diario, racha y meta.
-// Persistencia local (sin backend todavía — Sesión 6 conecta Supabase, ver ESTADO.md).
+// Lógica pura de la app interna — Semáforo diario, racha y meta.
+// Sin I/O: la persistencia real vive en lib/supabase/datos.ts (Sesión 6).
 
 import { leerRespuestas, LABEL_META } from '@/lib/onboarding';
 
@@ -26,8 +26,7 @@ export interface EstadoApp {
   fechaInicioTrial: string | null;
 }
 
-const CLAVE = 'respira_app';
-const ESTADO_VACIO: EstadoApp = { checkins: [], meta: null, fechaInicioTrial: null };
+export const OBJETIVO_HABITO_DIAS = 30;
 
 function isoDeFecha(d: Date): string {
   const offsetMs = d.getTimezoneOffset() * 60000;
@@ -38,59 +37,9 @@ export function hoyISO(): string {
   return isoDeFecha(new Date());
 }
 
-export function leerEstadoApp(): EstadoApp {
-  try {
-    const crudo = window.localStorage.getItem(CLAVE);
-    if (!crudo) return ESTADO_VACIO;
-    return { ...ESTADO_VACIO, ...(JSON.parse(crudo) as Partial<EstadoApp>) };
-  } catch {
-    return ESTADO_VACIO;
-  }
-}
-
-function guardarEstadoApp(estado: EstadoApp): EstadoApp {
-  try {
-    window.localStorage.setItem(CLAVE, JSON.stringify(estado));
-  } catch {
-    // localStorage no disponible (privado/bloqueado) — la sesión sigue en memoria.
-  }
-  return estado;
-}
-
-/** Prueba real de escritura (no solo `typeof window`): en navegación privada
- * o con storage bloqueado, `localStorage` existe pero cada `setItem` lanza.
- * Hoy la usa para avisar que un check-in NO quedó guardado de verdad —
- * revisor-visual ronda 1: mostrar la confirmación igual sería mentirle al
- * usuario sobre si su registro sobrevive a cerrar la pestaña. */
-export function localStorageDisponible(): boolean {
-  try {
-    const clave = '__respira_test__';
-    window.localStorage.setItem(clave, '1');
-    window.localStorage.removeItem(clave);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/** Se llama una vez al entrar a la app interna: marca el inicio de la prueba
- * gratis (para Cuenta) si es la primera vez, sin tocar nada más. */
-export function asegurarInicioTrial(): EstadoApp {
-  const actual = leerEstadoApp();
-  if (actual.fechaInicioTrial) return actual;
-  return guardarEstadoApp({ ...actual, fechaInicioTrial: hoyISO() });
-}
-
 export function checkInDeHoy(estado: EstadoApp): CheckIn | undefined {
   const hoy = hoyISO();
   return estado.checkins.find((c) => c.fecha === hoy);
-}
-
-export function registrarCheckIn(estadoSemaforo: EstadoSemaforo): EstadoApp {
-  const actual = leerEstadoApp();
-  const hoy = hoyISO();
-  const sinHoy = actual.checkins.filter((c) => c.fecha !== hoy);
-  return guardarEstadoApp({ ...actual, checkins: [...sinHoy, { fecha: hoy, estado: estadoSemaforo }] });
 }
 
 /** Días consecutivos con check-in, terminando hoy (o ayer si hoy aún no se marcó
@@ -153,8 +102,6 @@ const MODO_POR_TIPO: Record<string, ModoMeta> = {
   entender: 'habito',
 };
 
-const OBJETIVO_HABITO_DIAS = 30;
-
 /** Arma una meta nueva a partir del tipo elegido en el onboarding (o 'ahorrar'
  * por defecto si no respondió). El monto lo confirma el usuario en /app/meta;
  * el modo hábito no pide monto — se mide en días de racha. */
@@ -168,47 +115,12 @@ export function metaInicialDesdeOnboarding(): Pick<Meta, 'tipo' | 'nombre' | 'mo
   };
 }
 
-export function crearMetaMonto(tipo: string, nombre: string, objetivo: number, actual: number): EstadoApp {
-  const estadoActual = leerEstadoApp();
-  const meta: Meta = { tipo, nombre, modo: 'monto', objetivo: Math.max(1, objetivo), actual: Math.max(0, actual) };
-  return guardarEstadoApp({ ...estadoActual, meta });
-}
-
-export function crearMetaHabito(tipo: string, nombre: string): EstadoApp {
-  const estadoActual = leerEstadoApp();
-  const racha = calcularRacha(estadoActual.checkins);
-  const meta: Meta = { tipo, nombre, modo: 'habito', objetivo: OBJETIVO_HABITO_DIAS, actual: racha };
-  return guardarEstadoApp({ ...estadoActual, meta });
-}
-
-export function registrarAvanceMeta(delta: number): EstadoApp {
-  const actual = leerEstadoApp();
-  if (!actual.meta) return actual;
-  const metaActualizada: Meta = { ...actual.meta, actual: Math.max(0, actual.meta.actual + delta) };
-  return guardarEstadoApp({ ...actual, meta: metaActualizada });
-}
-
 /** El modo hábito no se "registra a mano": se sincroniza con la racha real
  * cada vez que se lee la meta, para que nunca quede desactualizada. */
 export function metaSincronizada(estado: EstadoApp): Meta | null {
   if (!estado.meta) return null;
   if (estado.meta.modo !== 'habito') return estado.meta;
   return { ...estado.meta, actual: calcularRacha(estado.checkins) };
-}
-
-export function borrarMeta(): EstadoApp {
-  const actual = leerEstadoApp();
-  return guardarEstadoApp({ ...actual, meta: null });
-}
-
-export function cerrarSesionLocal(): void {
-  try {
-    window.localStorage.removeItem(CLAVE);
-    window.localStorage.removeItem('respira_plan');
-    window.localStorage.removeItem('respira_onboarding');
-  } catch {
-    // localStorage no disponible — no hay nada que limpiar.
-  }
 }
 
 /** Reflexiones cortas del día (feature #4 del MVP) — una por día, estable

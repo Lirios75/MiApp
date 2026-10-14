@@ -17,10 +17,31 @@ dominio nuevo, mejora solo con el tiempo, no bloqueante) → clic en el enlace �
 traducción automática de Chrome ROMPE texto que el usuario escribe en paneles como Hostinger y
 Supabase — tradujo "resend" a "reenviar" una vez. Apagar la traducción automática del sitio ANTES
 de escribir nombres de registros DNS o claves.
-Siguiente paso exacto: migrar las 4 pantallas de la app interna (Hoy/Semana/Meta/Cuenta) de
-`localStorage` a datos reales de Supabase (las tablas `perfiles`/`checkins`/`metas` ya existen
-con RLS, ver migración en `supabase/migrations/`) — ahora sí se puede probar contra el proyecto
-real. Después: dominio propio para la app (hoy vive en `*.vercel.app`), Hotmart.
+✅ CHECKPOINT (2026-10-14, tarde): las 4 pantallas de la app interna (Hoy/Semana/Meta/Cuenta) ya
+quedaron migradas de `localStorage` a datos reales de Supabase.
+- `lib/app.ts`: queda SOLO lógica pura (racha, semanas, reflexión del día, tipos) — se le quitó
+  todo el I/O de localStorage (`leerEstadoApp`, `registrarCheckIn`, `crearMeta*`,
+  `registrarAvanceMeta`, `borrarMeta` [no se usaba en ningún lado], `cerrarSesionLocal`,
+  `localStorageDisponible`).
+- `lib/supabase/datos.ts` (nuevo): las versiones reales async — `obtenerEstadoApp()` (lee
+  perfiles+checkins+metas del usuario autenticado, y crea la fila de `perfiles` la primera vez),
+  `registrarCheckInSupabase`, `crearMetaMontoSupabase`, `crearMetaHabitoSupabase`,
+  `registrarAvanceMetaSupabase`, `cerrarSesionSupabase` (hace `signOut()` real + limpia las 3
+  llaves de localStorage que siguen siendo preferencias de cliente, no datos de cuenta: plan
+  elegido y notificaciones — esas DOS quedan fuera de esta migración a propósito, son
+  configuración local del dispositivo, no datos que deban persistir en el servidor).
+- `app/app/layout.tsx`: ahora es un Server Component async que exige sesión real de Supabase —
+  sin sesión, redirige a `/entrar` (antes cualquiera podía entrar a `/app` sin loguearse).
+- Las 4 pantallas: mismo diseño y copy exactos, solo cambia de dónde leen/escriben (ahora async,
+  con manejo de error mostrando el aviso "No pudimos guardar tu registro" si falla la escritura,
+  y botones deshabilitados mientras guardan para evitar doble clic).
+- Verificado: tsc ✓ build ✓ (las 4 rutas de `/app` pasaron de estáticas a dinámicas `ƒ`, correcto
+  porque ahora dependen de la cookie de sesión). NO se pudo probar en vivo en este sandbox (sin
+  acceso de red a Supabase) — pendiente que la usuaria pruebe el flujo completo en
+  `mi-app-olive.vercel.app/app` una vez publicado: marcar el Semáforo, ver la semana, crear/avanzar
+  una meta, cerrar sesión, y confirmar que entrar de nuevo con el mismo correo trae los mismos datos.
+Siguiente paso exacto: la usuaria prueba el flujo completo en vivo (ver arriba). Si todo pasa:
+dominio propio para la app (hoy vive en `*.vercel.app`), después Hotmart.
 
 ⏸️ CHECKPOINT SESIÓN 6 (servicios externos, en curso) — GitHub ya conectado desde antes.
 Paso actual: publicando en Vercel. La usuaria creó su cuenta de Vercel y conectó el repositorio

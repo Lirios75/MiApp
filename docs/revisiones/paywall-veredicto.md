@@ -158,3 +158,13 @@ paywall no importa nada de `app/entrar/`, `lib/supabase/` ni `proxy.ts`. Cero im
 El commit reemplaza `app/auth/confirm/route.ts` por `app/auth/confirm/page.tsx` (corrige el
 enlace del correo de Supabase con las plantillas por defecto). No toca `app/paywall/page.tsx`
 ni ningún componente que el paywall importe. Cero impacto.
+
+## Duodécima re-verificación (2026-10-14, commit pendiente — app interna migrada a Supabase)
+
+El commit toca `app/app/page.tsx`, `app/app/semana/page.tsx`, `app/app/meta/page.tsx`,
+`app/app/cuenta/page.tsx`, `app/app/layout.tsx`, `lib/app.ts` y crea `lib/supabase/datos.ts` —
+reemplaza el localStorage de la app interna (Hoy/Semana/Meta/Cuenta) por datos reales de
+Supabase y protege `/app` con sesión real. Verificado por grep: ninguno de estos archivos
+importa `app/paywall/page.tsx` ni `components/funnel/ui.tsx` (solo un comentario menciona ese
+archivo como referencia a un bug de CSS ya documentado, no un import real). Cero impacto en el
+paywall.

@@ -7,7 +7,8 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { diasDeLaSemana, hoyISO, leerEstadoApp, resumenUltimasSemanas, type EstadoApp } from '@/lib/app';
+import { diasDeLaSemana, hoyISO, resumenUltimasSemanas, type EstadoApp } from '@/lib/app';
+import { obtenerEstadoApp } from '@/lib/supabase/datos';
 import { formatearRangoSemana, inicialDia } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
@@ -27,7 +28,7 @@ export default function Semana() {
   const { contenedor, item } = useVariantes();
 
   useEffect(() => {
-    setEstado(leerEstadoApp());
+    obtenerEstadoApp().then(setEstado);
   }, []);
 
   if (!estado) {

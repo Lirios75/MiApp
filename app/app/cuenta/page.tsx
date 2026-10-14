@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Bell, Globe, LogOut, Mail, ShieldCheck } from 'lucide-react';
 import { PLAN_ANUAL, PLAN_MENSUAL, TRIAL_DIAS } from '@/lib/pricing';
-import { cerrarSesionLocal, leerEstadoApp } from '@/lib/app';
+import { cerrarSesionSupabase, obtenerEstadoApp } from '@/lib/supabase/datos';
 
 const SOPORTE_EMAIL = 'lina.rios@ikigaihumano.com';
 
@@ -29,8 +29,8 @@ export default function Cuenta() {
   useEffect(() => {
     const guardado = window.localStorage.getItem('respira_plan');
     setPlan(guardado === 'anual' ? 'anual' : 'mensual');
-    setDiasRestantes(diasDeTrialRestantes(leerEstadoApp().fechaInicioTrial));
     setNotificaciones(window.localStorage.getItem('respira_notificaciones') !== 'no');
+    obtenerEstadoApp().then((estado) => setDiasRestantes(diasDeTrialRestantes(estado.fechaInicioTrial)));
   }, []);
 
   function alternarNotificaciones() {
@@ -43,8 +43,8 @@ export default function Cuenta() {
 
   const infoPlan = plan === 'anual' ? PLAN_ANUAL : PLAN_MENSUAL;
 
-  function salir() {
-    cerrarSesionLocal();
+  async function salir() {
+    await cerrarSesionSupabase();
     router.push('/');
   }
 
