@@ -81,9 +81,11 @@ propia sesión y el ícono no queda logueado aunque el correo sí haya funcionad
 lado del código (confirmado: es aislamiento de almacenamiento entre apps del sistema operativo,
 no un bug de Respira). Solución que funcionó: desde el correo, "Copiar URL" en vez de tocar el
 enlace directo, abrir el ícono de Respira ya instalado, pegar la URL en su barra de direcciones y
-entrar ahí. Pendiente evaluar (no decidido aún, preguntar a la usuaria): ¿vale la pena agregar un
-tip breve en el correo o en /entrar explicando esto para las compradoras reales que instalen la
-app? Siguiente paso exacto: dominio propio para la app, luego Hotmart.
+entrar ahí. La usuaria pidió agregar el tip — hecho en `app/entrar/page.tsx` (pantalla propia, no se tocó la
+plantilla de correo de Supabase): en la vista "Revisa tu correo" (justo después de pedir el
+enlace) se agregó una nota corta "Si ya tienes el ícono de Respira en tu pantalla de inicio,
+ábrelo desde ahí en cuanto toques el enlace del correo." Verificado: tsc ✓ build ✓.
+Siguiente paso exacto: dominio propio para la app, luego Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

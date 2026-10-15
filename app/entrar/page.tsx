@@ -6,7 +6,7 @@
 // que ya tiene una cuenta real creada hasta que la conexión exista de verdad.
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { Lock, Mail } from 'lucide-react';
+import { Lock, Mail, Smartphone } from 'lucide-react';
 import { FunnelButton } from '@/components/funnel/ui';
 import { RespiraMark } from '@/components/RespiraMark';
 import { crearClienteSupabase } from '@/lib/supabase/client';
@@ -78,6 +78,11 @@ export default function Entrar() {
         >
           {segundos > 0 ? `Reenviar en ${segundos}s` : 'Reenviar enlace'}
         </button>
+
+        <p className="mx-auto flex max-w-xs items-start gap-2 rounded-[var(--radius-button)] bg-[var(--surface)] p-3 text-left text-[13px] leading-relaxed text-[var(--text-secondary)]">
+          <Smartphone size={15} strokeWidth={2} color="var(--text-tertiary)" aria-hidden="true" className="mt-0.5 shrink-0" />
+          Si ya tienes el ícono de Respira en tu pantalla de inicio, ábrelo desde ahí en cuanto toques el enlace del correo.
+        </p>
       </main>
     );
   }
