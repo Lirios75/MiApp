@@ -1,5 +1,17 @@
 # ESTADO — Respira
-Última actualización: 2026-10-14 | Sesión actual: 6
+Última actualización: 2026-10-15 | Sesión actual: 6
+
+⏸️ CHECKPOINT (2026-10-15): tras migrar Hoy/Semana/Meta/Cuenta a Supabase real, las 3 pantallas
+quedaron con el skeleton de carga pegado — causa real: faltaban los GRANT base de Postgres para
+el rol `authenticated` sobre `perfiles`/`checkins`/`metas` (RLS solo filtra filas, no da acceso a
+la tabla; confirmado con 403 en la consola del navegador). Fix ya escrito, commiteado y pusheado:
+`supabase/migrations/20261015000000_grants.sql`. De paso se agregó `ErrorCarga` (componente
+compartido en `components/app/ui.tsx`) + estado de error en las 3 pantallas, para que un fallo de
+red/permiso muestre "Reintentar" en vez de quedarse cargando para siempre — queda como mejora
+permanente, no solo parche del bug. El SQL del fix ya se ejecutó con éxito en la base real ("Success. No rows returned", confirmado
+por captura). **Bug de permisos CERRADO.** Siguiente paso exacto: la usuaria está probando el
+flujo completo en vivo (marcar Semáforo, ver semana, crear/avanzar meta, cerrar sesión y volver a
+entrar con el mismo correo) — pendiente su confirmación de que todo funciona.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
