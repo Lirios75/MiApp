@@ -51,9 +51,10 @@ confirmación. Después: dominio propio, luego Hotmart.
    con un tinte sutil en vez de blanco plano), sin agregar un color nuevo a la paleta. La usuaria
    también preguntó por emojis en esa tarjeta — se le explicó por qué NO (rompe la consistencia
    con los íconos de línea que usa el resto de la app) y aceptó mantener los íconos SVG.
-Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox (mismo límite de siempre).
-Siguiente paso exacto: (1) la usuaria ejecuta la migración SQL de `nota`, (2) prueba la meta con
-nombre/frecuencia (pendiente de antes) Y la nota opcional en Hoy. Después: dominio propio, Hotmart.
+Verificado: tsc ✓ build ✓. La migración SQL de `nota` ya se ejecutó con éxito en la base real
+("Success. No rows returned"). Siguiente paso exacto: la usuaria prueba en vivo (1) editar su
+meta con nombre propio y frecuencia, (2) la nota opcional "¿En qué se te fue?" en Hoy — pendiente
+su confirmación. Después: dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
