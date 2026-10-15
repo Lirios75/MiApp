@@ -71,10 +71,19 @@ pidió). Implementado — app instalable:
   la barra del navegador en el celular) — SOLO metadata del `<head>`, cero cambios visuales en
   ninguna pantalla (confirmado por diff).
 Verificado: tsc ✓ build ✓ (rutas `/icon.png`, `/apple-icon.png`, `/manifest.webmanifest` generadas
-correctamente). NO se pudo probar en vivo en este sandbox. Siguiente paso exacto: la usuaria
-prueba en su celular: Android/Chrome debería ofrecer "Instalar app" solo; en iPhone/Safari hay
-que explicarle el paso manual (Compartir → Agregar a pantalla de inicio — Apple no ofrece install
-automático, es límite de la plataforma, no un bug). Después: dominio propio, Hotmart.
+correctamente). **La usuaria PROBÓ Y CONFIRMÓ en vivo**: instaló el ícono en su Android (con
+"Navegador Mi", el navegador de Xiaomi) y se ve con su marca — funciona.
+⚠️ Nota operativa descubierta probando (igual que la de Chrome-traduce — documentar para no
+re-diagnosticar si vuelve a pasar): el enlace mágico del correo puede abrirse en un navegador
+DISTINTO al que instaló el ícono (ej. Gmail abre en "el navegador" por defecto del teléfono, que
+puede no ser el mismo donde está instalada la PWA) — como son apps distintas, cada una guarda su
+propia sesión y el ícono no queda logueado aunque el correo sí haya funcionado. Nada roto del
+lado del código (confirmado: es aislamiento de almacenamiento entre apps del sistema operativo,
+no un bug de Respira). Solución que funcionó: desde el correo, "Copiar URL" en vez de tocar el
+enlace directo, abrir el ícono de Respira ya instalado, pegar la URL en su barra de direcciones y
+entrar ahí. Pendiente evaluar (no decidido aún, preguntar a la usuaria): ¿vale la pena agregar un
+tip breve en el correo o en /entrar explicando esto para las compradoras reales que instalen la
+app? Siguiente paso exacto: dominio propio para la app, luego Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
