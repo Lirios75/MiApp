@@ -93,9 +93,17 @@ enlace) se agregó una nota corta "Si ya tienes el ícono de Respira en tu panta
 2. "Editar" en la meta solo dejaba cambiar nombre y frecuencia, no el monto total — ahora también
    permite cambiar "¿Cuánto quieres ahorrar en total?" sin perder lo ya ahorrado (`actual` no se
    toca). `actualizarDetalleMetaSupabase` ahora recibe también el objetivo.
-Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox. Siguiente paso exacto:
-(1) la usuaria ejecuta la migración de `quincenal`, (2) prueba cambiar el monto desde "Editar" en
-Meta. Después: dominio propio, Hotmart.
+Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox. ⏸️ CHECKPOINT (2026-10-15, noche) — Semana ahora muestra la nota de cada día: la usuaria preguntó
+si la nota opcional de Hoy se guardaba y si se podía ver en el calendario — confirmado que sí se
+guarda, pero no se veía en ningún lado más que el mismo día. Pidió agregarlo, implementado en
+`app/app/semana/page.tsx`: los días YA marcados (no futuros) ahora son tocables — al tocar uno se
+abre un panel debajo del calendario con la fecha completa, si fue día tranquilo/alerta, y la nota
+de ese día (o "No escribiste en qué se te fue ese día." si no escribió nada). Solo lectura — para
+editar una nota pasada se sigue haciendo desde Hoy (día de hoy únicamente, ya existía). Verificado:
+tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox. Siguiente paso exacto: (1) la usuaria
+ejecuta la migración de `quincenal` (pendiente de antes), (2) prueba cambiar el monto desde
+"Editar" en Meta, (3) prueba tocar un día marcado en Semana para ver su nota. Después: dominio
+propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

@@ -6,10 +6,10 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { diasDeLaSemana, hoyISO, resumenUltimasSemanas, type EstadoApp } from '@/lib/app';
 import { obtenerEstadoApp } from '@/lib/supabase/datos';
-import { ErrorCarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
+import { ErrorCarga, formatearFechaLarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -26,6 +26,7 @@ export default function Semana() {
   const [estado, setEstado] = useState<EstadoApp | null>(null);
   const [error, setError] = useState(false);
   const [offset, setOffset] = useState(0);
+  const [diaSeleccionado, setDiaSeleccionado] = useState<string | null>(null);
   const { contenedor, item } = useVariantes();
 
   useEffect(() => {
@@ -52,14 +53,14 @@ export default function Semana() {
 
   const fechas = diasDeLaSemana(offset);
   const hoy = hoyISO();
-  const dias = fechas.map((iso) => ({
-    iso,
-    estadoDia: estado.checkins.find((c) => c.fecha === iso)?.estado ?? null,
-    esFuturo: iso > hoy,
-  }));
+  const dias = fechas.map((iso) => {
+    const checkin = estado.checkins.find((c) => c.fecha === iso);
+    return { iso, estadoDia: checkin?.estado ?? null, nota: checkin?.nota ?? null, esFuturo: iso > hoy };
+  });
   const tranquilos = dias.filter((d) => d.estadoDia === 'tranquilo').length;
   const alertas = dias.filter((d) => d.estadoDia === 'alerta').length;
   const marcados = tranquilos + alertas;
+  const seleccionado = dias.find((d) => d.iso === diaSeleccionado) ?? null;
 
   return (
     <motion.main variants={contenedor} initial="hidden" animate="visible" className="flex flex-1 flex-col gap-6 px-4 pb-8 pt-8">
@@ -89,8 +90,10 @@ export default function Semana() {
 
       <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]">
         <div className="flex justify-between">
-          {dias.map(({ iso, estadoDia, esFuturo }, i) => (
-            <div key={iso} className="flex flex-col items-center gap-2">
+          {dias.map(({ iso, estadoDia, esFuturo }, i) => {
+            const tocable = !esFuturo && estadoDia !== null;
+            const activo = iso === diaSeleccionado;
+            const circulo = (
               <span
                 aria-hidden="true"
                 className="flex size-10 items-center justify-center rounded-full"
@@ -104,9 +107,12 @@ export default function Semana() {
                         : 'color-mix(in oklab, var(--text-tertiary) 10%, transparent)',
                   border: esFuturo
                     ? '1.5px dashed color-mix(in oklab, var(--text-tertiary) 30%, transparent)'
-                    : iso === hoy
+                    : activo
                       ? '1.5px solid var(--accent)'
-                      : '1.5px solid transparent',
+                      : iso === hoy
+                        ? '1.5px solid var(--accent)'
+                        : '1.5px solid transparent',
+                  boxShadow: activo ? '0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent)' : 'none',
                 }}
               >
                 {!esFuturo && estadoDia && (
@@ -116,12 +122,55 @@ export default function Semana() {
                   />
                 )}
               </span>
-              <span className="text-[11px] font-medium text-[var(--text-tertiary)]">
-                {inicialDia(i)} {Number(iso.slice(8, 10))}
-              </span>
-            </div>
-          ))}
+            );
+            return (
+              <div key={iso} className="flex flex-col items-center gap-2">
+                {tocable ? (
+                  <button
+                    type="button"
+                    onClick={() => setDiaSeleccionado((d) => (d === iso ? null : iso))}
+                    aria-pressed={activo}
+                    aria-label={`Ver el ${formatearFechaLarga(iso)}`}
+                    className="[touch-action:manipulation]"
+                  >
+                    {circulo}
+                  </button>
+                ) : (
+                  circulo
+                )}
+                <span className="text-[11px] font-medium text-[var(--text-tertiary)]">
+                  {inicialDia(i)} {Number(iso.slice(8, 10))}
+                </span>
+              </div>
+            );
+          })}
         </div>
+
+        {seleccionado && (
+          <div className="mt-4 border-t border-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)] pt-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-[13px] font-semibold text-[var(--text-secondary)]">
+                  {formatearFechaLarga(seleccionado.iso)}
+                </p>
+                <p className="mt-0.5 text-[13px] font-semibold" style={{ color: seleccionado.estadoDia === 'tranquilo' ? 'var(--accent-2-text)' : 'var(--accent-3-text)' }}>
+                  {seleccionado.estadoDia === 'tranquilo' ? 'Día tranquilo' : 'Día de alerta'}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDiaSeleccionado(null)}
+                aria-label="Cerrar detalle del día"
+                className="shrink-0 rounded-full p-1 text-[var(--text-tertiary)] [touch-action:manipulation]"
+              >
+                <X size={18} strokeWidth={2} aria-hidden="true" />
+              </button>
+            </div>
+            <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-primary)]">
+              {seleccionado.nota ?? 'No escribiste en qué se te fue ese día.'}
+            </p>
+          </div>
+        )}
       </motion.section>
 
       <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">

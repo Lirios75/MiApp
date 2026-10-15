@@ -214,3 +214,9 @@ El cambio toca `lib/app.ts`, `lib/supabase/datos.ts` y `app/app/meta/page.tsx` �
 "Quincenal" a las frecuencias y permite cambiar el monto total de la meta desde "Editar".
 Verificado por grep: ninguno de estos archivos menciona `paywall` ni es importado desde
 `app/paywall/page.tsx` o `components/funnel/ui.tsx`. Cero impacto en el paywall.
+
+## Decimonovena re-verificación (2026-10-15, noche — nota del día visible en Semana)
+
+El cambio toca solo `app/app/semana/page.tsx` — los días marcados ahora son tocables y muestran
+la nota de ese día. Verificado por grep: el archivo no menciona `paywall` ni es importado desde
+`app/paywall/page.tsx` o `components/funnel/ui.tsx`. Cero impacto en el paywall.
