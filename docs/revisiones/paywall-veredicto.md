@@ -175,3 +175,11 @@ El commit agrega `<ErrorCarga>` a `components/app/ui.tsx` y lo usa en `app/app/p
 `app/app/semana/page.tsx` y `app/app/meta/page.tsx` para no dejar esas pantallas pegadas en
 "cargando" si falla Supabase. Mismo árbol de archivos que la re-verificación anterior — cero
 impacto en el paywall.
+
+## Decimocuarta re-verificación (2026-10-15, commit 20ae1b3 — nombre propio y frecuencia en Tu meta)
+
+El commit toca `lib/app.ts`, `lib/supabase/datos.ts` y `app/app/meta/page.tsx` — agrega el campo
+de texto libre "¿Para qué es tu meta?" y el selector de frecuencia (diario/semanal/mensual/
+semestral/anual) al crear o editar una meta de ahorro/deuda. Verificado por grep: ninguno de
+estos archivos menciona `paywall` ni es importado desde `app/paywall/page.tsx` o
+`components/funnel/ui.tsx`. Cero impacto en el paywall.
