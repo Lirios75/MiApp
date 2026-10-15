@@ -16,7 +16,7 @@ import {
   type Meta,
 } from '@/lib/app';
 import { crearMetaHabitoSupabase, crearMetaMontoSupabase, obtenerEstadoApp, registrarAvanceMetaSupabase } from '@/lib/supabase/datos';
-import { AnilloProgreso, ConteoAnimado } from '@/components/app/ui';
+import { AnilloProgreso, ConteoAnimado, ErrorCarga } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -42,11 +42,21 @@ const COPY_TIPO: Record<string, { pregunta: string; motivacion: (m: Meta) => str
 
 export default function MetaPage() {
   const [estado, setEstado] = useState<EstadoApp | null>(null);
+  const [error, setError] = useState(false);
   const { contenedor, item } = useVariantes();
 
   useEffect(() => {
-    obtenerEstadoApp().then(setEstado);
+    obtenerEstadoApp()
+      .then(setEstado)
+      .catch((e) => {
+        console.error(e);
+        setError(true);
+      });
   }, []);
+
+  if (error) {
+    return <ErrorCarga />;
+  }
 
   if (!estado) {
     return (

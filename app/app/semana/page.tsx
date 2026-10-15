@@ -9,7 +9,7 @@ import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { diasDeLaSemana, hoyISO, resumenUltimasSemanas, type EstadoApp } from '@/lib/app';
 import { obtenerEstadoApp } from '@/lib/supabase/datos';
-import { formatearRangoSemana, inicialDia } from '@/components/app/ui';
+import { ErrorCarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -24,12 +24,22 @@ function useVariantes(): { contenedor: Variants; item: Variants } {
 
 export default function Semana() {
   const [estado, setEstado] = useState<EstadoApp | null>(null);
+  const [error, setError] = useState(false);
   const [offset, setOffset] = useState(0);
   const { contenedor, item } = useVariantes();
 
   useEffect(() => {
-    obtenerEstadoApp().then(setEstado);
+    obtenerEstadoApp()
+      .then(setEstado)
+      .catch((e) => {
+        console.error(e);
+        setError(true);
+      });
   }, []);
+
+  if (error) {
+    return <ErrorCarga />;
+  }
 
   if (!estado) {
     return (

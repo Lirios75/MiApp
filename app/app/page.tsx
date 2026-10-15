@@ -18,7 +18,7 @@ import {
   type EstadoSemaforo,
 } from '@/lib/app';
 import { obtenerEstadoApp, registrarCheckInSupabase } from '@/lib/supabase/datos';
-import { AnilloProgreso, formatearFechaLarga, inicialDia, RachaBadge } from '@/components/app/ui';
+import { AnilloProgreso, ErrorCarga, formatearFechaLarga, inicialDia, RachaBadge } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -35,12 +35,16 @@ export default function Hoy() {
   const [estado, setEstado] = useState<EstadoApp | null>(null);
   const [editando, setEditando] = useState(false);
   const [avisoGuardado, setAvisoGuardado] = useState(false);
+  const [errorCarga, setErrorCarga] = useState(false);
   const { contenedor, item } = useVariantes();
 
   useEffect(() => {
     obtenerEstadoApp()
       .then(setEstado)
-      .catch(() => setAvisoGuardado(true));
+      .catch((e) => {
+        console.error(e);
+        setErrorCarga(true);
+      });
   }, []);
 
   async function marcar(valor: EstadoSemaforo) {
@@ -51,6 +55,10 @@ export default function Hoy() {
     } catch {
       setAvisoGuardado(true);
     }
+  }
+
+  if (errorCarga) {
+    return <ErrorCarga />;
   }
 
   if (!estado) {

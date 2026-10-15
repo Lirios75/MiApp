@@ -8,7 +8,7 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { CalendarDays, Flame, Home, Target, CircleUserRound, type LucideIcon } from 'lucide-react';
+import { CalendarDays, Flame, Home, Target, CircleUserRound, RefreshCw, WifiOff, type LucideIcon } from 'lucide-react';
 
 /* ── <AppFondo> — mesh sutil compartido, más calmo que el del funnel (esta es
    una pantalla que se abre varias veces al día: nada que "llame la atención"
@@ -171,6 +171,32 @@ export function RachaBadge({ dias }: { dias: number }) {
         <ConteoAnimado valor={dias} /> {dias === 1 ? 'día' : 'días'}
       </span>
     </span>
+  );
+}
+
+/* ── <ErrorCarga> — cuando falla traer los datos de Supabase (sin conexión,
+   sesión vencida, etc.): nunca dejar la pantalla pegada en el esqueleto de
+   carga para siempre — siempre una salida con qué pasó + qué hacer. ── */
+export function ErrorCarga() {
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
+      <span
+        aria-hidden="true"
+        className="flex size-12 items-center justify-center rounded-full bg-[color-mix(in_oklab,var(--accent-3)_14%,transparent)]"
+      >
+        <WifiOff size={22} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" />
+      </span>
+      <p className="text-[15px] leading-relaxed text-[var(--text-secondary)]">
+        No pudimos traer tus datos. Revisa tu conexión e inténtalo de nuevo.
+      </p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="mt-1 flex h-11 items-center gap-2 rounded-[var(--radius-button)] bg-[var(--accent)] px-5 text-[14px] font-semibold text-[var(--bg)] [touch-action:manipulation]"
+      >
+        <RefreshCw size={16} strokeWidth={2} aria-hidden="true" /> Reintentar
+      </button>
+    </div>
   );
 }
 
