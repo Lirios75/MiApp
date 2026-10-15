@@ -200,3 +200,10 @@ diff de `app/layout.tsx` línea por línea: el único cambio es metadata del `<h
 `viewport.themeColor`) — el `<html>`/`<body>` y sus clases quedan exactamente igual, cero cambio
 visual. `app/manifest.ts` no se importa desde ninguna pantalla (es una ruta especial que Next
 sirve sola en `/manifest.webmanifest`). Cero impacto en el paywall.
+
+## Decimoséptima re-verificación (2026-10-15, noche — aviso de ícono instalado en /entrar)
+
+El cambio toca solo `app/entrar/page.tsx` — agrega una nota corta en la vista "Revisa tu correo"
+para quien ya instaló el ícono de la app. Verificado por grep: el archivo no menciona `paywall`
+ni es importado desde `app/paywall/page.tsx` o `components/funnel/ui.tsx`. Cero impacto en el
+paywall.
