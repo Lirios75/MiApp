@@ -7,16 +7,65 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { Plus } from 'lucide-react';
+import { Pencil, Plus, X } from 'lucide-react';
 import {
   calcularRacha,
   metaInicialDesdeOnboarding,
   metaSincronizada,
+  OPCIONES_FRECUENCIA,
   type EstadoApp,
+  type Frecuencia,
   type Meta,
 } from '@/lib/app';
-import { crearMetaHabitoSupabase, crearMetaMontoSupabase, obtenerEstadoApp, registrarAvanceMetaSupabase } from '@/lib/supabase/datos';
+import {
+  actualizarDetalleMetaSupabase,
+  crearMetaHabitoSupabase,
+  crearMetaMontoSupabase,
+  obtenerEstadoApp,
+  registrarAvanceMetaSupabase,
+} from '@/lib/supabase/datos';
 import { AnilloProgreso, ConteoAnimado, ErrorCarga } from '@/components/app/ui';
+
+const PLACEHOLDER_NOMBRE: Record<string, string> = {
+  ahorrar: 'Ej: viaje a la playa, fondo de emergencia...',
+  salir_deuda: 'Ej: tarjeta de crédito, préstamo del carro...',
+};
+
+const FRECUENCIA_LABEL: Record<Frecuencia, string> = Object.fromEntries(
+  OPCIONES_FRECUENCIA.map((o) => [o.value, o.label])
+) as Record<Frecuencia, string>;
+
+function SelectorFrecuencia({
+  valor,
+  onElegir,
+}: {
+  valor: Frecuencia;
+  onElegir: (f: Frecuencia) => void;
+}) {
+  return (
+    <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Cada cuánto quieres ahorrar">
+      {OPCIONES_FRECUENCIA.map((opcion) => {
+        const activa = opcion.value === valor;
+        return (
+          <button
+            key={opcion.value}
+            type="button"
+            role="radio"
+            aria-checked={activa}
+            onClick={() => onElegir(opcion.value)}
+            className="flex h-8 items-center rounded-full px-3 text-[13px] font-semibold [touch-action:manipulation]"
+            style={{
+              background: activa ? 'var(--accent)' : 'var(--surface-2)',
+              color: activa ? 'var(--bg)' : 'var(--text-secondary)',
+            }}
+          >
+            {opcion.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -127,7 +176,9 @@ function ConfigurarMeta({
   onCreada: (estado: EstadoApp) => void;
 }) {
   const inicial = metaInicialDesdeOnboarding();
+  const [nombre, setNombre] = useState('');
   const [monto, setMonto] = useState('');
+  const [frecuencia, setFrecuencia] = useState<Frecuencia>('mensual');
   const [guardando, setGuardando] = useState(false);
   const esHabito = inicial.modo === 'habito';
 
@@ -140,8 +191,8 @@ function ConfigurarMeta({
         onCreada(await crearMetaHabitoSupabase(inicial.tipo, inicial.nombre, checkins));
       } else {
         const objetivo = Number(monto);
-        if (!objetivo || objetivo <= 0) return;
-        onCreada(await crearMetaMontoSupabase(inicial.tipo, inicial.nombre, objetivo, 0));
+        if (!objetivo || objetivo <= 0 || !nombre.trim()) return;
+        onCreada(await crearMetaMontoSupabase(inicial.tipo, nombre.trim(), objetivo, 0, frecuencia));
       }
     } finally {
       setGuardando(false);
@@ -154,25 +205,44 @@ function ConfigurarMeta({
       className="rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]"
     >
       <h2 className="text-[19px] font-bold leading-[1.25] [font-family:var(--font-display)]">
-        {esHabito ? 'Vamos a medir tu constancia' : (COPY_TIPO[inicial.tipo]?.pregunta ?? '¿Cuánto quieres ahorrar en total?')}
+        {esHabito ? 'Vamos a medir tu constancia' : '¿Para qué es tu meta?'}
       </h2>
       <p className="mt-1 text-[13px] text-[var(--text-secondary)]">
         {esHabito
           ? `Tu meta "${inicial.nombre.toLowerCase()}" se va a medir en días seguidos marcando tu Semáforo.`
-          : 'Puedes cambiar este número después.'}
+          : 'Ponle un nombre que reconozcas — puedes cambiarlo después.'}
       </p>
       {!esHabito && (
-        <input
-          type="number"
-          inputMode="decimal"
-          min={1}
-          required
-          autoFocus
-          placeholder="Ej: 500"
-          value={monto}
-          onChange={(e) => setMonto(e.target.value)}
-          className="mt-4 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
-        />
+        <>
+          <input
+            type="text"
+            required
+            autoFocus
+            placeholder={PLACEHOLDER_NOMBRE[inicial.tipo] ?? 'Ej: mi meta de ahorro'}
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            aria-label="Para qué es tu meta"
+            className="mt-4 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+          />
+
+          <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">
+            {COPY_TIPO[inicial.tipo]?.pregunta ?? '¿Cuánto quieres ahorrar en total?'}
+          </p>
+          <input
+            type="number"
+            inputMode="decimal"
+            min={1}
+            required
+            placeholder="Ej: 500"
+            value={monto}
+            onChange={(e) => setMonto(e.target.value)}
+            aria-label="Monto objetivo"
+            className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+          />
+
+          <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Cada cuánto quieres ahorrar?</p>
+          <SelectorFrecuencia valor={frecuencia} onElegir={setFrecuencia} />
+        </>
       )}
       <motion.button
         type="submit"
@@ -195,6 +265,7 @@ function ProgresoMeta({
 }) {
   const [avance, setAvance] = useState('');
   const [guardando, setGuardando] = useState(false);
+  const [editando, setEditando] = useState(false);
   const porcentaje = Math.min(100, Math.round((meta.actual / meta.objetivo) * 100));
   const unidad = meta.modo === 'habito' ? 'días' : '$';
   const copy = COPY_TIPO[meta.tipo]?.motivacion(meta) ?? `Vas en el ${porcentaje}% de tu meta.`;
@@ -212,9 +283,40 @@ function ProgresoMeta({
     }
   }
 
+  if (editando && meta.modo === 'monto') {
+    return (
+      <EditarDetalleMeta
+        meta={meta}
+        onGuardada={(estado) => {
+          setEditando(false);
+          onActualizar(estado);
+        }}
+        onCancelar={() => setEditando(false)}
+      />
+    );
+  }
+
   return (
     <div className="rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]">
-      <p className="text-[13px] font-semibold text-[var(--text-secondary)]">{meta.nombre}</p>
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[13px] font-semibold text-[var(--text-secondary)]">{meta.nombre}</p>
+          {meta.modo === 'monto' && meta.frecuencia && (
+            <span className="mt-1 inline-flex h-6 items-center rounded-full bg-[var(--chip-bg)] px-2 text-[12px] font-semibold text-[var(--accent)]">
+              {FRECUENCIA_LABEL[meta.frecuencia]}
+            </span>
+          )}
+        </div>
+        {meta.modo === 'monto' && (
+          <button
+            type="button"
+            onClick={() => setEditando(true)}
+            className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-[var(--accent)] [touch-action:manipulation]"
+          >
+            <Pencil size={13} strokeWidth={2} aria-hidden="true" /> Editar
+          </button>
+        )}
+      </div>
       <div className="mt-4 flex items-center justify-center">
         <AnilloProgreso porcentaje={porcentaje} tamano={128} grosor={12}>
           <div className="flex flex-col items-center">
@@ -261,5 +363,69 @@ function ProgresoMeta({
         </p>
       )}
     </div>
+  );
+}
+
+function EditarDetalleMeta({
+  meta,
+  onGuardada,
+  onCancelar,
+}: {
+  meta: Meta;
+  onGuardada: (estado: EstadoApp) => void;
+  onCancelar: () => void;
+}) {
+  const [nombre, setNombre] = useState(meta.nombre);
+  const [frecuencia, setFrecuencia] = useState<Frecuencia>(meta.frecuencia ?? 'mensual');
+  const [guardando, setGuardando] = useState(false);
+
+  async function guardar(e: FormEvent) {
+    e.preventDefault();
+    if (guardando || !nombre.trim()) return;
+    setGuardando(true);
+    try {
+      onGuardada(await actualizarDetalleMetaSupabase(nombre.trim(), frecuencia));
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <form onSubmit={guardar} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]">
+      <div className="flex items-start justify-between gap-3">
+        <h2 className="text-[19px] font-bold leading-[1.25] [font-family:var(--font-display)]">Editar tu meta</h2>
+        <button
+          type="button"
+          onClick={onCancelar}
+          aria-label="Cancelar edición"
+          className="shrink-0 rounded-full p-1 text-[var(--text-tertiary)] [touch-action:manipulation]"
+        >
+          <X size={20} strokeWidth={2} aria-hidden="true" />
+        </button>
+      </div>
+
+      <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Para qué es tu meta?</p>
+      <input
+        type="text"
+        required
+        autoFocus
+        value={nombre}
+        onChange={(e) => setNombre(e.target.value)}
+        aria-label="Para qué es tu meta"
+        className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+      />
+
+      <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Cada cuánto quieres ahorrar?</p>
+      <SelectorFrecuencia valor={frecuencia} onElegir={setFrecuencia} />
+
+      <motion.button
+        type="submit"
+        disabled={guardando}
+        whileTap={{ scale: 0.97 }}
+        className="mt-5 flex h-[52px] w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] text-[16px] font-semibold text-[var(--bg)] disabled:opacity-60 [touch-action:manipulation]"
+      >
+        {guardando ? 'Guardando…' : 'Guardar cambios'}
+      </motion.button>
+    </form>
   );
 }

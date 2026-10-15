@@ -5,7 +5,7 @@
 // lib/app.ts sin cambios; esto solo lee/escribe las 3 tablas de Supabase
 // (perfiles/checkins/metas — ver supabase/migrations/).
 
-import { calcularRacha, hoyISO, OBJETIVO_HABITO_DIAS, type EstadoApp, type EstadoSemaforo, type ModoMeta } from '@/lib/app';
+import { calcularRacha, hoyISO, OBJETIVO_HABITO_DIAS, type EstadoApp, type EstadoSemaforo, type Frecuencia, type ModoMeta } from '@/lib/app';
 import { crearClienteSupabase } from './client';
 
 async function usuarioId(): Promise<string> {
@@ -22,7 +22,7 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
   const [{ data: perfil }, { data: checkins, error: errorCheckins }, { data: meta, error: errorMeta }] = await Promise.all([
     supabase.from('perfiles').select('fecha_inicio_trial').eq('id', uid).maybeSingle(),
     supabase.from('checkins').select('fecha, estado').eq('user_id', uid).order('fecha'),
-    supabase.from('metas').select('tipo, nombre, modo, objetivo, actual').eq('user_id', uid).maybeSingle(),
+    supabase.from('metas').select('tipo, nombre, modo, objetivo, actual, frecuencia').eq('user_id', uid).maybeSingle(),
   ]);
   if (errorCheckins) throw errorCheckins;
   if (errorMeta) throw errorMeta;
@@ -43,6 +43,7 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
           modo: meta.modo as ModoMeta,
           objetivo: Number(meta.objetivo),
           actual: Number(meta.actual),
+          frecuencia: (meta.frecuencia as Frecuencia | null) ?? null,
         }
       : null,
     fechaInicioTrial,
@@ -63,13 +64,24 @@ export async function crearMetaMontoSupabase(
   tipo: string,
   nombre: string,
   objetivo: number,
-  actual: number
+  actual: number,
+  frecuencia: Frecuencia
 ): Promise<EstadoApp> {
   const supabase = crearClienteSupabase();
   const uid = await usuarioId();
   const { error } = await supabase
     .from('metas')
-    .upsert({ user_id: uid, tipo, nombre, modo: 'monto', objetivo: Math.max(1, objetivo), actual: Math.max(0, actual) });
+    .upsert({ user_id: uid, tipo, nombre, modo: 'monto', objetivo: Math.max(1, objetivo), actual: Math.max(0, actual), frecuencia });
+  if (error) throw error;
+  return obtenerEstadoApp();
+}
+
+/** Cambiar el nombre y/o la frecuencia de una meta "monto" ya creada (Editar en /app/meta),
+ * sin tocar su objetivo/actual. */
+export async function actualizarDetalleMetaSupabase(nombre: string, frecuencia: Frecuencia): Promise<EstadoApp> {
+  const supabase = crearClienteSupabase();
+  const uid = await usuarioId();
+  const { error } = await supabase.from('metas').update({ nombre, frecuencia }).eq('user_id', uid);
   if (error) throw error;
   return obtenerEstadoApp();
 }

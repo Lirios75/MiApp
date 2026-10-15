@@ -15,8 +15,28 @@ guardado con racha de 1 día, Semana mostró el mismo día con su punto verde + 
 (12-18 oct), Meta mostró su meta real "Ahorrar para algo" ($5000 de $20.000, 25%) con el anillo
 de progreso, Cuenta mostró el plan real ("Mensual $6.99/mes, prueba gratis 7 de 7 días"). **La
 migración completa de localStorage a Supabase queda 100% cerrada y probada end-to-end con datos
-reales de la usuaria.** Siguiente paso exacto: dominio propio para la app (hoy vive en
-`*.vercel.app`), luego Hotmart — próximas fases de la SECUENCIA MAESTRA.
+reales de la usuaria.**
+
+⏸️ CHECKPOINT (2026-10-15, tarde): la usuaria pidió un cambio en "Tu meta": que al crear la meta
+pueda ESCRIBIR para qué está ahorrando (antes era un nombre fijo tipo "Ahorrar para algo") y
+elegir CADA CUÁNTO ahorra (diario/semanal/mensual/semestral/anual) — aplica solo a metas de
+ahorro/deuda (modo "monto"); las de hábito (dejar impulso/entender) siguen midiéndose en racha,
+sin este campo. Implementado:
+- `lib/app.ts`: nuevo tipo `Frecuencia` + `OPCIONES_FRECUENCIA`, `Meta.frecuencia` (nullable).
+- `supabase/migrations/20261015020000_meta_frecuencia.sql`: agrega la columna `frecuencia` a
+  `metas` (con check de los 5 valores válidos). **Falta que la usuaria la ejecute en el SQL
+  Editor de Supabase** (mismo procedimiento de siempre — cuidado con la traducción de Chrome).
+- `lib/supabase/datos.ts`: `crearMetaMontoSupabase` ahora pide la frecuencia;
+  `actualizarDetalleMetaSupabase` (nueva) permite cambiar nombre/frecuencia de una meta ya creada
+  sin tocar su monto.
+- `app/app/meta/page.tsx`: al crear la meta, ahora pide primero "¿Para qué es tu meta?" (texto
+  libre) y luego "¿Cada cuánto quieres ahorrar?" (chips Diario/Semanal/Mensual/Semestral/Anual).
+  La meta ya creada muestra el nombre + un chip con la frecuencia, y un botón "Editar" (mismo
+  patrón que "Cambiar" en Hoy) para cambiarlos después sin perder el progreso.
+Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox (sin acceso de red a
+Supabase, mismo límite de siempre). Siguiente paso exacto: (1) la usuaria ejecuta la migración
+SQL nueva en Supabase, (2) prueba crear/editar una meta con nombre propio y frecuencia en
+`mi-app-olive.vercel.app/app/meta`. Después: dominio propio, luego Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

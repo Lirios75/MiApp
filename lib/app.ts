@@ -12,12 +12,23 @@ export interface CheckIn {
 
 export type ModoMeta = 'monto' | 'habito';
 
+export type Frecuencia = 'diario' | 'semanal' | 'mensual' | 'semestral' | 'anual';
+
+export const OPCIONES_FRECUENCIA: readonly { value: Frecuencia; label: string }[] = [
+  { value: 'diario', label: 'Diario' },
+  { value: 'semanal', label: 'Semanal' },
+  { value: 'mensual', label: 'Mensual' },
+  { value: 'semestral', label: 'Semestral' },
+  { value: 'anual', label: 'Anual' },
+];
+
 export interface Meta {
   tipo: string; // value de OPCIONES_META
-  nombre: string; // label a mostrar
+  nombre: string; // nombre elegido por la usuaria (ej: "Viaje a Cartagena")
   modo: ModoMeta;
   objetivo: number; // monto objetivo (modo monto) o días objetivo (modo habito)
   actual: number; // monto actual (modo monto) o días actuales (modo habito)
+  frecuencia: Frecuencia | null; // cada cuánto ahorra — solo aplica en modo monto
 }
 
 export interface EstadoApp {
