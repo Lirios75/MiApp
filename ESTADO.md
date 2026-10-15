@@ -85,7 +85,17 @@ entrar ahí. La usuaria pidió agregar el tip — hecho en `app/entrar/page.tsx`
 plantilla de correo de Supabase): en la vista "Revisa tu correo" (justo después de pedir el
 enlace) se agregó una nota corta "Si ya tienes el ícono de Respira en tu pantalla de inicio,
 ábrelo desde ahí en cuanto toques el enlace del correo." Verificado: tsc ✓ build ✓.
-Siguiente paso exacto: dominio propio para la app, luego Hotmart.
+⏸️ CHECKPOINT (2026-10-15, noche) — dos ajustes más en Tu meta, pedidos por la usuaria:
+1. Faltaba "Quincenal" entre las frecuencias (solo estaban diario/semanal/mensual/semestral/
+   anual) — agregado en `lib/app.ts` (`OPCIONES_FRECUENCIA`) + nueva migración
+   `supabase/migrations/20261015040000_meta_frecuencia_quincenal.sql` (reemplaza el check de la
+   columna `frecuencia` para incluir `quincenal`) — **falta que la usuaria la ejecute**.
+2. "Editar" en la meta solo dejaba cambiar nombre y frecuencia, no el monto total — ahora también
+   permite cambiar "¿Cuánto quieres ahorrar en total?" sin perder lo ya ahorrado (`actual` no se
+   toca). `actualizarDetalleMetaSupabase` ahora recibe también el objetivo.
+Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox. Siguiente paso exacto:
+(1) la usuaria ejecuta la migración de `quincenal`, (2) prueba cambiar el monto desde "Editar" en
+Meta. Después: dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

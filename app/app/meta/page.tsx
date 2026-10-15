@@ -377,14 +377,16 @@ function EditarDetalleMeta({
 }) {
   const [nombre, setNombre] = useState(meta.nombre);
   const [frecuencia, setFrecuencia] = useState<Frecuencia>(meta.frecuencia ?? 'mensual');
+  const [objetivo, setObjetivo] = useState(String(meta.objetivo));
   const [guardando, setGuardando] = useState(false);
 
   async function guardar(e: FormEvent) {
     e.preventDefault();
-    if (guardando || !nombre.trim()) return;
+    const nuevoObjetivo = Number(objetivo);
+    if (guardando || !nombre.trim() || !nuevoObjetivo || nuevoObjetivo <= 0) return;
     setGuardando(true);
     try {
-      onGuardada(await actualizarDetalleMetaSupabase(nombre.trim(), frecuencia));
+      onGuardada(await actualizarDetalleMetaSupabase(nombre.trim(), frecuencia, nuevoObjetivo));
     } finally {
       setGuardando(false);
     }
@@ -412,6 +414,18 @@ function EditarDetalleMeta({
         value={nombre}
         onChange={(e) => setNombre(e.target.value)}
         aria-label="Para qué es tu meta"
+        className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+      />
+
+      <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Cuánto quieres ahorrar en total?</p>
+      <input
+        type="number"
+        inputMode="decimal"
+        min={1}
+        required
+        value={objetivo}
+        onChange={(e) => setObjetivo(e.target.value)}
+        aria-label="Monto total de la meta"
         className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
       />
 

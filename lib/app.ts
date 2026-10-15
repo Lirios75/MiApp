@@ -13,11 +13,12 @@ export interface CheckIn {
 
 export type ModoMeta = 'monto' | 'habito';
 
-export type Frecuencia = 'diario' | 'semanal' | 'mensual' | 'semestral' | 'anual';
+export type Frecuencia = 'diario' | 'semanal' | 'quincenal' | 'mensual' | 'semestral' | 'anual';
 
 export const OPCIONES_FRECUENCIA: readonly { value: Frecuencia; label: string }[] = [
   { value: 'diario', label: 'Diario' },
   { value: 'semanal', label: 'Semanal' },
+  { value: 'quincenal', label: 'Quincenal' },
   { value: 'mensual', label: 'Mensual' },
   { value: 'semestral', label: 'Semestral' },
   { value: 'anual', label: 'Anual' },

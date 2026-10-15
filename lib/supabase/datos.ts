@@ -90,12 +90,19 @@ export async function crearMetaMontoSupabase(
   return obtenerEstadoApp();
 }
 
-/** Cambiar el nombre y/o la frecuencia de una meta "monto" ya creada (Editar en /app/meta),
- * sin tocar su objetivo/actual. */
-export async function actualizarDetalleMetaSupabase(nombre: string, frecuencia: Frecuencia): Promise<EstadoApp> {
+/** Cambiar el nombre, la frecuencia y/o el monto total de una meta "monto" ya creada
+ * (Editar en /app/meta) — no toca cuánto lleva ahorrado (actual). */
+export async function actualizarDetalleMetaSupabase(
+  nombre: string,
+  frecuencia: Frecuencia,
+  objetivo: number
+): Promise<EstadoApp> {
   const supabase = crearClienteSupabase();
   const uid = await usuarioId();
-  const { error } = await supabase.from('metas').update({ nombre, frecuencia }).eq('user_id', uid);
+  const { error } = await supabase
+    .from('metas')
+    .update({ nombre, frecuencia, objetivo: Math.max(1, objetivo) })
+    .eq('user_id', uid);
   if (error) throw error;
   return obtenerEstadoApp();
 }

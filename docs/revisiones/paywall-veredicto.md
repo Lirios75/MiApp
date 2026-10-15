@@ -207,3 +207,10 @@ El cambio toca solo `app/entrar/page.tsx` — agrega una nota corta en la vista 
 para quien ya instaló el ícono de la app. Verificado por grep: el archivo no menciona `paywall`
 ni es importado desde `app/paywall/page.tsx` o `components/funnel/ui.tsx`. Cero impacto en el
 paywall.
+
+## Decimoctava re-verificación (2026-10-15, noche — frecuencia "quincenal" y monto editable en Tu meta)
+
+El cambio toca `lib/app.ts`, `lib/supabase/datos.ts` y `app/app/meta/page.tsx` — agrega
+"Quincenal" a las frecuencias y permite cambiar el monto total de la meta desde "Editar".
+Verificado por grep: ninguno de estos archivos menciona `paywall` ni es importado desde
+`app/paywall/page.tsx` o `components/funnel/ui.tsx`. Cero impacto en el paywall.
