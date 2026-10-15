@@ -159,7 +159,7 @@ El commit reemplaza `app/auth/confirm/route.ts` por `app/auth/confirm/page.tsx` 
 enlace del correo de Supabase con las plantillas por defecto). No toca `app/paywall/page.tsx`
 ni ningún componente que el paywall importe. Cero impacto.
 
-## Duodécima re-verificación (2026-10-14, commit pendiente — app interna migrada a Supabase)
+## Duodécima re-verificación (2026-10-14, commit 095b63d — app interna migrada a Supabase)
 
 El commit toca `app/app/page.tsx`, `app/app/semana/page.tsx`, `app/app/meta/page.tsx`,
 `app/app/cuenta/page.tsx`, `app/app/layout.tsx`, `lib/app.ts` y crea `lib/supabase/datos.ts` —
@@ -168,3 +168,10 @@ Supabase y protege `/app` con sesión real. Verificado por grep: ninguno de esto
 importa `app/paywall/page.tsx` ni `components/funnel/ui.tsx` (solo un comentario menciona ese
 archivo como referencia a un bug de CSS ya documentado, no un import real). Cero impacto en el
 paywall.
+
+## Decimotercera re-verificación (2026-10-15, commit b9a5f4e — estado de error en Hoy/Semana/Meta)
+
+El commit agrega `<ErrorCarga>` a `components/app/ui.tsx` y lo usa en `app/app/page.tsx`,
+`app/app/semana/page.tsx` y `app/app/meta/page.tsx` para no dejar esas pantallas pegadas en
+"cargando" si falla Supabase. Mismo árbol de archivos que la re-verificación anterior — cero
+impacto en el paywall.
