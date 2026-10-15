@@ -183,3 +183,11 @@ de texto libre "¿Para qué es tu meta?" y el selector de frecuencia (diario/sem
 semestral/anual) al crear o editar una meta de ahorro/deuda. Verificado por grep: ninguno de
 estos archivos menciona `paywall` ni es importado desde `app/paywall/page.tsx` o
 `components/funnel/ui.tsx`. Cero impacto en el paywall.
+
+## Decimoquinta re-verificación (2026-10-15, noche — nota opcional y color de reflexión en Hoy)
+
+El cambio toca `lib/app.ts`, `lib/supabase/datos.ts` y `app/app/page.tsx` — agrega la nota
+opcional "¿En qué se te fue?" tras marcar el Semáforo y un fondo con tinte de acento (sin color
+nuevo) en la tarjeta de reflexión diaria. Verificado por grep: ninguno de estos archivos menciona
+`paywall` ni es importado desde `app/paywall/page.tsx` o `components/funnel/ui.tsx`. Cero impacto
+en el paywall.

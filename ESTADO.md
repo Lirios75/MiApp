@@ -38,6 +38,23 @@ rows returned", confirmado por captura). Siguiente paso exacto: la usuaria prueb
 una meta con nombre propio y frecuencia en `mi-app-olive.vercel.app/app/meta` — pendiente su
 confirmación. Después: dominio propio, luego Hotmart.
 
+⏸️ CHECKPOINT (2026-10-15, noche): dos pedidos más de la usuaria sobre "Hoy":
+1. Nota opcional "¿En qué se te fue?" después de marcar el Semáforo — **decisión de diseño
+   consultada y acordada con la usuaria**: opcional y fuera del paso de 1 toque (no obligatoria),
+   para no repetir el error de las apps de la competencia que piden anotar cada gasto y la gente
+   abandona (ver "Reporte de validación" arriba). Aparece como link "+ ¿En qué se te fue?" debajo
+   de la confirmación del día; se puede editar después. Implementado: `lib/app.ts` (`CheckIn.nota`),
+   `supabase/migrations/20261015030000_checkin_nota.sql` (columna `nota` en `checkins`, **falta
+   que la usuaria la ejecute**), `lib/supabase/datos.ts` (`registrarNotaCheckInSupabase`),
+   `app/app/page.tsx` (`ConfirmacionDia` con el formulario opcional).
+2. Color distinto para la tarjeta de reflexión diaria — hecho con el MISMO acento de marca (fondo
+   con un tinte sutil en vez de blanco plano), sin agregar un color nuevo a la paleta. La usuaria
+   también preguntó por emojis en esa tarjeta — se le explicó por qué NO (rompe la consistencia
+   con los íconos de línea que usa el resto de la app) y aceptó mantener los íconos SVG.
+Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox (mismo límite de siempre).
+Siguiente paso exacto: (1) la usuaria ejecuta la migración SQL de `nota`, (2) prueba la meta con
+nombre/frecuencia (pendiente de antes) Y la nota opcional en Hoy. Después: dominio propio, Hotmart.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→

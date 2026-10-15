@@ -21,7 +21,7 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
 
   const [{ data: perfil }, { data: checkins, error: errorCheckins }, { data: meta, error: errorMeta }] = await Promise.all([
     supabase.from('perfiles').select('fecha_inicio_trial').eq('id', uid).maybeSingle(),
-    supabase.from('checkins').select('fecha, estado').eq('user_id', uid).order('fecha'),
+    supabase.from('checkins').select('fecha, estado, nota').eq('user_id', uid).order('fecha'),
     supabase.from('metas').select('tipo, nombre, modo, objetivo, actual, frecuencia').eq('user_id', uid).maybeSingle(),
   ]);
   if (errorCheckins) throw errorCheckins;
@@ -35,7 +35,7 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
   }
 
   return {
-    checkins: (checkins ?? []).map((c) => ({ fecha: c.fecha, estado: c.estado as EstadoSemaforo })),
+    checkins: (checkins ?? []).map((c) => ({ fecha: c.fecha, estado: c.estado as EstadoSemaforo, nota: c.nota ?? null })),
     meta: meta
       ? {
           tipo: meta.tipo,
@@ -56,6 +56,20 @@ export async function registrarCheckInSupabase(estadoSemaforo: EstadoSemaforo): 
   const { error } = await supabase
     .from('checkins')
     .upsert({ user_id: uid, fecha: hoyISO(), estado: estadoSemaforo }, { onConflict: 'user_id,fecha' });
+  if (error) throw error;
+  return obtenerEstadoApp();
+}
+
+/** Guarda (o borra, si llega vacío) la nota opcional "¿en qué se te fue?" del check-in de hoy —
+ * no toca el estado tranquilo/alerta ya marcado. */
+export async function registrarNotaCheckInSupabase(nota: string): Promise<EstadoApp> {
+  const supabase = crearClienteSupabase();
+  const uid = await usuarioId();
+  const { error } = await supabase
+    .from('checkins')
+    .update({ nota: nota.trim() || null })
+    .eq('user_id', uid)
+    .eq('fecha', hoyISO());
   if (error) throw error;
   return obtenerEstadoApp();
 }

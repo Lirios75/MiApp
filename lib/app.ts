@@ -8,6 +8,7 @@ export type EstadoSemaforo = 'tranquilo' | 'alerta';
 export interface CheckIn {
   fecha: string; // YYYY-MM-DD en hora local
   estado: EstadoSemaforo;
+  nota: string | null; // en qué se le fue el dinero ese día — opcional, no bloquea el check-in
 }
 
 export type ModoMeta = 'monto' | 'habito';

@@ -5,7 +5,7 @@
 // Ver docs/sistema/PREFLIGHT-PANTALLA.md + FICHA-ARTE.md antes de tocar esto.
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { AlertTriangle, ArrowRight, Check, Lightbulb, Pencil, Smile, AlertCircle, Target, X } from 'lucide-react';
 import {
@@ -17,7 +17,7 @@ import {
   type EstadoApp,
   type EstadoSemaforo,
 } from '@/lib/app';
-import { obtenerEstadoApp, registrarCheckInSupabase } from '@/lib/supabase/datos';
+import { obtenerEstadoApp, registrarCheckInSupabase, registrarNotaCheckInSupabase } from '@/lib/supabase/datos';
 import { AnilloProgreso, ErrorCarga, formatearFechaLarga, inicialDia, RachaBadge } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
@@ -51,6 +51,15 @@ export default function Hoy() {
     setEditando(false);
     try {
       setEstado(await registrarCheckInSupabase(valor));
+      setAvisoGuardado(false);
+    } catch {
+      setAvisoGuardado(true);
+    }
+  }
+
+  async function guardarNota(nota: string) {
+    try {
+      setEstado(await registrarNotaCheckInSupabase(nota));
       setAvisoGuardado(false);
     } catch {
       setAvisoGuardado(true);
@@ -110,7 +119,13 @@ export default function Hoy() {
             onCancelar={checkin ? () => setEditando(false) : undefined}
           />
         ) : (
-          <ConfirmacionDia estado={checkin.estado} racha={racha} onCambiar={() => setEditando(true)} />
+          <ConfirmacionDia
+            estado={checkin.estado}
+            racha={racha}
+            nota={checkin.nota}
+            onCambiar={() => setEditando(true)}
+            onGuardarNota={guardarNota}
+          />
         )}
       </motion.section>
 
@@ -153,7 +168,7 @@ export default function Hoy() {
 
       <motion.section
         variants={item}
-        className="flex items-start gap-3 rounded-[var(--radius-card)] border border-[color-mix(in_oklab,var(--accent)_18%,transparent)] bg-[var(--surface)] p-4"
+        className="flex items-start gap-3 rounded-[var(--radius-card)] border border-[color-mix(in_oklab,var(--accent)_18%,transparent)] bg-[color-mix(in_oklab,var(--accent)_7%,var(--surface))] p-4"
       >
         <span
           aria-hidden="true"
@@ -307,37 +322,116 @@ function SelectorSemaforo({
 function ConfirmacionDia({
   estado,
   racha,
+  nota,
   onCambiar,
+  onGuardarNota,
 }: {
   estado: EstadoSemaforo;
   racha: number;
+  nota: string | null;
   onCambiar: () => void;
+  onGuardarNota: (nota: string) => Promise<void>;
 }) {
   const tranquilo = estado === 'tranquilo';
+  const [editandoNota, setEditandoNota] = useState(false);
+  const [texto, setTexto] = useState(nota ?? '');
+  const [guardandoNota, setGuardandoNota] = useState(false);
+
+  async function guardarNota(e: FormEvent) {
+    e.preventDefault();
+    if (guardandoNota) return;
+    setGuardandoNota(true);
+    try {
+      await onGuardarNota(texto);
+      setEditandoNota(false);
+    } finally {
+      setGuardandoNota(false);
+    }
+  }
+
   return (
-    <div className="flex items-center gap-4 rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]">
-      <span
-        aria-hidden="true"
-        className="flex size-14 shrink-0 items-center justify-center rounded-full"
-        style={{ background: `color-mix(in oklab, var(--accent-${tranquilo ? '2' : '3'}) 16%, transparent)` }}
-      >
-        <Check size={24} strokeWidth={2.5} color={tranquilo ? 'var(--accent-2)' : 'var(--accent-3)'} aria-hidden="true" />
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="text-[19px] font-bold [font-family:var(--font-display)]">
-          Marcaste: {tranquilo ? 'día tranquilo' : 'día de alerta'}
-        </p>
-        <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">
-          {racha <= 1 ? 'Tu primer día registrado.' : `Llevas ${racha} días seguidos marcando tu Semáforo.`}
-        </p>
+    <div className="rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]">
+      <div className="flex items-center gap-4">
+        <span
+          aria-hidden="true"
+          className="flex size-14 shrink-0 items-center justify-center rounded-full"
+          style={{ background: `color-mix(in oklab, var(--accent-${tranquilo ? '2' : '3'}) 16%, transparent)` }}
+        >
+          <Check size={24} strokeWidth={2.5} color={tranquilo ? 'var(--accent-2)' : 'var(--accent-3)'} aria-hidden="true" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[19px] font-bold [font-family:var(--font-display)]">
+            Marcaste: {tranquilo ? 'día tranquilo' : 'día de alerta'}
+          </p>
+          <p className="mt-0.5 text-[13px] text-[var(--text-secondary)]">
+            {racha <= 1 ? 'Tu primer día registrado.' : `Llevas ${racha} días seguidos marcando tu Semáforo.`}
+          </p>
+          <button
+            type="button"
+            onClick={onCambiar}
+            className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)]"
+          >
+            <Pencil size={13} strokeWidth={2} aria-hidden="true" /> Cambiar
+          </button>
+        </div>
+      </div>
+
+      {editandoNota ? (
+        <form onSubmit={guardarNota} className="mt-4 border-t border-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)] pt-4">
+          <label htmlFor="nota-dia" className="text-[13px] font-semibold text-[var(--text-secondary)]">
+            ¿En qué se te fue? (opcional)
+          </label>
+          <textarea
+            id="nota-dia"
+            rows={2}
+            autoFocus
+            placeholder="Ej: antojo de comida, ropa que no necesitaba..."
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            className="mt-2 w-full resize-none rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 py-3 text-[15px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+          />
+          <div className="mt-2 flex gap-3">
+            <motion.button
+              type="submit"
+              disabled={guardandoNota}
+              whileTap={{ scale: 0.97 }}
+              className="flex h-9 items-center rounded-full bg-[var(--accent)] px-4 text-[13px] font-semibold text-[var(--bg)] disabled:opacity-60 [touch-action:manipulation]"
+            >
+              {guardandoNota ? 'Guardando…' : 'Guardar'}
+            </motion.button>
+            <button
+              type="button"
+              onClick={() => {
+                setTexto(nota ?? '');
+                setEditandoNota(false);
+              }}
+              className="text-[13px] font-semibold text-[var(--text-tertiary)]"
+            >
+              Cancelar
+            </button>
+          </div>
+        </form>
+      ) : nota ? (
+        <div className="mt-4 border-t border-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)] pt-4">
+          <p className="text-[13px] font-semibold text-[var(--text-secondary)]">En qué se te fue</p>
+          <p className="mt-1 text-[15px] leading-relaxed text-[var(--text-primary)]">{nota}</p>
+          <button
+            type="button"
+            onClick={() => setEditandoNota(true)}
+            className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)]"
+          >
+            <Pencil size={13} strokeWidth={2} aria-hidden="true" /> Editar
+          </button>
+        </div>
+      ) : (
         <button
           type="button"
-          onClick={onCambiar}
-          className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)]"
+          onClick={() => setEditandoNota(true)}
+          className="mt-4 border-t border-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)] pt-4 text-[13px] font-semibold text-[var(--accent)]"
         >
-          <Pencil size={13} strokeWidth={2} aria-hidden="true" /> Cambiar
+          + ¿En qué se te fue?
         </button>
-      </div>
+      )}
     </div>
   );
 }
