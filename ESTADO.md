@@ -9,9 +9,14 @@ la tabla; confirmado con 403 en la consola del navegador). Fix ya escrito, commi
 compartido en `components/app/ui.tsx`) + estado de error en las 3 pantallas, para que un fallo de
 red/permiso muestre "Reintentar" en vez de quedarse cargando para siempre — queda como mejora
 permanente, no solo parche del bug. El SQL del fix ya se ejecutó con éxito en la base real ("Success. No rows returned", confirmado
-por captura). **Bug de permisos CERRADO.** Siguiente paso exacto: la usuaria está probando el
-flujo completo en vivo (marcar Semáforo, ver semana, crear/avanzar meta, cerrar sesión y volver a
-entrar con el mismo correo) — pendiente su confirmación de que todo funciona.
+por captura). **Bug de permisos CERRADO y VERIFICADO EN VIVO** (2026-10-15, capturas reales desde
+el celular de la usuaria en `mi-app-olive.vercel.app`): Hoy marcó "día tranquilo" y quedó
+guardado con racha de 1 día, Semana mostró el mismo día con su punto verde + fechas reales
+(12-18 oct), Meta mostró su meta real "Ahorrar para algo" ($5000 de $20.000, 25%) con el anillo
+de progreso, Cuenta mostró el plan real ("Mensual $6.99/mes, prueba gratis 7 de 7 días"). **La
+migración completa de localStorage a Supabase queda 100% cerrada y probada end-to-end con datos
+reales de la usuaria.** Siguiente paso exacto: dominio propio para la app (hoy vive en
+`*.vercel.app`), luego Hotmart — próximas fases de la SECUENCIA MAESTRA.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
