@@ -52,9 +52,29 @@ confirmación. Después: dominio propio, luego Hotmart.
    también preguntó por emojis en esa tarjeta — se le explicó por qué NO (rompe la consistencia
    con los íconos de línea que usa el resto de la app) y aceptó mantener los íconos SVG.
 Verificado: tsc ✓ build ✓. La migración SQL de `nota` ya se ejecutó con éxito en la base real
-("Success. No rows returned"). Siguiente paso exacto: la usuaria prueba en vivo (1) editar su
-meta con nombre propio y frecuencia, (2) la nota opcional "¿En qué se te fue?" en Hoy — pendiente
-su confirmación. Después: dominio propio, Hotmart.
+("Success. No rows returned"). La usuaria PROBÓ Y CONFIRMÓ en vivo: el nombre/frecuencia editable
+de la meta y la nota opcional de Hoy quedan 100% cerrados y funcionando.
+
+⏸️ CHECKPOINT (2026-10-15, noche) — app instalable en el celular (PWA): la usuaria preguntó cómo
+hacer que la app, al comprarla, quede como un ícono en el celular (no solo abierta en el
+navegador). Se le explicó la diferencia entre esto (gratis, funciona ya, "Agregar a pantalla de
+inicio") y publicar en App Store/Google Play (trámite aparte, con costo y revisión, no es lo que
+pidió). Implementado — app instalable:
+- Generados los íconos de la app con el anillo de respiración de la marca (mismo mark de
+  `components/RespiraMark.tsx`, azul-lila `#5468D4` sobre crema `#FAF6EF`) con Playwright en
+  este sandbox: `app/icon.png` (512), `app/apple-icon.png` (180, iPhone), `public/icons/
+  icon-192.png`, `icon-512.png`, `icon-512-maskable.png` (con más margen, para Android). Se quitó
+  el favicon por defecto de Next.
+- `app/manifest.ts`: manifest de la app (nombre, colores de marca, `start_url: '/app'`,
+  `display: 'standalone'`) — Next lo sirve automático en `/manifest.webmanifest`.
+- `app/layout.tsx`: metadata de `appleWebApp` (capable, título) + `viewport.themeColor` (color de
+  la barra del navegador en el celular) — SOLO metadata del `<head>`, cero cambios visuales en
+  ninguna pantalla (confirmado por diff).
+Verificado: tsc ✓ build ✓ (rutas `/icon.png`, `/apple-icon.png`, `/manifest.webmanifest` generadas
+correctamente). NO se pudo probar en vivo en este sandbox. Siguiente paso exacto: la usuaria
+prueba en su celular: Android/Chrome debería ofrecer "Instalar app" solo; en iPhone/Safari hay
+que explicarle el paso manual (Compartir → Agregar a pantalla de inicio — Apple no ofrece install
+automático, es límite de la plataforma, no un bug). Después: dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

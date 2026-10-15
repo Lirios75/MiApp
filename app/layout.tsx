@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,15 @@ export const metadata: Metadata = {
   title: "Respira — deja de gastar por ansiedad",
   description:
     "Un registro de 30 segundos al día que te ayuda a notar el patrón antes de repetirlo. Sin conectar tu banco, sin categorías complicadas.",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Respira",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#FAF6EF",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

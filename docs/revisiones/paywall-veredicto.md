@@ -191,3 +191,12 @@ opcional "¿En qué se te fue?" tras marcar el Semáforo y un fondo con tinte de
 nuevo) en la tarjeta de reflexión diaria. Verificado por grep: ninguno de estos archivos menciona
 `paywall` ni es importado desde `app/paywall/page.tsx` o `components/funnel/ui.tsx`. Cero impacto
 en el paywall.
+
+## Decimosexta re-verificación (2026-10-15, noche — app instalable / PWA)
+
+El cambio toca `app/layout.tsx` (el layout RAÍZ que sí envuelve `/paywall`), más `app/manifest.ts`
+y los archivos de ícono (`app/icon.png`, `app/apple-icon.png`, `public/icons/*`). Revisado el
+diff de `app/layout.tsx` línea por línea: el único cambio es metadata del `<head>` (`appleWebApp`,
+`viewport.themeColor`) — el `<html>`/`<body>` y sus clases quedan exactamente igual, cero cambio
+visual. `app/manifest.ts` no se importa desde ninguna pantalla (es una ruta especial que Next
+sirve sola en `/manifest.webmanifest`). Cero impacto en el paywall.
