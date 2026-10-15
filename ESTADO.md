@@ -33,10 +33,10 @@ sin este campo. Implementado:
   libre) y luego "¿Cada cuánto quieres ahorrar?" (chips Diario/Semanal/Mensual/Semestral/Anual).
   La meta ya creada muestra el nombre + un chip con la frecuencia, y un botón "Editar" (mismo
   patrón que "Cambiar" en Hoy) para cambiarlos después sin perder el progreso.
-Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox (sin acceso de red a
-Supabase, mismo límite de siempre). Siguiente paso exacto: (1) la usuaria ejecuta la migración
-SQL nueva en Supabase, (2) prueba crear/editar una meta con nombre propio y frecuencia en
-`mi-app-olive.vercel.app/app/meta`. Después: dominio propio, luego Hotmart.
+Verificado: tsc ✓ build ✓. La migración SQL ya se ejecutó con éxito en la base real ("Success. No
+rows returned", confirmado por captura). Siguiente paso exacto: la usuaria prueba crear/editar
+una meta con nombre propio y frecuencia en `mi-app-olive.vercel.app/app/meta` — pendiente su
+confirmación. Después: dominio propio, luego Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
