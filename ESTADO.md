@@ -101,9 +101,16 @@ abre un panel debajo del calendario con la fecha completa, si fue día tranquilo
 de ese día (o "No escribiste en qué se te fue ese día." si no escribió nada). Solo lectura — para
 editar una nota pasada se sigue haciendo desde Hoy (día de hoy únicamente, ya existía). Verificado:
 tsc ✓ build ✓. La migración de `quincenal` ya se ejecutó con éxito en la base real ("Success. No
-rows returned"). Siguiente paso exacto: la usuaria prueba (1) cambiar el monto y ver "Quincenal"
-desde "Editar" en Meta, (2) tocar un día marcado en Semana para ver su nota — pendiente su
-confirmación. Después: dominio propio, Hotmart.
+rows returned"). ⏸️ CHECKPOINT (2026-10-15, noche) — montos con puntos de miles mientras se escriben: la usuaria
+preguntó si debía escribir "10.000.000" o "10000000" en los campos de monto de Meta — se le
+explicó que el campo no entendía puntos, y pidió que se formatearan solos. Implementado en los 3
+campos de monto de `app/app/meta/page.tsx` (crear meta, editar meta, registrar avance): ahora son
+`type="text" inputMode="numeric"` en vez de `type="number"`, y mientras la usuaria escribe se ven
+los puntos de miles (ej. escribe "10000000", ve "10.000.000"). Nuevas funciones compartidas en
+`components/app/ui.tsx`: `formatearMiles` (dígitos → texto con puntos) y `soloDigitos` (texto →
+solo números, para guardar el valor real). Verificado: tsc ✓ build ✓. NO se pudo probar en vivo
+en este sandbox. Siguiente paso exacto: la usuaria prueba escribir un monto en Meta y confirma
+que los puntos aparecen solos. Después: dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

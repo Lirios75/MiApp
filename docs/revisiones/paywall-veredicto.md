@@ -220,3 +220,10 @@ Verificado por grep: ninguno de estos archivos menciona `paywall` ni es importad
 El cambio toca solo `app/app/semana/page.tsx` — los días marcados ahora son tocables y muestran
 la nota de ese día. Verificado por grep: el archivo no menciona `paywall` ni es importado desde
 `app/paywall/page.tsx` o `components/funnel/ui.tsx`. Cero impacto en el paywall.
+
+## Vigésima re-verificación (2026-10-15, noche — montos con puntos de miles en Tu meta)
+
+El cambio toca `components/app/ui.tsx` (nuevas funciones `formatearMiles`/`soloDigitos`) y
+`app/app/meta/page.tsx` (los 3 campos de monto). Verificado por grep: `app/paywall/page.tsx` NO
+importa nada de `components/app/ui.tsx` (usa `components/funnel/ui.tsx`, un archivo distinto).
+Cero impacto en el paywall.

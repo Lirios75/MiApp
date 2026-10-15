@@ -24,7 +24,7 @@ import {
   obtenerEstadoApp,
   registrarAvanceMetaSupabase,
 } from '@/lib/supabase/datos';
-import { AnilloProgreso, ConteoAnimado, ErrorCarga } from '@/components/app/ui';
+import { AnilloProgreso, ConteoAnimado, ErrorCarga, formatearMiles, soloDigitos } from '@/components/app/ui';
 
 const PLACEHOLDER_NOMBRE: Record<string, string> = {
   ahorrar: 'Ej: viaje a la playa, fondo de emergencia...',
@@ -229,13 +229,12 @@ function ConfigurarMeta({
             {COPY_TIPO[inicial.tipo]?.pregunta ?? '¿Cuánto quieres ahorrar en total?'}
           </p>
           <input
-            type="number"
-            inputMode="decimal"
-            min={1}
+            type="text"
+            inputMode="numeric"
             required
-            placeholder="Ej: 500"
-            value={monto}
-            onChange={(e) => setMonto(e.target.value)}
+            placeholder="Ej: 500.000"
+            value={formatearMiles(monto)}
+            onChange={(e) => setMonto(soloDigitos(e.target.value))}
             aria-label="Monto objetivo"
             className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
           />
@@ -338,12 +337,11 @@ function ProgresoMeta({
       {meta.modo === 'monto' ? (
         <form onSubmit={registrar} className="mt-5 flex gap-2">
           <input
-            type="number"
-            inputMode="decimal"
-            min={1}
+            type="text"
+            inputMode="numeric"
             placeholder="Registrar avance"
-            value={avance}
-            onChange={(e) => setAvance(e.target.value)}
+            value={formatearMiles(avance)}
+            onChange={(e) => setAvance(soloDigitos(e.target.value))}
             aria-label="Cuánto quieres sumar a tu meta"
             className="h-[48px] flex-1 rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
           />
@@ -419,12 +417,11 @@ function EditarDetalleMeta({
 
       <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Cuánto quieres ahorrar en total?</p>
       <input
-        type="number"
-        inputMode="decimal"
-        min={1}
+        type="text"
+        inputMode="numeric"
         required
-        value={objetivo}
-        onChange={(e) => setObjetivo(e.target.value)}
+        value={formatearMiles(objetivo)}
+        onChange={(e) => setObjetivo(soloDigitos(e.target.value))}
         aria-label="Monto total de la meta"
         className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
       />

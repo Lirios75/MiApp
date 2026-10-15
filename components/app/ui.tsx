@@ -200,6 +200,20 @@ export function ErrorCarga() {
   );
 }
 
+/** Formatea dígitos crudos ("10000000") con puntos de miles ("10.000.000") mientras la usuaria
+ * escribe un monto — recibe lo que haya en el input, descarta todo lo que no sea número. */
+export function formatearMiles(valor: string): string {
+  const limpio = valor.replace(/\D/g, '');
+  if (!limpio) return '';
+  return Number(limpio).toLocaleString('es');
+}
+
+/** Deja solo los dígitos de lo que la usuaria escribió en un campo de monto — así el estado
+ * guarda el número real, no el texto con puntos. */
+export function soloDigitos(valor: string): string {
+  return valor.replace(/\D/g, '');
+}
+
 const DIAS_SEMANA_CORTOS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'] as const;
 
 export function inicialDia(index: number): string {
