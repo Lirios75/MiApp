@@ -100,10 +100,10 @@ guarda, pero no se veía en ningún lado más que el mismo día. Pidió agregarl
 abre un panel debajo del calendario con la fecha completa, si fue día tranquilo/alerta, y la nota
 de ese día (o "No escribiste en qué se te fue ese día." si no escribió nada). Solo lectura — para
 editar una nota pasada se sigue haciendo desde Hoy (día de hoy únicamente, ya existía). Verificado:
-tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox. Siguiente paso exacto: (1) la usuaria
-ejecuta la migración de `quincenal` (pendiente de antes), (2) prueba cambiar el monto desde
-"Editar" en Meta, (3) prueba tocar un día marcado en Semana para ver su nota. Después: dominio
-propio, Hotmart.
+tsc ✓ build ✓. La migración de `quincenal` ya se ejecutó con éxito en la base real ("Success. No
+rows returned"). Siguiente paso exacto: la usuaria prueba (1) cambiar el monto y ver "Quincenal"
+desde "Editar" en Meta, (2) tocar un día marcado en Semana para ver su nota — pendiente su
+confirmación. Después: dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
