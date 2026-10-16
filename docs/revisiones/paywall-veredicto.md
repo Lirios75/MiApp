@@ -247,3 +247,19 @@ completo por un dígito; la certificación LISTA (37/40 · 20/20 · 19/20) sigue
 ninguno de los ejes que evaluó (jerarquía, espaciado, accesibilidad, copy persuasivo) cambió — el
 copy sigue cumpliendo el mismo rol persuasivo, solo con el número correcto. Mismo cambio aplicado
 también en `app/page.tsx` (landing) y `app/reembolsos/page.tsx` para mantener consistencia.
+
+## Vigesimotercera re-verificación (2026-10-16, noche — webhook de Hotmart, conecta el CTA al checkout real)
+
+Cambio en `app/paywall/page.tsx`: dentro de `empezarPrueba()` se agregó UNA rama de lógica —
+si `lib/hotmart.ts` ya tiene cargado el link real de checkout del plan elegido, el botón
+navega ahí (`window.location.href`) en vez de a `/entrar`. Verificado por diff línea a línea:
+cero cambios de JSX, cero cambios de clases/estilos/spacing/tipografía — el componente se ve y
+se comporta EXACTO igual que antes, porque `HOTMART_CHECKOUT_MENSUAL`/`HOTMART_CHECKOUT_ANUAL`
+siguen vacíos (pendiente de que la usuaria comparta los links de Hotmart) y la rama nueva no se
+activa todavía. `app/app/cuenta/page.tsx` también cambió en el mismo commit (ahora puede
+mostrar el plan/estado real una vez haya una compra de Hotmart) pero es pantalla secundaria, sin
+revisor-visual obligatorio, y tampoco tuvo cambios de JSX/layout — solo qué texto cae en el
+mismo bloque que ya existía. Cero impacto visual en el paywall; la certificación LISTA
+(37/40 · 20/20 · 19/20) sigue vigente. Cuando se carguen los links reales y el botón empiece a
+salir de la app de verdad, esto se re-evalúa (no es un cambio visual, pero si cambia el
+comportamiento del CTA principal vale la pena una prueba manual del flujo completo).
