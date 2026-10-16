@@ -263,3 +263,16 @@ mismo bloque que ya existía. Cero impacto visual en el paywall; la certificaci�
 (37/40 · 20/20 · 19/20) sigue vigente. Cuando se carguen los links reales y el botón empiece a
 salir de la app de verdad, esto se re-evalúa (no es un cambio visual, pero si cambia el
 comportamiento del CTA principal vale la pena una prueba manual del flujo completo).
+
+## Vigesimocuarta re-verificación (2026-10-16, noche — links reales de Hotmart cargados en `lib/hotmart.ts`)
+
+Se completaron `HOTMART_CHECKOUT_MENSUAL`/`HOTMART_CHECKOUT_ANUAL` con los links reales que
+compartió la usuaria (Hotmart → Hotlinks → "Página de Pago" de cada plan). La rama de
+`empezarPrueba()` descrita en la re-verificación anterior AHORA SÍ se activa: el CTA del
+paywall deja de ir a `/entrar` y navega al checkout real de Hotmart. Sigue siendo CERO cambio
+visual (mismo componente, mismo texto del botón, mismo estado de carga mientras navega) —
+no amerita relanzar el revisor-visual completo, la certificación LISTA sigue vigente en lo
+estructural. Pendiente de verdad: una prueba manual del flujo completo (tocar el botón → llegar
+al checkout real de Hotmart con el plan correcto preseleccionado → comprar de prueba → volver a
+la app con acceso) — esa es la Prueba E2E del Paso F de `18-VENTA-HOTMART.md`, no una revisión
+visual.

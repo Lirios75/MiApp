@@ -285,6 +285,17 @@ menú del producto → "Ver mis Hotlinks") para completar `lib/hotmart.ts` y con
 paywall al checkout real; después, una compra de prueba real (puede ser reembolsable) para
 verificar: se crea la cuenta, llega el correo de acceso, el plan queda activo en Cuenta.
 
+⏸️ CHECKPOINT (2026-10-16, noche) — `lib/hotmart.ts` completado con los 2 links reales de
+checkout que compartió la usuaria (Hotmart → Hotlinks → "Página de Pago" de cada plan, con su
+código de oferta). El botón "Empezar mis 7 días gratis" del paywall AHORA SÍ sale de la app y
+lleva al cobro real de Hotmart (antes simulaba yendo a `/entrar`). Verificado: tsc ✓ build ✓.
+Re-verificación del paywall anotada (cero cambio visual, certificación sigue vigente — ver
+`docs/revisiones/paywall-veredicto.md`). **Falta la prueba real de punta a punta (Paso F):**
+hacer una compra de prueba (puede ser reembolsable) desde el paywall real y confirmar: llega al
+checkout correcto → el webhook la procesa → se crea la cuenta → llega el correo de acceso → al
+entrar, Cuenta muestra el plan activo. Siguiente paso exacto: guiar a la usuaria a abrir su app
+en el celular, llegar hasta el paywall, y hacer la compra de prueba.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→

@@ -4,8 +4,7 @@
 
 export const HOTMART_PRODUCT_ID = '8740950'; // producto "RESPIRA" en Hotmart
 
-// Links reales de checkout (Hotmart → menú del producto → "Ver mis Hotlinks"). Mientras estén
-// vacíos, el paywall sigue llevando a /entrar (comportamiento honesto que ya tenía, nunca un
-// checkout falso) — se completan en cuanto la usuaria los comparta.
-export const HOTMART_CHECKOUT_MENSUAL = '';
-export const HOTMART_CHECKOUT_ANUAL = '';
+// Links reales de checkout (Hotmart → menú del producto → "Ver mis Hotlinks" → "Página de Pago"
+// de cada plan) — compartidos por la usuaria el 2026-10-16.
+export const HOTMART_CHECKOUT_MENSUAL = 'https://pay.hotmart.com/A108052335O?off=aarlhwza';
+export const HOTMART_CHECKOUT_ANUAL = 'https://pay.hotmart.com/A108052335O?off=wslidftp';
