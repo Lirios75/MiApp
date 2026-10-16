@@ -143,8 +143,9 @@ select e insert) — sin esa política, RLS bloquea la fila en silencio y el PAT
 pero no actualiza ninguna fila. Fix en
 `supabase/migrations/20261016020000_rls_update_perfiles.sql` (crea la política de update en
 `perfiles`, mismo patrón que checkins/metas) — ya ejecutada con éxito en la base real ("Success.
-No rows returned"). Siguiente paso exacto: la usuaria prueba subir la foto de nuevo en Cuenta —
-pendiente su confirmación. Después: dominio propio, Hotmart.
+No rows returned"). **La usuaria PROBÓ Y CONFIRMÓ: su foto ya se ve correctamente en Cuenta.** Feature de foto de
+perfil 100% cerrada y funcionando. Siguiente paso exacto: dominio propio para la app, luego
+Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
