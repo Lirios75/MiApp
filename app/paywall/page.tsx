@@ -15,6 +15,7 @@ import { ConfirmSalir, FunnelButton, FunnelFondo } from '@/components/funnel/ui'
 import { RespiraMark } from '@/components/RespiraMark';
 import { LABEL_DOLOR, LABEL_META, LABEL_META_HEADLINE, LABEL_MOMENTO, leerRespuestas, type RespuestasOnboarding } from '@/lib/onboarding';
 import { GARANTIA_DIAS, PLAN_ANUAL, PLAN_MENSUAL, TRIAL_DIAS } from '@/lib/pricing';
+import { HOTMART_CHECKOUT_ANUAL, HOTMART_CHECKOUT_MENSUAL } from '@/lib/hotmart';
 
 function formatearFecha(fecha: Date): string {
   return fecha.toLocaleDateString('es', { day: 'numeric', month: 'short' });
@@ -71,6 +72,11 @@ export default function Paywall() {
       window.localStorage.setItem('respira_plan', plan);
     } catch {
       // no bloquea el avance — /entrar simplemente no tendrá el plan preseleccionado.
+    }
+    const checkoutUrl = plan === 'anual' ? HOTMART_CHECKOUT_ANUAL : HOTMART_CHECKOUT_MENSUAL;
+    if (checkoutUrl) {
+      window.location.href = checkoutUrl; // sale de la app al checkout real de Hotmart
+      return;
     }
     router.push('/entrar');
     // Salvaguarda: si la navegación no ocurre (falla o queda pendiente),

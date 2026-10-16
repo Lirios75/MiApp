@@ -33,11 +33,27 @@ export interface Meta {
   frecuencia: Frecuencia | null; // cada cuánto ahorra — solo aplica en modo monto
 }
 
+// Estado real de la membresía (lo llena el webhook de Hotmart al confirmar un pago) — null
+// significa "todavía no hay ninguna compra registrada" (p. ej. mientras se prueba la app).
+export type EstadoMembresiaApp =
+  | 'trialing'
+  | 'active'
+  | 'past_due'
+  | 'cancelled'
+  | 'expired'
+  | 'refunded'
+  | 'chargeback'
+  | null;
+
 export interface EstadoApp {
   checkins: CheckIn[];
   meta: Meta | null;
   fechaInicioTrial: string | null;
   avatarUrl: string | null;
+  estadoMembresia: EstadoMembresiaApp;
+  planHotmart: string | null; // nombre real del plan pagado (ej. "Mensual"/"Anual")
+  trialTerminaEl: string | null; // ISO — solo tiene sentido si estadoMembresia === 'trialing'
+  accesoHasta: string | null; // ISO — acceso pagado restante si estadoMembresia === 'cancelled'
 }
 
 export const OBJETIVO_HABITO_DIAS = 30;

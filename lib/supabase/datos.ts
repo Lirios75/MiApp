@@ -20,7 +20,11 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
   const uid = await usuarioId();
 
   const [{ data: perfil }, { data: checkins, error: errorCheckins }, { data: meta, error: errorMeta }] = await Promise.all([
-    supabase.from('perfiles').select('fecha_inicio_trial, avatar_url').eq('id', uid).maybeSingle(),
+    supabase
+      .from('perfiles')
+      .select('fecha_inicio_trial, avatar_url, status, hotmart_plan_name, trial_ends_at, access_until')
+      .eq('id', uid)
+      .maybeSingle(),
     supabase.from('checkins').select('fecha, estado, nota').eq('user_id', uid).order('fecha'),
     supabase.from('metas').select('tipo, nombre, modo, objetivo, actual, frecuencia').eq('user_id', uid).maybeSingle(),
   ]);
@@ -48,6 +52,10 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
       : null,
     fechaInicioTrial,
     avatarUrl: perfil?.avatar_url ?? null,
+    estadoMembresia: (perfil?.status as EstadoApp['estadoMembresia']) ?? null,
+    planHotmart: perfil?.hotmart_plan_name ?? null,
+    trialTerminaEl: perfil?.trial_ends_at ?? null,
+    accesoHasta: perfil?.access_until ?? null,
   };
 }
 

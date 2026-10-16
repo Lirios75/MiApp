@@ -209,9 +209,62 @@ minutos". Estado actual: "En análisis". Fase 1 del plan de 4 (ella en Hotmart) 
 sustancialmente cerrada en cuanto Hotmart apruebe. Resumen de lo configurado: planes Mensual
 $6.99/mes y Anual $49.99/año (USD), ambos con 7 días de prueba gratis (modalidad "Gratuito"),
 garantía de reembolso 15 días. **Aprobado por Hotmart** (2026-10-16, noche — captura real del
-panel: "¡Todo listo para vender!", checklist completo en verde). Fase 1 CERRADA. Siguiente paso:
-arrancar la Fase 2 (código del endpoint seguro del webhook + conexión del paywall real al
-checkout de Hotmart), según `docs/sistema/18-VENTA-HOTMART.md`.
+panel: "¡Todo listo para vender!", checklist completo en verde). Fase 1 CERRADA.
+
+⏸️ CHECKPOINT (2026-10-16, noche) — Fase 2 de Hotmart: CÓDIGO del webhook construido y verificado
+(tsc ✓ build ✓), siguiendo `docs/sistema/18-VENTA-HOTMART.md` (las 4 defensas: autenticidad,
+frescura, idempotencia, máquina de estados). Archivos nuevos:
+- `supabase/migrations/20261017000000_hotmart_webhook.sql`: agrega a `perfiles` las columnas
+  reales de membresía (`email`, `status`, `plan`, `hotmart_subscriber_code`,
+  `hotmart_plan_name`, `trial_ends_at`, `first_paid_at`, `access_until`, `grace_ends_at`) + las
+  tablas `processed_events` (dedupe) y `webhook_log` (auditoría) + la función
+  `apply_hotmart_event` (atómica: dedupe + cambio de estado juntos). **Falta que la usuaria la
+  ejecute** (mismo procedimiento SQL de siempre).
+  ⚠️ CIERRE DE SEGURIDAD DE PASO: mientras construía esto encontré que las políticas de RLS de
+  `perfiles` (hechas para la foto de perfil) dejaban a CUALQUIER usuaria autenticada
+  actualizar/crear su propia fila CON CUALQUIER COLUMNA — incluidas `status`/`plan` — es decir,
+  con la clave pública cualquiera podía auto-otorgarse Pro gratis sin pagar. Cerrado con permisos
+  a nivel de COLUMNA (Postgres los soporta junto a RLS): `authenticated` solo puede tocar
+  `avatar_url` (update) y `id`/`fecha_inicio_trial` (insert) — igual que antes para la foto —,
+  el resto de columnas de membresía solo las escribe la función de arriba (corre como
+  `service_role`). Esto va en la MISMA migración.
+- `lib/hotmart-verify.ts`: verifica el hottok en tiempo constante (`crypto.timingSafeEqual`,
+  anti timing-attack) + ventana anti-replay de 5 min.
+- `lib/membership-fsm.ts`: traduce evento de Hotmart + monto cobrado → estado
+  (trialing/active/past_due/cancelled/expired/refunded/chargeback) y bloquea reactivar un
+  reembolso/contracargo con un evento viejo reentregado.
+- `lib/supabase/admin.ts`: cliente con la llave SERVICE ROLE (SOLO servidor) + función que crea
+  la cuenta de quien compró (o la reutiliza si ya existía) ANTES de tocar `perfiles` — para
+  nunca dejar un pago "procesado" sin cuenta real detrás.
+- `lib/hotmart.ts`: el product id real (8740950) + los dos links de checkout — **vacíos por
+  ahora, pendientes de que la usuaria los comparta** (Hotmart → menú del producto → "Ver mis
+  Hotlinks"). Mientras estén vacíos, el paywall sigue mandando a `/entrar` como hasta ahora (sin
+  romper nada en producción).
+- `app/api/webhooks/hotmart/route.ts`: el endpoint en sí — valida → verifica catálogo
+  (producto+moneda+importe esperados) → resuelve/crea la cuenta → aplica el estado de forma
+  atómica (RPC) → envía el enlace de acceso reusando Supabase Auth + Resend YA conectados (sin
+  montar un envío de correo aparte).
+- `app/paywall/page.tsx`: el botón de "Empezar mis 7 días gratis" ahora manda al checkout REAL
+  de Hotmart si el link ya está cargado (si no, sigue igual que hasta hoy).
+- `lib/app.ts` / `lib/supabase/datos.ts` / `app/app/cuenta/page.tsx`: Cuenta ahora muestra el
+  plan y el estado REALES en cuanto exista una compra confirmada por Hotmart (antes era una
+  adivinanza hecha en el navegador con `localStorage`); si todavía no hay compra, se ve
+  exactamente igual que antes (sin regresión para su cuenta de pruebas actual).
+⚠️ Alcance decidido (DECIDE-INFORMA-AVANZA, documentado aquí): por ahora NO se construyó el
+libro mayor de ingresos (`payment_transactions`) ni el job semanal de reconciliación que pide el
+SO — son para no duplicar INGRESOS en reportes financieros, no afectan si el acceso se otorga
+bien o mal (eso sí está cubierto). Se agregan antes de necesitar reportes de plata reales.
+Tampoco se mapeó `SWITCH_PLAN` (cambio nativo mensual↔anual) — se ignora sin romper nada; se
+agrega si se habilita esa opción en el panel de Hotmart.
+Siguiente paso exacto (3 cosas, en este orden):
+1. La usuaria ejecuta la migración SQL nueva en Supabase (igual que siempre).
+2. La usuaria agrega en Vercel una variable de entorno nueva: `SUPABASE_SERVICE_ROLE_KEY` (la
+   copia del panel de Supabase, Configuración → API, directo a Vercel — nunca pegada en el chat)
+   y otra `HOTMART_HOTTOK` (se consigue en el Paso E de abajo).
+3. Paso E de `18-VENTA-HOTMART.md`: conectar el webhook en el panel de Hotmart (pegar la URL del
+   endpoint ya desplegado + elegir los eventos + copiar el HOTTOK a Vercel) y mandar un test.
+Después: pedirle los 2 links de "Hotlinks" para completar `lib/hotmart.ts`, y hacer la compra de
+prueba de punta a punta (Paso F) antes de anunciar la venta.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

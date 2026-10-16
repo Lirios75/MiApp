@@ -9,6 +9,7 @@ import { motion } from 'motion/react';
 import { Bell, Camera, Globe, LogOut, Mail, ShieldCheck, User } from 'lucide-react';
 import { PLAN_ANUAL, PLAN_MENSUAL, TRIAL_DIAS } from '@/lib/pricing';
 import { cerrarSesionSupabase, obtenerEstadoApp, subirFotoPerfilSupabase } from '@/lib/supabase/datos';
+import type { EstadoMembresiaApp } from '@/lib/app';
 
 const SOPORTE_EMAIL = 'lina.rios@ikigaihumano.com';
 
@@ -20,6 +21,32 @@ function diasDeTrialRestantes(fechaInicioTrial: string | null): number {
   return Math.max(0, TRIAL_DIAS - transcurridos);
 }
 
+function formatearFecha(iso: string): string {
+  return new Date(iso).toLocaleDateString('es', { day: 'numeric', month: 'short' });
+}
+
+/** Mensaje de la tarjeta del plan — una vez que Hotmart confirmó una compra real
+ * (estadoMembresia no es null), reemplaza la estimación local de siempre. */
+function mensajeMembresia(estado: Exclude<EstadoMembresiaApp, null>, trialTerminaEl: string | null, accesoHasta: string | null): string {
+  switch (estado) {
+    case 'trialing':
+      return trialTerminaEl ? `Prueba gratis activa — termina el ${formatearFecha(trialTerminaEl)}` : 'Prueba gratis activa';
+    case 'active':
+      return 'Tu plan está activo';
+    case 'past_due':
+      return 'Tu último pago no pasó — actualiza tu método para no perder el acceso';
+    case 'cancelled':
+      return accesoHasta ? `Cancelaste — tienes acceso hasta el ${formatearFecha(accesoHasta)}` : 'Cancelaste tu plan';
+    case 'expired':
+      return 'Tu plan venció';
+    case 'refunded':
+    case 'chargeback':
+      return 'Tu plan ya no está activo';
+    default:
+      return '';
+  }
+}
+
 export default function Cuenta() {
   const router = useRouter();
   const [plan, setPlan] = useState<'anual' | 'mensual' | null>(null);
@@ -28,6 +55,12 @@ export default function Cuenta() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [subiendoFoto, setSubiendoFoto] = useState(false);
   const [errorFoto, setErrorFoto] = useState<string | null>(null);
+  const [membresia, setMembresia] = useState<{
+    estado: EstadoMembresiaApp;
+    planHotmart: string | null;
+    trialTerminaEl: string | null;
+    accesoHasta: string | null;
+  }>({ estado: null, planHotmart: null, trialTerminaEl: null, accesoHasta: null });
   const inputFotoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -37,8 +70,16 @@ export default function Cuenta() {
     obtenerEstadoApp().then((estado) => {
       setDiasRestantes(diasDeTrialRestantes(estado.fechaInicioTrial));
       setAvatarUrl(estado.avatarUrl);
+      setMembresia({
+        estado: estado.estadoMembresia,
+        planHotmart: estado.planHotmart,
+        trialTerminaEl: estado.trialTerminaEl,
+        accesoHasta: estado.accesoHasta,
+      });
     });
   }, []);
+
+  const tienePlanReal = membresia.estado !== null;
 
   async function cambiarFoto(e: React.ChangeEvent<HTMLInputElement>) {
     const archivo = e.target.files?.[0];
@@ -64,7 +105,9 @@ export default function Cuenta() {
     });
   }
 
-  const infoPlan = plan === 'anual' ? PLAN_ANUAL : PLAN_MENSUAL;
+  const infoPlan = tienePlanReal
+    ? (membresia.planHotmart === 'Anual' ? PLAN_ANUAL : PLAN_MENSUAL)
+    : (plan === 'anual' ? PLAN_ANUAL : PLAN_MENSUAL);
 
   async function salir() {
     await cerrarSesionSupabase();
@@ -125,9 +168,11 @@ export default function Cuenta() {
         <div className="mt-4 flex items-center gap-2 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-2)_10%,transparent)] px-3 py-2.5">
           <ShieldCheck size={16} strokeWidth={2} color="var(--accent-2)" aria-hidden="true" />
           <p className="text-[13px] font-medium text-[var(--accent-2-text)]">
-            {diasRestantes > 0
-              ? `Prueba gratis: te quedan ${diasRestantes} de ${TRIAL_DIAS} días`
-              : 'Tu prueba gratis terminó'}
+            {tienePlanReal
+              ? mensajeMembresia(membresia.estado!, membresia.trialTerminaEl, membresia.accesoHasta)
+              : diasRestantes > 0
+                ? `Prueba gratis: te quedan ${diasRestantes} de ${TRIAL_DIAS} días`
+                : 'Tu prueba gratis terminó'}
           </p>
         </div>
       </section>
