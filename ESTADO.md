@@ -266,6 +266,25 @@ Siguiente paso exacto (3 cosas, en este orden):
 Después: pedirle los 2 links de "Hotlinks" para completar `lib/hotmart.ts`, y hacer la compra de
 prueba de punta a punta (Paso F) antes de anunciar la venta.
 
+⏸️ CHECKPOINT (2026-10-15/16, noche) — Fase 2, Paso E CERRADO: la usuaria completó las 3 cosas
+pedidas arriba (migración SQL ejecutada, `SUPABASE_SERVICE_ROLE_KEY` y `HOTMART_HOTTOK` agregadas
+en Vercel + redeploy) y conectó el webhook en Hotmart (URL `https://respira.ikigaihumano.com/
+api/webhooks/hotmart`, versión 2.0.0, 6 eventos: compra aprobada/completa/reembolsada, chargeback,
+cancelación de suscripción, cambio de plan — "pago atrasado/recurrencia" no apareció como opción
+en el panel de su cuenta, no bloqueante). Envió la prueba de Hotmart ("Enviar prueba de
+configuración") y los 6 eventos de prueba dieron **"200 - Procesado"** — confirma que la URL y el
+HOTTOK están bien conectados y el endpoint no se cae con ningún evento. ⚠️ Honesto: esta prueba
+NO confirma todavía que el flujo completo (crear cuenta real + mandar el correo de acceso) esté
+funcionando — los eventos de prueba de Hotmart traen datos ficticios (producto/monto/correo de
+prueba) que el filtro de "catálogo permitido" del webhook (`app/api/webhooks/hotmart/route.ts`)
+rechaza a propósito sin romperse (responde 200 igual, por diseño, para no hacer que Hotmart
+reintente algo que nunca va a coincidir) — por eso no se creó ninguna cuenta nueva con esta
+prueba, y es lo esperado. La única forma de confirmar el flujo real es la compra de prueba de
+verdad (Paso F). Siguiente paso exacto: pedirle a la usuaria los 2 links de "Hotlinks" (Hotmart →
+menú del producto → "Ver mis Hotlinks") para completar `lib/hotmart.ts` y conectar el botón del
+paywall al checkout real; después, una compra de prueba real (puede ser reembolsable) para
+verificar: se crea la cuenta, llega el correo de acceso, el plan queda activo en Cuenta.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→
