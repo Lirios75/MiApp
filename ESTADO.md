@@ -161,8 +161,24 @@ Supabase Auth → Configuración de URL: "Site URL" ya es `https://respira.ikiga
 "URLs de redireccionamiento" tiene AMBAS: `https://mi-app-olive.vercel.app/**` (la vieja, se deja
 por si acaso) y `https://respira.ikigaihumano.com/**` (la nueva). **La usuaria PROBÓ Y CONFIRMÓ: `respira.ikigaihumano.com` funciona de punta a punta** (sesión real,
 datos reales, mismo backend). El código no necesitó cambios: el redirect del login usa
-`window.location.origin` (dinámico), no una URL fija. **Dominio propio 100% cerrado.** Siguiente
-paso exacto: Hotmart (conectar la venta real).
+`window.location.origin` (dinámico), no una URL fija. **Dominio propio 100% cerrado.**
+
+⏸️ CHECKPOINT (2026-10-16) — Hotmart, EN CURSO (ver `docs/sistema/18-VENTA-HOTMART.md`, la fuente
+canónica de todo este bloque). Plan de 4 fases explicado a la usuaria en simple:
+1. Ella en Hotmart: crear el producto tipo SUSCRIPCIÓN + área de miembros (1 clase con el
+   instructivo de acceso) + planes mensual/anual con prueba gratis de 7 días + enviar a aprobar.
+2. Yo en código: endpoint seguro del webhook (hottok en tiempo constante, dedupe por event_id,
+   FSM de membresía, tabla `processed_events`/`webhook_log`) + conectar el paywall real al
+   checkout de Hotmart + flujo de cuenta tras la compra.
+3. Juntas: conectar el webhook en Hotmart (pegar la URL del endpoint + copiar el HOTTOK a una
+   variable de entorno).
+4. Juntas: compra de prueba de punta a punta antes de anunciar.
+**Modelo de creación de usuario:** 2A (onboarding-first / preview anónimo) — coherente con la
+decisión de Sesión 1 ("Freemium con suscripción, onboarding-first") y con que hoy el paywall YA
+manda a `/entrar` sin cuenta previa (simulación honesta, `app/paywall/page.tsx` líneas ~66-76).
+Decisión técnica, no se le pregunta a la usuaria.
+Estado actual: empezando la Fase 1 — se le pidió crear el producto tipo Suscripción en
+app.hotmart.com, nombre "Respira". Pendiente su captura para seguir guiándola paso a paso.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
