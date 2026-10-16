@@ -190,12 +190,12 @@ el número que muestra, pero no la estructura/diseño — certificación 37/40·
 vigente). Decisión confirmada con la usuaria: precios en **dólares (USD)**, no reales brasileños (default de
 Hotmart) ni pesos colombianos. Plan **Mensual** casi listo en Hotmart: nombre "Mensual",
 descripción, moneda USD, $6.99, periodicidad mensual, "Pago al contado", "Hasta que el cliente
-cancele", claves de seguimiento apagadas (no necesarias aún) — a punto de guardar. Falta: (1)
-guardar este plan, (2) crear el plan ANUAL ($49.99/año) de la misma forma, (3) activar la prueba
-gratis de 7 días en AMBOS planes (Período de testes, modalidad GRATIS — paso que viene después de
-crear los planes), (4) completar el resto de "Fijación de precios" y enviar a aprobación (Paso D),
-(5) el área de miembros con la clase de instructivo de acceso (Paso B, con el texto modelo de
-18-VENTA-HOTMART.md) — probablemente pendiente, falta confirmar si ya se hizo.
+cancele", claves de seguimiento apagadas (no necesarias aún) — a punto de guardar. **Ambos planes ya creados y guardados en Hotmart**: Mensual ($6.99 USD, pago al contado, hasta
+cancelar) y Anual ($49.99 USD, mismo esquema). Plazo de reembolso: 15 días. Falta: (1) activar la
+prueba gratis de 7 días en AMBOS planes (Período de testes, modalidad GRATIS), (2) completar el
+resto de "Fijación de precios" y enviar a aprobación (Paso D), (3) el área de miembros con la
+clase de instructivo de acceso (Paso B, con el texto modelo de 18-VENTA-HOTMART.md) — probablemente
+pendiente, falta confirmar si ya se hizo.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
