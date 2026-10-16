@@ -21,11 +21,19 @@
 - PIX/boleto: no aplica directamente (mercado objetivo es Colombia/México, no Brasil).
 
 ## 4. PRUEBA Y GARANTÍA
-- Plazos que admite Hotmart: se verifica en Sesión 6 antes de publicar cualquier plazo en la landing — el número de abajo es la decisión del agente mientras tanto (DECIDE-INFORMA-AVANZA), no un dato de Hotmart verificado todavía.
-- Prueba elegida: 7 · Garantía elegida: 14 (días de suscripción PAGADA, contados desde el primer cobro — no se solapan con los 7 de prueba gratis).
-- Comprobación garantía > prueba: 14 > 7 → SÍ.
-- Historial de esta decisión (para no repetir la vuelta): el 2026-09-17 el usuario pidió bajar la garantía a 7 (igualándola con la prueba); se documentó el override y su efecto (cobertura real cero tras el cobro). El mismo día, tras ver la advertencia, el usuario decidió mantenerla en 14 para conservar el extra de confianza real después del cobro. Queda en 14 salvo que el usuario pida lo contrario otra vez.
-- ⚠️ Antes de vender de verdad (Sesión 6): confirmar que Hotmart admite configurar un reembolso de 14 días sobre el cobro pagado; si el máximo que permite es menor, bajar el número AQUÍ primero y luego en el copy (docs/copy/landing.md, app/page.tsx, app/reembolsos/page.tsx) — nunca al revés.
+- Plazos que admite Hotmart: VERIFICADO en Sesión 6, panel real del producto "Respira" — el
+  desplegable de "Plazo para solicitar el reembolso" solo ofrece 7 / 15 / 21 / 30 días (NO 14
+  exactos, a diferencia de lo asumido antes de conectar Hotmart de verdad).
+- Prueba elegida: 7 · Garantía elegida: **15** (se sube de 14 a 15 porque Hotmart no ofrece 14 —
+  15 es la opción más cercana que sigue cumpliendo garantía > prueba; días de suscripción PAGADA,
+  contados desde el primer cobro, no se solapan con los 7 de prueba gratis).
+- Comprobación garantía > prueba: 15 > 7 → SÍ.
+- Historial de esta decisión: el 2026-09-17 el usuario pidió bajar la garantía a 7 (igualándola
+  con la prueba); tras ver la advertencia de cobertura cero, la mantuvo en 14. El 2026-10-16, al
+  configurar el producto real en Hotmart, se descubrió que 14 no es una opción del panel — se
+  subió a 15 (la más cercana por arriba) y se actualizó el código (`lib/pricing.ts`
+  `GARANTIA_DIAS`, `app/page.tsx`, `app/reembolsos/page.tsx`) y el copy (`docs/copy/landing.md`,
+  `docs/copy/onboarding-paywall.md`) para que todo diga 15 de forma consistente.
 
 ## 5. CONVERSIÓN ESPERABLE
 - NO ENCONTRADO — se define umbral de muestra en Sesión 8 (Analítica) con datos propios.

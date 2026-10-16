@@ -177,8 +177,18 @@ canónica de todo este bloque). Plan de 4 fases explicado a la usuaria en simple
 decisión de Sesión 1 ("Freemium con suscripción, onboarding-first") y con que hoy el paywall YA
 manda a `/entrar` sin cuenta previa (simulación honesta, `app/paywall/page.tsx` líneas ~66-76).
 Decisión técnica, no se le pregunta a la usuaria.
-Estado actual: empezando la Fase 1 — se le pidió crear el producto tipo Suscripción en
-app.hotmart.com, nombre "Respira". Pendiente su captura para seguir guiándola paso a paso.
+Progreso de la Fase 1 (en Hotmart, app.hotmart.com): producto "RESPIRA" tipo Suscripción creado,
+con descripción, idioma (Español), país (Colombia), categoría ("Finanzas e Inversiones") e imagen
+(el ícono de marca que ya existía en `public/icons/icon-512.png`) — pasó a "Fijación de precios".
+⚠️ HALLAZGO IMPORTANTE: el panel real de Hotmart para "Plazo para solicitar el reembolso" NO
+ofrece 14 días — solo 7/15/21/30. Se subió la garantía de 14 a **15 días** (sigue cumpliendo
+garantía > prueba de 7) y se corrigió en TODO el proyecto para quedar consistente:
+`lib/pricing.ts` (`GARANTIA_DIAS`, usado por el paywall), `app/page.tsx` (landing),
+`app/reembolsos/page.tsx`, `docs/copy/landing.md`, `docs/copy/onboarding-paywall.md`,
+`FICHA-MERCADO.md` §4. Verificado: tsc ✓ build ✓. Re-verificación del paywall hecha (SÍ le cambia
+el número que muestra, pero no la estructura/diseño — certificación 37/40·20/20·19/20 sigue
+vigente). Pendiente de publicar (commit + push) y seguir con el resto de "Fijación de precios":
+crear el plan mensual, luego el anual, con la prueba gratis de 7 días activada en AMBOS.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

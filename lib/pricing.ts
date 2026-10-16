@@ -2,7 +2,7 @@
 // (la landing, ya aprobada). Si el precio cambia, se actualiza AQUÍ y en app/page.tsx.
 
 export const TRIAL_DIAS = 7;
-export const GARANTIA_DIAS = 14;
+export const GARANTIA_DIAS = 15; // Hotmart no ofrece 14 — opciones reales: 7/15/21/30 (Sesión 6)
 
 export const PLAN_ANUAL = {
   nombre: 'Anual',

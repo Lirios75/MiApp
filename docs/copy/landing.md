@@ -46,8 +46,8 @@
 
 ## 7. GARANTÍA
 - nombre: `la Garantía de los Primeros 14 Días Sin Culpa` — 14 > 7 (prueba), cumple la regla dura de 18/FICHA-MERCADO §4. (El usuario probó bajarla a 7 el 2026-09-17 y luego decidió mantenerla en 14 para conservar el extra de confianza real después del cobro.)
-- condición: `Si en tus primeros 14 días pagados el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas.`
-- piso legal: `7 días de prueba gratis + 14 días de garantía pagada` — ⚠️ decisión del agente mientras Hotmart no está configurado (Sesión 6); si Hotmart no admite 14 días de reembolso pagado, bajar el número aquí PRIMERO y luego en el código.
+- condición: `Si en tus primeros 15 días pagados el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas.`
+- piso legal: `7 días de prueba gratis + 15 días de garantía pagada` — confirmado en Hotmart (Sesión 6): el panel solo ofrece 7/15/21/30 días, no 14 exactos; se eligió 15 (la opción más cercana que sigue cumpliendo garantía > prueba).
 
 ## 8. FAQ — objeciones de la ficha, en orden de fuerza
 1. ¿Necesito conectar mi cuenta bancaria? → No. Todo el registro es manual — tú decides qué anotar, sin dar acceso a tu banco.

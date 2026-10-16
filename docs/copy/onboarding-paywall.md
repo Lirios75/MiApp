@@ -56,7 +56,7 @@
 - CTA: `Empezar mis 7 días gratis`
 - reversibilidad: `Cancela cuando quieres · te avisamos antes del cobro`
 - salida limpia: `Ahora no`
-- trust row: `Pago seguro` · `Garantía de 14 días` (íconos Lucide Lock/ShieldCheck, jamás emoji)
+- trust row: `Pago seguro` · `Garantía de 15 días` (íconos Lucide Lock/ShieldCheck, jamás emoji)
 - ⚠️ El CTA hoy lleva a `/entrar` en vez de a Hotmart — el checkout real se conecta en la Sesión 6
   (ver ESTADO.md). No es un checkout falso: solo avanza al siguiente paso simulado del flujo.
 

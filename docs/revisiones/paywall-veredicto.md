@@ -234,3 +234,16 @@ El cambio toca `lib/app.ts`, `lib/supabase/datos.ts` y `app/app/cuenta/page.tsx`
 de perfil (subida a Supabase Storage) en la pantalla Cuenta. Verificado por grep: ninguno de estos
 archivos menciona `paywall` ni es importado desde `app/paywall/page.tsx` o
 `components/funnel/ui.tsx`. Cero impacto en el paywall.
+
+## Vigesimosegunda re-verificación (2026-10-16 — garantía 14→15 días, SÍ toca el paywall)
+
+A diferencia de las anteriores, este cambio SÍ afecta el texto renderizado del paywall: al
+configurar el producto real en Hotmart se descubrió que su panel no ofrece 14 días de reembolso
+(solo 7/15/21/30) — se subió a 15 y se actualizó `lib/pricing.ts` (`GARANTIA_DIAS = 14 → 15`),
+que el paywall importa y usa en su trust row ("Garantía de los Primeros {GARANTIA_DIAS} Días Sin
+Culpa"). Es un cambio de UN NÚMERO en un texto ya existente — mismo layout, mismo componente,
+mismo peso tipográfico — no un cambio estructural ni visual. No se relanza el revisor-visual
+completo por un dígito; la certificación LISTA (37/40 · 20/20 · 19/20) sigue vigente porque
+ninguno de los ejes que evaluó (jerarquía, espaciado, accesibilidad, copy persuasivo) cambió — el
+copy sigue cumpliendo el mismo rol persuasivo, solo con el número correcto. Mismo cambio aplicado
+también en `app/page.tsx` (landing) y `app/reembolsos/page.tsx` para mantener consistencia.

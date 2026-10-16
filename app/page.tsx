@@ -151,9 +151,9 @@ export default function LandingRespira() {
 
       {/* 7. GARANTÍA */}
       <Garantia
-        nombre="la Garantía de los Primeros 14 Días Sin Culpa"
-        condicionMarked="Si en tus primeros 14 días pagados el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas."
-        pisoLegal="7 días de prueba gratis + 14 días de garantía pagada"
+        nombre="la Garantía de los Primeros 15 Días Sin Culpa"
+        condicionMarked="Si en tus primeros 15 días pagados el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas."
+        pisoLegal="7 días de prueba gratis + 15 días de garantía pagada"
       />
 
       {/* 8. FAQ — objeciones de FICHA-AVATAR.md, en orden de fuerza */}
