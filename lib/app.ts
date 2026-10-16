@@ -37,6 +37,7 @@ export interface EstadoApp {
   checkins: CheckIn[];
   meta: Meta | null;
   fechaInicioTrial: string | null;
+  avatarUrl: string | null;
 }
 
 export const OBJETIVO_HABITO_DIAS = 30;

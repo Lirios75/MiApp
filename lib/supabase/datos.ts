@@ -20,7 +20,7 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
   const uid = await usuarioId();
 
   const [{ data: perfil }, { data: checkins, error: errorCheckins }, { data: meta, error: errorMeta }] = await Promise.all([
-    supabase.from('perfiles').select('fecha_inicio_trial').eq('id', uid).maybeSingle(),
+    supabase.from('perfiles').select('fecha_inicio_trial, avatar_url').eq('id', uid).maybeSingle(),
     supabase.from('checkins').select('fecha, estado, nota').eq('user_id', uid).order('fecha'),
     supabase.from('metas').select('tipo, nombre, modo, objetivo, actual, frecuencia').eq('user_id', uid).maybeSingle(),
   ]);
@@ -47,7 +47,43 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
         }
       : null,
     fechaInicioTrial,
+    avatarUrl: perfil?.avatar_url ?? null,
   };
+}
+
+const TIPOS_FOTO_VALIDOS = ['image/jpeg', 'image/png', 'image/webp'];
+const TAMANO_MAXIMO_FOTO = 5 * 1024 * 1024; // 5 MB
+
+/** Sube la foto de perfil al bucket "avatars" (sobrescribe la anterior si ya tenía una) y
+ * guarda su URL en perfiles.avatar_url. */
+export async function subirFotoPerfilSupabase(archivo: File): Promise<EstadoApp> {
+  if (!TIPOS_FOTO_VALIDOS.includes(archivo.type)) {
+    throw new Error('Solo se aceptan fotos JPG, PNG o WEBP.');
+  }
+  if (archivo.size > TAMANO_MAXIMO_FOTO) {
+    throw new Error('La foto pesa más de 5 MB — elige una más liviana.');
+  }
+
+  const supabase = crearClienteSupabase();
+  const uid = await usuarioId();
+  const extension = archivo.type === 'image/png' ? 'png' : archivo.type === 'image/webp' ? 'webp' : 'jpg';
+  const ruta = `${uid}/avatar.${extension}`;
+
+  const { error: errorSubida } = await supabase.storage
+    .from('avatars')
+    .upload(ruta, archivo, { upsert: true, contentType: archivo.type });
+  if (errorSubida) throw errorSubida;
+
+  const { data: publica } = supabase.storage.from('avatars').getPublicUrl(ruta);
+  const urlConCacheBust = `${publica.publicUrl}?t=${Date.now()}`;
+
+  const { error: errorGuardado } = await supabase
+    .from('perfiles')
+    .update({ avatar_url: urlConCacheBust })
+    .eq('id', uid);
+  if (errorGuardado) throw errorGuardado;
+
+  return obtenerEstadoApp();
 }
 
 export async function registrarCheckInSupabase(estadoSemaforo: EstadoSemaforo): Promise<EstadoApp> {

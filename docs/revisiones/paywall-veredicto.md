@@ -227,3 +227,10 @@ El cambio toca `components/app/ui.tsx` (nuevas funciones `formatearMiles`/`soloD
 `app/app/meta/page.tsx` (los 3 campos de monto). Verificado por grep: `app/paywall/page.tsx` NO
 importa nada de `components/app/ui.tsx` (usa `components/funnel/ui.tsx`, un archivo distinto).
 Cero impacto en el paywall.
+
+## Vigesimoprimera re-verificación (2026-10-16 — foto de perfil en Cuenta)
+
+El cambio toca `lib/app.ts`, `lib/supabase/datos.ts` y `app/app/cuenta/page.tsx` — agrega la foto
+de perfil (subida a Supabase Storage) en la pantalla Cuenta. Verificado por grep: ninguno de estos
+archivos menciona `paywall` ni es importado desde `app/paywall/page.tsx` o
+`components/funnel/ui.tsx`. Cero impacto en el paywall.

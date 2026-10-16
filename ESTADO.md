@@ -109,8 +109,26 @@ campos de monto de `app/app/meta/page.tsx` (crear meta, editar meta, registrar a
 los puntos de miles (ej. escribe "10000000", ve "10.000.000"). Nuevas funciones compartidas en
 `components/app/ui.tsx`: `formatearMiles` (dígitos → texto con puntos) y `soloDigitos` (texto →
 solo números, para guardar el valor real). Verificado: tsc ✓ build ✓. NO se pudo probar en vivo
-en este sandbox. Siguiente paso exacto: la usuaria prueba escribir un monto en Meta y confirma
-que los puntos aparecen solos. Después: dominio propio, Hotmart.
+en este sandbox. La usuaria PROBÓ Y CONFIRMÓ: los puntos de miles funcionan.
+
+⏸️ CHECKPOINT (2026-10-16) — foto de perfil: la usuaria preguntó si la app se podía personalizar
+(subir una foto u otra idea que yo propusiera). Se le preguntó para acotar el alcance y confirmó
+"foto de perfil en Cuenta". Implementado:
+- `supabase/migrations/20261016000000_avatar_perfil.sql`: columna `avatar_url` en `perfiles` +
+  bucket de Supabase Storage "avatars" (público para lectura, cada usuaria solo puede subir/
+  cambiar/borrar el suyo vía RLS sobre `storage.objects`, carpeta por `user_id`) — **falta que la
+  usuaria la ejecute** (es SQL, mismo procedimiento de siempre, en el mismo editor).
+- `lib/app.ts`: `EstadoApp.avatarUrl`.
+- `lib/supabase/datos.ts`: `subirFotoPerfilSupabase` (valida tipo JPG/PNG/WEBP y máximo 5 MB,
+  sube a `avatars/<uid>/avatar.<ext>` con `upsert`, guarda la URL pública con cache-bust en
+  `perfiles.avatar_url`).
+- `app/app/cuenta/page.tsx`: círculo de foto arriba de "Tu plan" (ícono de persona si no tiene
+  foto) con un botón de cámara para cambiarla — abre el selector de archivos del celular
+  directamente (sin librería de recorte, para no sobre-construir: la imagen se recorta visualmente
+  con `object-cover` en el círculo, no se guarda recortada).
+Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox (sin acceso de red a
+Supabase Storage). Siguiente paso exacto: (1) la usuaria ejecuta la migración de `avatar_perfil`,
+(2) prueba subir su foto en Cuenta. Después: dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT

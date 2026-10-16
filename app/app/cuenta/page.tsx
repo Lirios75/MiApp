@@ -3,12 +3,12 @@
 // CUENTA — pantalla secundaria (ajustes/plan), sin revisor-visual obligatorio.
 // Protagonista: estado del plan y la prueba gratis.
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { Bell, Globe, LogOut, Mail, ShieldCheck } from 'lucide-react';
+import { Bell, Camera, Globe, LogOut, Mail, ShieldCheck, User } from 'lucide-react';
 import { PLAN_ANUAL, PLAN_MENSUAL, TRIAL_DIAS } from '@/lib/pricing';
-import { cerrarSesionSupabase, obtenerEstadoApp } from '@/lib/supabase/datos';
+import { cerrarSesionSupabase, obtenerEstadoApp, subirFotoPerfilSupabase } from '@/lib/supabase/datos';
 
 const SOPORTE_EMAIL = 'lina.rios@ikigaihumano.com';
 
@@ -25,13 +25,36 @@ export default function Cuenta() {
   const [plan, setPlan] = useState<'anual' | 'mensual' | null>(null);
   const [diasRestantes, setDiasRestantes] = useState(TRIAL_DIAS);
   const [notificaciones, setNotificaciones] = useState(true);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [subiendoFoto, setSubiendoFoto] = useState(false);
+  const [errorFoto, setErrorFoto] = useState<string | null>(null);
+  const inputFotoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const guardado = window.localStorage.getItem('respira_plan');
     setPlan(guardado === 'anual' ? 'anual' : 'mensual');
     setNotificaciones(window.localStorage.getItem('respira_notificaciones') !== 'no');
-    obtenerEstadoApp().then((estado) => setDiasRestantes(diasDeTrialRestantes(estado.fechaInicioTrial)));
+    obtenerEstadoApp().then((estado) => {
+      setDiasRestantes(diasDeTrialRestantes(estado.fechaInicioTrial));
+      setAvatarUrl(estado.avatarUrl);
+    });
   }, []);
+
+  async function cambiarFoto(e: React.ChangeEvent<HTMLInputElement>) {
+    const archivo = e.target.files?.[0];
+    e.target.value = '';
+    if (!archivo) return;
+    setErrorFoto(null);
+    setSubiendoFoto(true);
+    try {
+      const estado = await subirFotoPerfilSupabase(archivo);
+      setAvatarUrl(estado.avatarUrl);
+    } catch (error) {
+      setErrorFoto(error instanceof Error ? error.message : 'No pudimos subir tu foto. Intenta de nuevo.');
+    } finally {
+      setSubiendoFoto(false);
+    }
+  }
 
   function alternarNotificaciones() {
     setNotificaciones((actual) => {
@@ -53,6 +76,43 @@ export default function Cuenta() {
       <header>
         <h1 className="text-[22px] font-bold [font-family:var(--font-display)]">Cuenta</h1>
       </header>
+
+      <section className="flex flex-col items-center gap-2">
+        <div className="relative">
+          <span
+            aria-hidden="true"
+            className="flex size-24 items-center justify-center overflow-hidden rounded-full bg-[var(--chip-bg)]"
+            style={{ opacity: subiendoFoto ? 0.5 : 1 }}
+          >
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="" className="size-full object-cover" />
+            ) : (
+              <User size={36} strokeWidth={1.75} color="var(--accent)" aria-hidden="true" />
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={() => inputFotoRef.current?.click()}
+            disabled={subiendoFoto}
+            aria-label="Cambiar foto de perfil"
+            className="absolute bottom-0 right-0 flex size-8 items-center justify-center rounded-full bg-[var(--accent)] disabled:opacity-60 [touch-action:manipulation]"
+          >
+            <Camera size={15} strokeWidth={2} color="var(--bg)" aria-hidden="true" />
+          </button>
+          <input
+            ref={inputFotoRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            onChange={cambiarFoto}
+            className="hidden"
+          />
+        </div>
+        <p className="text-[13px] font-medium text-[var(--text-tertiary)]">
+          {subiendoFoto ? 'Subiendo foto…' : avatarUrl ? 'Toca el ícono para cambiarla' : 'Toca el ícono para subir tu foto'}
+        </p>
+        {errorFoto && <p className="text-[13px] text-[var(--accent-3-text)]">{errorFoto}</p>}
+      </section>
 
       <section className="rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-1)]">
         <div className="flex items-center justify-between">
