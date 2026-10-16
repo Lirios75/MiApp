@@ -201,6 +201,17 @@ confunde con `notificaciones@mail.ikigaihumano.com` que es solo de envío autom�
 completar lo que falte de "Fijación de precios" y "Página de producto"/"Página de Venta" si no
 están ya marcadas, y hacer clic en "Finalizar registro" (Paso D) para enviar a aprobación.
 
+⏸️ CHECKPOINT (2026-10-16, noche) — producto RESPIRA (ID 8740950) enviado a aprobación en
+Hotmart: la usuaria hizo clic en "Finalizar registro" con el checklist completo en verde
+(Información básica, Fijación de precios, Página de Venta, Datos personales, Área de Miembros,
+Contenido) y Hotmart respondió "Enviado a aprobación — este proceso puede tardar hasta 15
+minutos". Estado actual: "En análisis". Fase 1 del plan de 4 (ella en Hotmart) queda
+sustancialmente cerrada en cuanto Hotmart apruebe. Resumen de lo configurado: planes Mensual
+$6.99/mes y Anual $49.99/año (USD), ambos con 7 días de prueba gratis (modalidad "Gratuito"),
+garantía de reembolso 15 días. Siguiente paso: esperar que la usuaria confirme la aprobación de
+Hotmart, y luego arrancar la Fase 2 (código del endpoint seguro del webhook + conexión del
+paywall real al checkout de Hotmart), según `docs/sistema/18-VENTA-HOTMART.md`.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→
