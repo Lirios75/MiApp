@@ -191,11 +191,15 @@ vigente). Decisión confirmada con la usuaria: precios en **dólares (USD)**, no
 Hotmart) ni pesos colombianos. Plan **Mensual** casi listo en Hotmart: nombre "Mensual",
 descripción, moneda USD, $6.99, periodicidad mensual, "Pago al contado", "Hasta que el cliente
 cancele", claves de seguimiento apagadas (no necesarias aún) — a punto de guardar. **Ambos planes ya creados y guardados en Hotmart**: Mensual ($6.99 USD, pago al contado, hasta
-cancelar) y Anual ($49.99 USD, mismo esquema). Plazo de reembolso: 15 días. Falta: (1) activar la
-prueba gratis de 7 días en AMBOS planes (Período de testes, modalidad GRATIS), (2) completar el
-resto de "Fijación de precios" y enviar a aprobación (Paso D), (3) el área de miembros con la
-clase de instructivo de acceso (Paso B, con el texto modelo de 18-VENTA-HOTMART.md) — probablemente
-pendiente, falta confirmar si ya se hizo.
+cancelar) y Anual ($49.99 USD, mismo esquema). Plazo de reembolso: 15 días. **Prueba gratis de 7
+días activada en AMBOS planes** (modalidad "Gratuito" — no modalidad "Período de prueba", que es
+otra cosa — confirmado en la tabla, columna "prueba" = 7 en Mensual y Anual). También se completó
+el "Contenido" del Área de Miembros con el texto del instructivo de acceso (adaptado del modelo de
+18-VENTA-HOTMART.md, con el link real `respira.ikigaihumano.com/entrar` y el correo de soporte
+`lina.rios@ikigaihumano.com` — ya aclarado con la usuaria que este correo SÍ es el correcto, no se
+confunde con `notificaciones@mail.ikigaihumano.com` que es solo de envío automático). Falta:
+completar lo que falte de "Fijación de precios" y "Página de producto"/"Página de Venta" si no
+están ya marcadas, y hacer clic en "Finalizar registro" (Paso D) para enviar a aprobación.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
