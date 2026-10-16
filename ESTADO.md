@@ -156,11 +156,12 @@ su dominio existente `ikigaihumano.com` (gratis, ya lo tiene) en vez de comprar 
   la lista de registros.
 - Pendiente: que el DNS propague (minutos a ~1h) y Vercel marque "Valid Configuration" al darle
   Refresh.
-Siguiente paso exacto, EN ORDEN: (1) confirmar "Valid Configuration" en Vercel, (2) actualizar en
-Supabase Auth → Configuración de URL: "Site URL" a `https://respira.ikigaihumano.com` y agregar
-`https://respira.ikigaihumano.com/**` a los redirects permitidos (dejar también el `*.vercel.app`
-actual para no romper nada mientras se prueba), (3) probar el login real (pedir enlace, entrar)
-desde el dominio nuevo. El código NO necesita cambios: el redirect del login usa
+Hecho: (1) Vercel generando el certificado SSL del dominio nuevo (DNS ya propagado), (2) en
+Supabase Auth → Configuración de URL: "Site URL" ya es `https://respira.ikigaihumano.com`, y
+"URLs de redireccionamiento" tiene AMBAS: `https://mi-app-olive.vercel.app/**` (la vieja, se deja
+por si acaso) y `https://respira.ikigaihumano.com/**` (la nueva). Siguiente paso exacto: la
+usuaria prueba el login real (pedir enlace, entrar) desde `respira.ikigaihumano.com` — pendiente
+su confirmación. El código NO necesitó cambios: el redirect del login usa
 `window.location.origin` (dinámico), no una URL fija. Después: Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
