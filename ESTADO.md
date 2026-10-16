@@ -133,9 +133,9 @@ rows returned"). La usuaria probó: dio error "No pudimos subir tu foto" — dia
 que el de checkins/metas, esta vez en perfiles. Fix en
 `supabase/migrations/20261016010000_grant_update_perfiles.sql` (agrega `update` en perfiles +
 confirma los grants base de `storage.objects`/`storage.buckets` para el rol autenticado, por si
-también faltaban) — **falta que la usuaria la ejecute**. Siguiente paso exacto: (1) la usuaria
-ejecuta esta migración nueva, (2) vuelve a probar subir la foto en Cuenta. Después: dominio
-propio, Hotmart.
+también faltaban) — ya ejecutada con éxito en la base real ("Success. No rows returned").
+Siguiente paso exacto: la usuaria vuelve a probar subir la foto en Cuenta — pendiente su
+confirmación. Después: dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
