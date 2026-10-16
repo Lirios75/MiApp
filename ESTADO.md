@@ -126,9 +126,9 @@ en este sandbox. La usuaria PROBÓ Y CONFIRMÓ: los puntos de miles funcionan.
   foto) con un botón de cámara para cambiarla — abre el selector de archivos del celular
   directamente (sin librería de recorte, para no sobre-construir: la imagen se recorta visualmente
   con `object-cover` en el círculo, no se guarda recortada).
-Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox (sin acceso de red a
-Supabase Storage). Siguiente paso exacto: (1) la usuaria ejecuta la migración de `avatar_perfil`,
-(2) prueba subir su foto en Cuenta. Después: dominio propio, Hotmart.
+Verificado: tsc ✓ build ✓. La migración ya se ejecutó con éxito en la base real ("Success. No
+rows returned"). Siguiente paso exacto: la usuaria prueba subir su foto en Cuenta — pendiente su
+confirmación. Después: dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
