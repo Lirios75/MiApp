@@ -24,7 +24,7 @@
 - Plazos que admite Hotmart: VERIFICADO en Sesión 6, panel real del producto "Respira" — el
   desplegable de "Plazo para solicitar el reembolso" solo ofrece 7 / 15 / 21 / 30 días (NO 14
   exactos, a diferencia de lo asumido antes de conectar Hotmart de verdad).
-- Prueba elegida: 7 · Garantía elegida: **15** (se sube de 14 a 15 porque Hotmart no ofrece 14 —
+- Prueba elegida: 7 · Garantía elegida: 15 (se sube de 14 a 15 porque Hotmart no ofrece 14 —
   15 es la opción más cercana que sigue cumpliendo garantía > prueba; días de suscripción PAGADA,
   contados desde el primer cobro, no se solapan con los 7 de prueba gratis).
 - Comprobación garantía > prueba: 15 > 7 → SÍ.
