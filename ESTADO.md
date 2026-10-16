@@ -127,8 +127,15 @@ en este sandbox. La usuaria PROBÓ Y CONFIRMÓ: los puntos de miles funcionan.
   directamente (sin librería de recorte, para no sobre-construir: la imagen se recorta visualmente
   con `object-cover` en el círculo, no se guarda recortada).
 Verificado: tsc ✓ build ✓. La migración ya se ejecutó con éxito en la base real ("Success. No
-rows returned"). Siguiente paso exacto: la usuaria prueba subir su foto en Cuenta — pendiente su
-confirmación. Después: dominio propio, Hotmart.
+rows returned"). La usuaria probó: dio error "No pudimos subir tu foto" — diagnosticado por consola del navegador
+(mismo método de siempre): `403` al subir. Causa raíz encontrada: el GRANT original de la Sesión
+6 solo daba `select, insert` en `perfiles` (nunca se necesitó `update` hasta ahora) — igual bug
+que el de checkins/metas, esta vez en perfiles. Fix en
+`supabase/migrations/20261016010000_grant_update_perfiles.sql` (agrega `update` en perfiles +
+confirma los grants base de `storage.objects`/`storage.buckets` para el rol autenticado, por si
+también faltaban) — **falta que la usuaria la ejecute**. Siguiente paso exacto: (1) la usuaria
+ejecuta esta migración nueva, (2) vuelve a probar subir la foto en Cuenta. Después: dominio
+propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
