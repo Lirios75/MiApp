@@ -159,10 +159,10 @@ su dominio existente `ikigaihumano.com` (gratis, ya lo tiene) en vez de comprar 
 Hecho: (1) Vercel generando el certificado SSL del dominio nuevo (DNS ya propagado), (2) en
 Supabase Auth → Configuración de URL: "Site URL" ya es `https://respira.ikigaihumano.com`, y
 "URLs de redireccionamiento" tiene AMBAS: `https://mi-app-olive.vercel.app/**` (la vieja, se deja
-por si acaso) y `https://respira.ikigaihumano.com/**` (la nueva). Siguiente paso exacto: la
-usuaria prueba el login real (pedir enlace, entrar) desde `respira.ikigaihumano.com` — pendiente
-su confirmación. El código NO necesitó cambios: el redirect del login usa
-`window.location.origin` (dinámico), no una URL fija. Después: Hotmart.
+por si acaso) y `https://respira.ikigaihumano.com/**` (la nueva). **La usuaria PROBÓ Y CONFIRMÓ: `respira.ikigaihumano.com` funciona de punta a punta** (sesión real,
+datos reales, mismo backend). El código no necesitó cambios: el redirect del login usa
+`window.location.origin` (dinámico), no una URL fija. **Dominio propio 100% cerrado.** Siguiente
+paso exacto: Hotmart (conectar la venta real).
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
