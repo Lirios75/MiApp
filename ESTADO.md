@@ -144,8 +144,24 @@ pero no actualiza ninguna fila. Fix en
 `supabase/migrations/20261016020000_rls_update_perfiles.sql` (crea la política de update en
 `perfiles`, mismo patrón que checkins/metas) — ya ejecutada con éxito en la base real ("Success.
 No rows returned"). **La usuaria PROBÓ Y CONFIRMÓ: su foto ya se ve correctamente en Cuenta.** Feature de foto de
-perfil 100% cerrada y funcionando. Siguiente paso exacto: dominio propio para la app, luego
-Hotmart.
+perfil 100% cerrada y funcionando.
+
+⏸️ CHECKPOINT (2026-10-16) — dominio propio, EN CURSO. La usuaria eligió usar un subdominio de
+su dominio existente `ikigaihumano.com` (gratis, ya lo tiene) en vez de comprar uno nuevo:
+**`respira.ikigaihumano.com`**. Hecho hasta ahora:
+- En Vercel (proyecto `mi-app`): agregado el dominio `respira.ikigaihumano.com` (Settings →
+  Domains → Add Existing), ambiente Production.
+- En Hostinger (DNS de `ikigaihumano.com`): agregado el registro que pidió Vercel —
+  `CNAME respira → d6eed6c8a1e1cf6c.vercel-dns-017.com` — confirmado guardado correctamente en
+  la lista de registros.
+- Pendiente: que el DNS propague (minutos a ~1h) y Vercel marque "Valid Configuration" al darle
+  Refresh.
+Siguiente paso exacto, EN ORDEN: (1) confirmar "Valid Configuration" en Vercel, (2) actualizar en
+Supabase Auth → Configuración de URL: "Site URL" a `https://respira.ikigaihumano.com` y agregar
+`https://respira.ikigaihumano.com/**` a los redirects permitidos (dejar también el `*.vercel.app`
+actual para no romper nada mientras se prueba), (3) probar el login real (pedir enlace, entrar)
+desde el dominio nuevo. El código NO necesita cambios: el redirect del login usa
+`window.location.origin` (dinámico), no una URL fija. Después: Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
