@@ -134,8 +134,17 @@ que el de checkins/metas, esta vez en perfiles. Fix en
 `supabase/migrations/20261016010000_grant_update_perfiles.sql` (agrega `update` en perfiles +
 confirma los grants base de `storage.objects`/`storage.buckets` para el rol autenticado, por si
 también faltaban) — ya ejecutada con éxito en la base real ("Success. No rows returned").
-Siguiente paso exacto: la usuaria vuelve a probar subir la foto en Cuenta — pendiente su
-confirmación. Después: dominio propio, Hotmart.
+Pero el GRANT no resolvió el problema real: la foto seguía sin verse. Diagnóstico extendido con
+la consola/Network del navegador (varias rondas, filtrando por "avatar" y por `method:PATCH`):
+la subida a Storage daba 200, el PATCH a perfiles daba 204 ("éxito")... pero al mirar la tabla
+`perfiles` directo en el Editor de Supabase, `avatar_url` seguía en NULL. Causa raíz real:
+`perfiles` NUNCA tuvo una POLÍTICA de RLS para "update" (la migración inicial solo creó las de
+select e insert) — sin esa política, RLS bloquea la fila en silencio y el PATCH "tiene éxito"
+pero no actualiza ninguna fila. Fix en
+`supabase/migrations/20261016020000_rls_update_perfiles.sql` (crea la política de update en
+`perfiles`, mismo patrón que checkins/metas) — **falta que la usuaria la ejecute**. Siguiente
+paso exacto: (1) la usuaria ejecuta esta migración, (2) prueba subir la foto de nuevo. Después:
+dominio propio, Hotmart.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
