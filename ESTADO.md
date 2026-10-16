@@ -208,9 +208,10 @@ Contenido) y Hotmart respondió "Enviado a aprobación — este proceso puede ta
 minutos". Estado actual: "En análisis". Fase 1 del plan de 4 (ella en Hotmart) queda
 sustancialmente cerrada en cuanto Hotmart apruebe. Resumen de lo configurado: planes Mensual
 $6.99/mes y Anual $49.99/año (USD), ambos con 7 días de prueba gratis (modalidad "Gratuito"),
-garantía de reembolso 15 días. Siguiente paso: esperar que la usuaria confirme la aprobación de
-Hotmart, y luego arrancar la Fase 2 (código del endpoint seguro del webhook + conexión del
-paywall real al checkout de Hotmart), según `docs/sistema/18-VENTA-HOTMART.md`.
+garantía de reembolso 15 días. **Aprobado por Hotmart** (2026-10-16, noche — captura real del
+panel: "¡Todo listo para vender!", checklist completo en verde). Fase 1 CERRADA. Siguiente paso:
+arrancar la Fase 2 (código del endpoint seguro del webhook + conexión del paywall real al
+checkout de Hotmart), según `docs/sistema/18-VENTA-HOTMART.md`.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
