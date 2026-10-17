@@ -447,14 +447,14 @@ function subirCambios() {
 }
 
 /* ---------- Confirmaciones dentro de la página ---------- */
-function confirmar(texto, { si = 'Sí, continuar', peligro = false } = {}) {
+function confirmar(texto, { si = 'Sí, continuar', no = 'Cancelar', peligro = false } = {}) {
   return new Promise(resolver => {
     const root = document.getElementById('confirm-root');
     root.innerHTML = `<div class="fixed inset-0 z-[60] grid place-items-center p-4" role="alertdialog" aria-modal="true" aria-label="Confirmar">
       <div class="absolute inset-0 bg-ink/50 fade-in" data-r="0"></div>
       <div class="sheet relative w-full max-w-sm bg-bg rounded-3xl p-5 shadow-2xl">
         <p class="text-[15px] whitespace-pre-line">${esc(texto)}</p>
-        <div class="flex gap-2 mt-5"><button class="btn-ghost flex-1" data-r="0">Cancelar</button><button class="${peligro ? 'btn bg-bad text-white hover:opacity-90' : 'btn-primary'} flex-1" data-r="1">${esc(si)}</button></div>
+        <div class="flex gap-2 mt-5"><button class="btn-ghost flex-1" data-r="0">${esc(no)}</button><button class="${peligro ? 'btn bg-bad text-white hover:opacity-90' : 'btn-primary'} flex-1" data-r="1">${esc(si)}</button></div>
       </div></div>`;
     const cerrar = v => { root.innerHTML = ''; resolver(v); };
     root.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); cerrar(b.dataset.r === '1'); }));
@@ -510,6 +510,7 @@ const ui = {
   busqueda: '', filtro: 'todos',
   etapaMovil: 'prospecto', cubetaMovil: 'gracia',
   semana: lunesDe(hoy()), filtroCitas: 'todas',
+  citasModo: 'agenda', statsTipo: 'mes', statsRef: hoy(),
   detalle: null,
   cargando: enClaude,
 };
@@ -843,8 +844,122 @@ function waLink(c, p, b) {
 }
 const waCumple = c => `${waNumero(c)}?text=${encodeURIComponent(`¡Feliz cumpleaños, ${c.nombre.split(' ')[0]}! 🌸 Te deseo un año lleno de salud y tranquilidad. Un abrazo.`)}`;
 
+/* ---------- ESTADÍSTICAS DE CITAS ---------- */
+const PERIODOS = [['dia', 'Día'], ['semana', 'Semana'], ['quincena', 'Quincena'], ['mes', 'Mes']];
+function rangoPeriodo(tipo, ref) {
+  if (tipo === 'dia') return [ref, ref];
+  if (tipo === 'semana') { const i = lunesDe(ref); return [i, addDays(i, 6)]; }
+  const d = parse(ref), y = d.getFullYear(), m = d.getMonth();
+  const ini = iso(new Date(y, m, 1)), fin = iso(new Date(y, m + 1, 0));
+  if (tipo === 'mes') return [ini, fin];
+  return d.getDate() <= 15 ? [ini, iso(new Date(y, m, 15))] : [iso(new Date(y, m, 16)), fin];
+}
+function moverPeriodo(tipo, ref, delta) {
+  if (tipo === 'dia') return addDays(ref, delta);
+  if (tipo === 'semana') return addDays(ref, 7 * delta);
+  if (tipo === 'mes') return addMonths(rangoPeriodo('mes', ref)[0], delta);
+  const [ini, fin] = rangoPeriodo('quincena', ref);
+  return delta > 0 ? addDays(fin, 1) : addDays(ini, -1);
+}
+function etiquetaPeriodo(tipo, [ini, fin]) {
+  if (tipo === 'dia') return fFechaLarga(ini);
+  if (tipo === 'mes') { const t = parse(ini).toLocaleDateString('es-CO', { month: 'long', year: 'numeric' }); return t[0].toUpperCase() + t.slice(1); }
+  return `${fFecha(ini)} – ${fFecha(fin, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+}
+/* Agendadas = citas cuya fecha cae en el periodo. Reagendadas = movimientos cuya fecha original caía en el periodo */
+function statsCitas(ini, fin) {
+  const citas = todasCitas();
+  const en = citas.filter(x => x.fecha >= ini && x.fecha <= fin);
+  const cuenta = (lista, st) => lista.filter(x => x.status === st).length;
+  const ef = cuenta(en, 'asistio'), no = cuenta(en, 'noasistio'), can = cuenta(en, 'cancelada'), pen = cuenta(en, 'programada');
+  const reag = citas.reduce((s, x) => s + (x.bitacora || []).filter(r => r.de >= ini && r.de <= fin).length, 0);
+  const cerradas = ef + no + can;
+  return { en, total: en.length, ef, no, can, pen, reag, efectividad: cerradas ? Math.round(ef / cerradas * 100) : null };
+}
+function vistaEstadisticas() {
+  const tipo = ui.statsTipo, rango = rangoPeriodo(tipo, ui.statsRef), [ini, fin] = rango;
+  const s = statsCitas(ini, fin);
+  const p = statsCitas(...rangoPeriodo(tipo, moverPeriodo(tipo, ui.statsRef, -1)));
+  const anterior = { dia: 'el día anterior', semana: 'la semana anterior', quincena: 'la quincena anterior', mes: 'el mes anterior' }[tipo];
+  const dif = s.ef - p.ef;
+  const contiene = hoy() >= ini && hoy() <= fin;
+  const tiles = [
+    ['Agendadas', s.total, 'en estas fechas', 'calendar-days', 'text-ink', 'bg-sunken text-ink2'],
+    ['Efectivas', s.ef, 'asistió a la cita', 'circle-check', 'text-ok', 'bg-ok-soft text-ok'],
+    ['Pendientes', s.pen, 'aún sin registrar', 'clock', 'text-brand', 'bg-brand-soft text-brand'],
+    ['Reagendadas', s.reag, 'se movieron de fecha', 'calendar-clock', 'text-warn', 'bg-warn-soft text-warn'],
+    ['No asistió', s.no, 'plantón', 'user-x', 'text-bad', 'bg-bad-soft text-bad'],
+    ['Canceladas', s.can, 'no se realizaron', 'calendar-x', 'text-ink2', 'bg-sunken text-ink2'],
+  ];
+  const insight = s.efectividad === null
+    ? (s.total ? 'Marca "Asistió" o "Plantón" en tus citas para ver tu efectividad.' : 'No hubo citas en estas fechas.')
+    : `<strong class="font-semibold">${s.efectividad}% de efectividad</strong>: de ${s.ef + s.no + s.can} ${s.ef + s.no + s.can === 1 ? 'cita' : 'citas'} con resultado, ${s.ef} ${s.ef === 1 ? 'fue efectiva' : 'fueron efectivas'}. ${dif === 0 ? `Igual que ${anterior}.` : `${Math.abs(dif)} ${Math.abs(dif) === 1 ? 'efectiva' : 'efectivas'} ${dif > 0 ? 'más' : 'menos'} que ${anterior}.`}`;
+  return `
+  ${encabezado('Citas', 'Cómo te va con tus citas en el periodo que elijas')}
+  ${toggleCitas()}
+  <div class="flex flex-wrap items-center gap-2 mb-4">
+    <div class="flex gap-1 card p-1 rounded-xl!">${PERIODOS.map(([id, n]) => `<button class="chip border-0! ${ui.statsTipo === id ? '' : 'bg-transparent!'}" data-act="stats-tipo" data-t="${id}" aria-pressed="${ui.statsTipo === id}">${n}</button>`).join('')}</div>
+    <div class="flex items-center gap-1 card px-1 py-1 rounded-xl!">
+      <button class="btn-ghost btn-sm px-2!" data-act="stats-mover" data-delta="-1" aria-label="Periodo anterior">${icon('chevron-left', 'w-4 h-4')}</button>
+      <p class="text-[14px] font-medium px-1 min-w-[150px] text-center">${etiquetaPeriodo(tipo, rango)}</p>
+      <button class="btn-ghost btn-sm px-2!" data-act="stats-mover" data-delta="1" aria-label="Periodo siguiente">${icon('chevron-right', 'w-4 h-4')}</button>
+    </div>
+    ${contiene ? '' : `<button class="btn-ghost btn-sm" data-act="stats-hoy">Ir a hoy</button>`}
+  </div>
+
+  <section class="card p-5 mb-4 fade-in" aria-label="Resumen del periodo">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+      ${tiles.map(([n, v, sub, ic, color, chip]) => `<div class="min-w-0 flex flex-col gap-1">
+        <p class="label flex items-center gap-1.5"><span class="grid place-items-center w-6 h-6 rounded-lg ${chip}">${icon(ic, 'w-3.5 h-3.5')}</span>${n}</p>
+        <p class="font-display text-[30px] leading-none ${color} tabular-nums">${v}</p><p class="text-[12px] text-ink3">${sub}</p></div>`).join('')}
+    </div>
+    <p class="text-[13.5px] text-ink2 mt-5 pt-4 border-t border-line">${insight}</p>
+  </section>
+
+  <div class="grid gap-4 lg:grid-cols-3">
+    <section class="card p-5 lg:col-span-2 min-w-0" aria-labelledby="h-graf">
+      ${tipo === 'dia' ? `<h2 id="h-graf" class="text-[20px] mb-2">Citas del día</h2>
+        ${s.en.length ? `<ul class="divide-y divide-line">${s.en.sort((a, b) => a.hora.localeCompare(b.hora)).map(x => filaCita(x)).join('')}</ul>` : vacioMini('calendar', 'Sin citas este día', 'Usa las flechas para ver otros días.')}`
+      : graficoDiario(ini, fin)}
+    </section>
+    <section class="card p-5 min-w-0" aria-labelledby="h-tipo">
+      <h2 id="h-tipo" class="text-[20px] mb-3">Por tipo de cita</h2>
+      <table class="w-full text-[13.5px] tabular-nums">
+        <thead><tr class="text-left text-ink3"><th class="font-medium pb-2">Tipo</th><th class="font-medium pb-2 pl-3 text-right">Agend.</th><th class="font-medium pb-2 pl-3 text-right">Efect.</th><th class="font-medium pb-2 pl-3 text-right">%</th></tr></thead>
+        <tbody class="divide-y divide-line">${Object.entries(TIPOS_CITA).map(([id, n]) => {
+          const l = s.en.filter(x => x.tipo === id);
+          const ef = l.filter(x => x.status === 'asistio').length, cer = l.filter(x => ['asistio', 'noasistio', 'cancelada'].includes(x.status)).length;
+          return `<tr><td class="py-2 pr-2">${n}</td><td class="py-2 pl-3 text-right">${l.length}</td><td class="py-2 pl-3 text-right text-ok font-medium">${ef}</td><td class="py-2 pl-3 text-right text-ink2">${cer ? Math.round(ef / cer * 100) + '%' : '—'}</td></tr>`;
+        }).join('')}</tbody>
+      </table>
+      <p class="text-[12px] text-ink3 mt-3">% = efectivas sobre las citas que ya tienen resultado (asistió, plantón o cancelada).</p>
+    </section>
+  </div>`;
+}
+function graficoDiario(ini, fin) {
+  const dias = []; for (let d = ini; d <= fin; d = addDays(d, 1)) dias.push(d);
+  const porDia = dias.map(d => { const l = todasCitas().filter(x => x.fecha === d); return { d, ef: l.filter(x => x.status === 'asistio').length, pen: l.filter(x => x.status === 'programada').length, mal: l.filter(x => ['noasistio', 'cancelada'].includes(x.status)).length }; });
+  const max = Math.max(1, ...porDia.map(x => x.ef + x.pen + x.mal));
+  const muchas = dias.length > 16;
+  const seg = (n, cls, ultimo) => n ? `<span class="block w-full max-w-[44px] mx-auto ${cls} ${ultimo ? 'rounded-t-[4px]' : ''}" style="height:${n / max * 100}%"></span>` : '';
+  return `<div class="flex items-center justify-between gap-3 flex-wrap mb-4"><h2 id="h-graf" class="text-[20px]">Citas por día</h2>
+    <div class="flex gap-3 text-[12px] text-ink2"><span class="flex items-center gap-1.5"><span class="dot bg-ok"></span>Efectivas</span><span class="flex items-center gap-1.5"><span class="dot bg-brand"></span>Pendientes</span><span class="flex items-center gap-1.5"><span class="dot bg-bad"></span>Plantón o cancelada</span></div></div>
+    <div class="flex items-end gap-[2px] h-40 border-b border-line" role="img" aria-label="Citas por día del periodo">
+      ${porDia.map(x => { const t = x.ef + x.pen + x.mal;
+        const desc = `${fFecha(x.d, { weekday: 'long', day: 'numeric', month: 'short' })}: ${t} ${t === 1 ? 'cita' : 'citas'} (${x.ef} efectivas, ${x.pen} pendientes, ${x.mal} plantón o cancelada)`;
+        return `<button class="flex-1 h-full flex flex-col-reverse gap-[2px] min-w-0 rounded-t-[4px] hover:bg-sunken/70 ${x.d === hoy() ? 'bg-brand-soft/50' : ''}" data-act="stats-dia" data-d="${x.d}" title="${desc}" aria-label="${desc}">
+          ${seg(x.ef, 'bg-ok', !x.pen && !x.mal)}${seg(x.pen, 'bg-brand', !x.mal)}${seg(x.mal, 'bg-bad', true)}</button>`; }).join('')}
+    </div>
+    <div class="flex gap-[2px] mt-1.5">${porDia.map((x, i) => `<span class="flex-1 min-w-0 text-center text-[11px] ${x.d === hoy() ? 'text-brand font-semibold' : 'text-ink3'}">${!muchas || i % 5 === 0 ? (dias.length <= 7 ? fFecha(x.d, { weekday: 'short' }).slice(0, 3) + ' ' : '') + parse(x.d).getDate() : ''}</span>`).join('')}</div>
+    <p class="text-[12px] text-ink3 mt-3">Toca una barra para ver las citas de ese día.</p>`;
+}
+const toggleCitas = () => `<div class="flex gap-1 card p-1 rounded-xl! w-fit mb-4" role="tablist">
+  ${[['agenda', 'Agenda', 'calendar-days'], ['stats', 'Estadísticas', 'bar-chart-3']].map(([id, n, ic]) => `<button class="chip border-0! ${ui.citasModo === id ? '' : 'bg-transparent!'}" role="tab" aria-selected="${ui.citasModo === id}" aria-pressed="${ui.citasModo === id}" data-act="citas-modo" data-m="${id}">${icon(ic, 'w-4 h-4')} ${n}</button>`).join('')}
+</div>`;
+
 /* ---------- CITAS ---------- */
 function vistaCitas() {
+  if (ui.citasModo === 'stats') return vistaEstadisticas();
   const ini = ui.semana, fin = addDays(ini, 6), T = hoy();
   const filtro = ui.filtroCitas;
   const pasaFiltro = x => filtro === 'todas' || (filtro === 'ventas' ? ['cita1', 'cita2'].includes(x.tipo) : ['anual', 'posventa'].includes(x.tipo));
@@ -855,6 +970,7 @@ function vistaCitas() {
   const rango = `${fFecha(ini, { day: 'numeric', month: 'short' })} – ${fFecha(fin, { day: 'numeric', month: 'short', year: 'numeric' })}`;
   return `
   ${encabezado('Citas', (n => `${n} ${n === 1 ? 'programada' : 'programadas'} esta semana`)(semana.filter(x => x.status === 'programada').length), `<button class="btn-primary" data-act="cita">${icon('calendar-plus', 'w-4 h-4')} <span class="hidden sm:inline">Agendar cita</span><span class="sm:hidden">Agendar</span></button>`)}
+  ${toggleCitas()}
   <div class="flex flex-wrap items-center gap-2 mb-4">
     <div class="flex items-center gap-1 card px-1 py-1 rounded-xl!">
       <button class="btn-ghost btn-sm px-2!" data-act="semana" data-delta="-7" aria-label="Semana anterior">${icon('chevron-left', 'w-4 h-4')}</button>
@@ -1200,7 +1316,8 @@ function abrirReagendar(cid, xid) {
     </div>
     <label class="field"><span>Motivo</span><input class="input" name="motivo" placeholder="Ej. Se le cruzó una junta"></label>
     <div class="flex flex-wrap gap-2">${['Se le cruzó otra reunión', 'Enfermedad', 'Viaje', 'No contestó', 'Lo pidió el cliente'].map(m => `<button type="button" class="chip" data-act="motivo" data-m="${m}">${m}</button>`).join('')}</div>
-    <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('calendar-clock', 'w-4 h-4')} Guardar nueva fecha</button></div>
+    <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Volver</button><button class="btn-primary flex-1">${icon('calendar-clock', 'w-4 h-4')} Guardar nueva fecha</button></div>
+    <button type="button" class="btn-ghost btn-sm text-bad! self-center" data-act="cancelar-cita" data-id="${cid}" data-cita="${xid}">${icon('calendar-x', 'w-4 h-4')} No se va a hacer: cancelar la cita</button>
   </form>`);
 }
 
@@ -1503,6 +1620,20 @@ const acciones = {
   'cubeta-movil': d => { ui.cubetaMovil = d.cubeta; render(); },
   filtro: d => { ui.filtro = d.f; render(); },
   'filtro-citas': d => { ui.filtroCitas = d.f; render(); },
+  'citas-modo': d => { ui.citasModo = d.m; render(); },
+  'stats-tipo': d => { ui.statsTipo = d.t; render(); },
+  'stats-mover': d => { ui.statsRef = moverPeriodo(ui.statsTipo, ui.statsRef, Number(d.delta)); render(); },
+  'stats-hoy': () => { ui.statsRef = hoy(); render(); },
+  'stats-dia': d => { ui.statsTipo = 'dia'; ui.statsRef = d.d; render(); },
+  'cancelar-cita': async d => {
+    if (!(await confirmar('¿Cancelar esta cita? Quedará como cancelada en tus estadísticas.', { si: 'Sí, cancelar la cita', no: 'Volver', peligro: true }))) return;
+    foto();
+    const c = getC(d.id), x = c.citas.find(y => y.id === d.cita);
+    x.status = 'cancelada'; x.canceladaEn = hoy();
+    c.notas.push({ id: uid(), fecha: hoy(), hora: new Date().toTimeString().slice(0, 5), texto: `Se canceló ${TIPOS_CITA[x.tipo]} del ${fFecha(x.fecha)}.` });
+    guardar(); render(); abrirDetalle(c.id);
+    toast('Cita cancelada', { deshacer: true });
+  },
   limpiar: () => { ui.filtro = 'todos'; ui.busqueda = ''; render(); },
   semana: d => { ui.semana = d.delta === '0' ? lunesDe(hoy()) : addDays(ui.semana, Number(d.delta)); render(); },
   motivo: (d, el) => { const f = el.closest('form'); f.motivo.value = d.m; },
