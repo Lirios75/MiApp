@@ -1,0 +1,1248 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Lirios CRM</title>
+<meta name="theme-color" content="#3A6478" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.1.11"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style type="text/tailwindcss">
+  @theme {
+    --font-display: "Fraunces", Georgia, serif;
+    --font-sans: "Poppins", ui-sans-serif, sans-serif;
+    --color-bg: #F5F1E8;
+    --color-surface: #FBF8F1;
+    --color-sunken: #ECE6D8;
+    --color-line: #E2DACA;
+    --color-ink: #3C3428;
+    --color-ink2: #5C5442;
+    --color-ink3: #857A66;
+    --color-brand: #3A6478;
+    --color-brand-deep: #2E5162;
+    --color-brand-soft: #DCE7EC;
+    --color-on-brand: #E8EFF2;
+    --color-on-brand2: #BBD0DA;
+    --color-ok: #4C7A57;
+    --color-ok-soft: #E1EBDD;
+    --color-warn: #A86A12;
+    --color-warn-soft: #F6E7C8;
+    --color-bad: #A3453A;
+    --color-bad-soft: #F3DCD6;
+  }
+  @layer base {
+    html { -webkit-tap-highlight-color: transparent; }
+    body { @apply bg-bg text-ink font-sans antialiased; font-size: 15px; }
+    h1, h2, h3, .font-display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; }
+    :focus-visible { outline: 2px solid var(--color-brand); outline-offset: 2px; }
+    input, select, textarea { font: inherit; color: inherit; }
+  }
+  @layer components {
+    .card, .kcard { @apply bg-surface rounded-2xl border border-line; box-shadow: 0 1px 0 rgba(60,52,40,.04), 0 6px 18px -10px rgba(60,52,40,.18); }
+    .btn, .btn-primary, .btn-ghost, .btn-soft { @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 min-h-11 text-sm font-medium transition active:scale-[.97] disabled:opacity-50 cursor-pointer select-none; }
+    .btn-primary { @apply bg-brand text-on-brand hover:bg-brand-deep; }
+    .btn-ghost { @apply bg-transparent text-ink2 hover:bg-sunken; }
+    .btn-soft { @apply bg-sunken text-ink hover:bg-line; }
+    .btn-sm { @apply min-h-9 px-3 text-[13px] rounded-lg; }
+    .chip { @apply inline-flex items-center gap-1.5 rounded-full px-3 min-h-9 text-[13px] font-medium border border-line bg-surface text-ink2 whitespace-nowrap cursor-pointer transition; }
+    .chip[aria-pressed="true"] { @apply bg-brand text-on-brand border-brand; }
+    .tag { @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11.5px] font-medium whitespace-nowrap; }
+    .field { @apply flex flex-col gap-1.5 min-w-0; }
+    .field > span { @apply text-[12.5px] font-medium text-ink2; }
+    .input { @apply w-full rounded-xl border border-line bg-bg px-3 min-h-11 text-[15px] outline-none transition focus:border-brand focus:bg-surface; }
+    textarea.input { @apply py-2.5 min-h-24; }
+    .label { @apply text-[12px] font-medium text-ink3 uppercase tracking-[0.06em]; }
+    .icon-chip { @apply grid place-items-center w-10 h-10 rounded-xl shrink-0; }
+    .navlink { @apply flex items-center gap-3 rounded-xl px-3 min-h-11 text-[14.5px] text-on-brand2 hover:bg-white/10 transition; }
+    .navlink[aria-current="page"] { @apply bg-on-brand text-brand font-medium; }
+    .tabbtn { @apply flex flex-col items-center justify-center gap-0.5 text-[11px] text-ink3 min-h-14 flex-1; }
+    .tabbtn[aria-current="page"] { @apply text-brand font-medium; }
+    .tabbtn[aria-current="page"] .tabdot { @apply bg-brand-soft; }
+    .tabdot { @apply grid place-items-center w-12 h-7 rounded-full transition; }
+    .kcol { @apply min-w-0 rounded-2xl bg-sunken/70 p-2.5 flex flex-col gap-2 min-h-40; }
+    .kcard { @apply p-3 cursor-pointer hover:border-brand/40 transition; }
+    .dot { @apply inline-block w-2 h-2 rounded-full shrink-0; }
+  }
+  .fade-in { animation: fadeIn .28s cubic-bezier(.2,.7,.2,1) both; }
+  .stagger > * { animation: fadeIn .32s cubic-bezier(.2,.7,.2,1) both; }
+  .stagger > *:nth-child(2) { animation-delay: 50ms } .stagger > *:nth-child(3) { animation-delay: 100ms }
+  .stagger > *:nth-child(4) { animation-delay: 150ms } .stagger > *:nth-child(5) { animation-delay: 200ms }
+  .stagger > *:nth-child(n+6) { animation-delay: 250ms }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+  .sheet { animation: sheetIn .26s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes sheetIn { from { opacity: 0; transform: translateY(18px) } to { opacity: 1; transform: none } }
+  .bg-depth { background: radial-gradient(1200px 500px at 85% -10%, #E9EEEA 0%, transparent 60%), radial-gradient(900px 400px at -10% 110%, #EFE6D3 0%, transparent 60%), var(--color-bg); }
+  .scroll-x { overflow-x: auto; scrollbar-width: none; } .scroll-x::-webkit-scrollbar { display: none; }
+  .bar { transform-origin: left; animation: grow .7s cubic-bezier(.2,.7,.2,1) both; }
+  @keyframes grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+  .drop-target { outline: 2px dashed var(--color-brand); outline-offset: -2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+  [data-lucide] { width: 1em; height: 1em; }
+  svg.lucide { stroke-width: 1.8; }
+</style>
+</head>
+<body class="bg-depth">
+<div id="app" class="min-h-dvh"></div>
+<div id="modal-root"></div>
+<div id="toast-root" class="fixed z-50 left-1/2 -translate-x-1/2 bottom-24 md:bottom-6 w-[min(92vw,420px)]"></div>
+
+<script>
+/* =========================================================
+   Lirios CRM — un solo archivo, guarda todo en este navegador
+   ========================================================= */
+const STORAGE_KEY = 'lirios-crm-v1';
+
+/* ---------- Catálogos ---------- */
+const VENTAS = [
+  { id: 'prospecto', nombre: 'Por llamar', sub: 'Prospectos' },
+  { id: 'cita1', nombre: 'Cita 1ª', sub: 'Descubrimiento' },
+  { id: 'propuesta', nombre: 'Propuesta', sub: 'Elaboración / estudio' },
+  { id: 'cita2', nombre: 'Cita 2ª', sub: 'Presentación y cierre' },
+  { id: 'tramite', nombre: 'En trámite', sub: 'Emisión' },
+  { id: 'emitida', nombre: 'Póliza emitida', sub: 'Pasa a posventa' },
+  { id: 'standby', nombre: 'Standby', sub: 'Reagendar a futuro' },
+];
+const POSVENTA = [
+  { id: 'activa', nombre: 'Pólizas activas', sub: 'Vigentes y al día', tono: 'ok' },
+  { id: 'renovacion', nombre: 'Renovación próxima', sub: 'Aniversario en ≤ 60 días', tono: 'warn' },
+  { id: 'pago', nombre: 'Alerta de pago', sub: 'Recibo en ≤ 15 días', tono: 'warn' },
+  { id: 'gracia', nombre: 'Periodo de gracia', sub: 'Recibo vencido', tono: 'bad' },
+  { id: 'conservada', nombre: 'Conservada / renovada', sub: 'Ciclo completado', tono: 'ok' },
+];
+const ESTADOS = ['Prospecto Frío','Contactado','Cita 1 Agendada','Cita 1 Realizada','Cita 2 Agendada','Cita 2 Realizada','En Trámite','Cliente Activo','En Renovación','Cancelada','Standby'];
+const RAMOS = ['Vida','Retiro','Gastos Médicos','Ahorro/Inversión'];
+const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
+const MONEDAS = ['MXN','USD','UDIs'];
+const PRIORIDADES = ['Alta','Media','Baja'];
+const EDADES = ['18-25','26-35','36-45','46-55','56-65','65+'];
+const CIVILES = ['Soltero(a)','Casado(a)','Unión libre','Divorciado(a)','Viudo(a)'];
+const TIPOS_CITA = {
+  cita1: 'Cita 1ª · Descubrimiento',
+  cita2: 'Cita 2ª · Propuesta',
+  anual: 'Revisión anual',
+  posventa: 'Seguimiento posventa',
+};
+const RAMO_ICON = { 'Vida': 'heart-handshake', 'Retiro': 'sunset', 'Gastos Médicos': 'stethoscope', 'Ahorro/Inversión': 'piggy-bank' };
+
+/* ---------- Fechas (siempre YYYY-MM-DD en hora local) ---------- */
+const pad = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const hoy = () => iso(new Date());
+const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return iso(d); };
+const addMonths = (s, n) => {
+  const d = parse(s), day = d.getDate();
+  d.setDate(1); d.setMonth(d.getMonth() + n);
+  d.setDate(Math.min(day, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate()));
+  return iso(d);
+};
+const diasEntre = (a, b) => Math.round((parse(b) - parse(a)) / 864e5);
+const diasHasta = s => diasEntre(hoy(), s);
+const mesesEntre = (a, b) => { const x = parse(a), y = parse(b); return (y.getFullYear() - x.getFullYear()) * 12 + (y.getMonth() - x.getMonth()); };
+const fFecha = (s, opts = { day: 'numeric', month: 'short' }) => s ? parse(s).toLocaleDateString('es-MX', opts).replace('.', '') : '—';
+const fFechaLarga = s => { const t = fFecha(s, { weekday: 'long', day: 'numeric', month: 'long' }); return t[0].toUpperCase() + t.slice(1); };
+const fHora = h => { if (!h) return ''; const [H, M] = h.split(':').map(Number); return `${((H + 11) % 12) + 1}:${pad(M)} ${H < 12 ? 'am' : 'pm'}`; };
+const relDias = n => n === 0 ? 'hoy' : n === 1 ? 'mañana' : n === -1 ? 'ayer' : n > 0 ? `en ${n} días` : `hace ${-n} días`;
+const lunesDe = s => { const d = parse(s); const dow = (d.getDay() + 6) % 7; d.setDate(d.getDate() - dow); return iso(d); };
+
+/* Recibos: se cuentan siempre desde el inicio de vigencia para no "derivar" en meses de 31 */
+function siguienteRecibo(inicio, forma, despuesDe) {
+  const m = FORMAS[forma] || 12;
+  for (let k = 1; k < 1200; k++) { const f = addMonths(inicio, k * m); if (f > despuesDe) return f; }
+  return addMonths(despuesDe, m);
+}
+function reciboVigente(inicio, forma) {
+  const m = FORMAS[forma] || 12, t = hoy();
+  for (let k = 1; k < 1200; k++) { const f = addMonths(inicio, k * m); if (f >= t) return f; }
+  return null;
+}
+function proximoAniversario(inicio) {
+  const t = hoy();
+  for (let k = 1; k < 100; k++) { const f = addMonths(inicio, 12 * k); if (f >= t) return f; }
+  return null;
+}
+
+/* ---------- Dinero ---------- */
+function aMXN(monto, moneda) {
+  const n = Number(monto) || 0;
+  if (moneda === 'USD') return n * (Number(db.ajustes.usd) || 0);
+  if (moneda === 'UDIs') return n * (Number(db.ajustes.udi) || 0);
+  return n;
+}
+function fDinero(monto, moneda = 'MXN', compacto = false) {
+  const n = Number(monto) || 0;
+  if (moneda === 'UDIs') return `${n.toLocaleString('es-MX', { maximumFractionDigits: 0 })} UDIs`;
+  if (compacto && n >= 1e6) return `${moneda === 'USD' ? 'US' : ''}$${(n / 1e6).toLocaleString('es-MX', { maximumFractionDigits: 1 })} M`;
+  if (compacto && n >= 1e4) return `${moneda === 'USD' ? 'US' : ''}$${Math.round(n / 1e3).toLocaleString('es-MX')} mil`;
+  return (moneda === 'USD' ? 'US' : '') + '$' + n.toLocaleString('es-MX', { maximumFractionDigits: 0 });
+}
+const primaRecibo = c => (Number(c.prima) || 0) / (12 / (FORMAS[c.formaPago] || 12));
+
+/* ---------- Utilidades ---------- */
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const iniciales = n => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
+const ahoraTexto = () => new Date().toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+const soloDigitos = s => String(s || '').replace(/\D/g, '');
+const icon = (name, cls = '') => `<i data-lucide="${name}" class="${cls}" aria-hidden="true"></i>`;
+
+/* ---------- Reglas de negocio ---------- */
+const esCliente = c => c.etapa === 'emitida';
+const enVentas = c => !esCliente(c) && c.etapa !== 'cancelada';
+
+function cubeta(c) {
+  if (!esCliente(c) || !c.proxVencimiento) return 'activa';
+  const dv = diasHasta(c.proxVencimiento);
+  if (c.gracia || dv < 0) return 'gracia';
+  if (dv <= 15) return 'pago';
+  const ani = c.inicioVigencia ? proximoAniversario(c.inicioVigencia) : null;
+  if (ani && diasHasta(ani) <= 60) return 'renovacion';
+  if (c.renovadoEn && diasEntre(c.renovadoEn, hoy()) <= 90) return 'conservada';
+  return 'activa';
+}
+function semaforo(c) {
+  if (!esCliente(c)) return null;
+  const b = cubeta(c);
+  if (b === 'gracia') return 'bad';
+  const dv = c.proxVencimiento ? diasHasta(c.proxVencimiento) : 999;
+  const ani = c.inicioVigencia ? proximoAniversario(c.inicioVigencia) : null;
+  if (dv <= 15 || (ani && diasHasta(ani) < 30)) return 'warn';
+  return 'ok';
+}
+function estadoDe(c) {
+  if (c.etapa === 'cancelada') return 'Cancelada';
+  if (c.etapa === 'standby') return 'Standby';
+  if (esCliente(c)) return cubeta(c) === 'renovacion' ? 'En Renovación' : 'Cliente Activo';
+  return c.estado || 'Prospecto Frío';
+}
+function proximaCita(c) {
+  return (c.citas || []).filter(x => x.status === 'programada').sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora))[0];
+}
+function todasCitas() {
+  return db.contactos.flatMap(c => (c.citas || []).map(ci => ({ ...ci, contacto: c })));
+}
+function lineaGracia(c) {
+  const dv = diasHasta(c.proxVencimiento);
+  if (dv < -30) return `Vencido hace ${-dv} días · fuera de tolerancia`;
+  if (dv < 0) return `Vencido hace ${-dv} días · quedan ${30 + dv} de gracia`;
+  return 'Marcado en periodo de gracia';
+}
+
+/* ---------- Datos de ejemplo (fechas relativas al día en que se crean) ---------- */
+function semilla() {
+  const T = hoy();
+  const c = (o) => ({ id: uid(), telefono: '', whatsapp: '', email: '', ocupacion: '', edad: '36-45', civil: 'Casado(a)', hijos: 0,
+    prioridad: 'Media', ramo: 'Vida', aseguradora: '', poliza: '', formaPago: 'Anual', inicioVigencia: '', proxVencimiento: '',
+    prima: 0, moneda: 'MXN', etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0,
+    fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: addDays(T, -40), ...o });
+  const nota = (dias, texto) => ({ id: uid(), fecha: addDays(T, dias), hora: '10:30', texto });
+  const cita = (o) => ({ id: uid(), hora: '10:00', modalidad: 'Virtual', link: '', objetivo: '', status: 'programada', reagendas: 0, bitacora: [], ...o });
+
+  const inicioRicardo = addMonths(addDays(T, 6), -15);
+  const inicioDaniela = addMonths(addDays(T, -12), -18);
+  const inicioPatricia = addMonths(addDays(T, 25), -36);
+  const inicioFernando = addMonths(addDays(T, -20), -24);
+  const inicioSofia = addDays(T, -12);
+
+  return [
+    c({ nombre: 'Mariana Robles Treviño', telefono: '55 3412 8890', whatsapp: '5534128890', email: 'mariana.robles@correo.mx', ocupacion: 'Arquitecta independiente',
+      edad: '26-35', civil: 'Casado(a)', hijos: 1, prioridad: 'Alta', ramo: 'Vida', prima: 24000, moneda: 'MXN', etapa: 'cita1', estado: 'Cita 1 Agendada',
+      notas: [nota(-3, 'Referida por Sofía Castañeda. Le preocupa proteger a su hija si a ella le pasa algo; su esposo no tiene seguro.')],
+      citas: [cita({ tipo: 'cita1', fecha: T, hora: '17:00', modalidad: 'Virtual', link: 'https://meet.google.com/', objetivo: 'Diagnóstico de protección familiar' })] }),
+    c({ nombre: 'Jorge Alberto Méndez', telefono: '33 1876 4402', whatsapp: '3318764402', email: 'jorge.mendez@empresa.com', ocupacion: 'Director comercial',
+      edad: '46-55', civil: 'Casado(a)', hijos: 2, prioridad: 'Alta', ramo: 'Retiro', prima: 60000, moneda: 'MXN', etapa: 'cita2', estado: 'Cita 2 Agendada', hitos: { cita1: addDays(T, -10) },
+      notas: [nota(-10, 'Quiere retirarse a los 60 con $45k mensuales. Tiene Afore pero no sabe cuánto lleva.'), nota(-4, 'Propuesta lista: plan de retiro 15 años, deducible art. 151.')],
+      citas: [cita({ tipo: 'cita1', fecha: addDays(T, -10), hora: '09:00', modalidad: 'Presencial', status: 'asistio', objetivo: 'Descubrimiento de metas de retiro' }),
+              cita({ tipo: 'cita2', fecha: addDays(T, 2), hora: '13:30', modalidad: 'Presencial', objetivo: 'Presentar plan de retiro y cerrar', reagendas: 1,
+                bitacora: [{ fecha: addDays(T, -2), de: addDays(T, -1), a: addDays(T, 2), motivo: 'Viaje de trabajo a Monterrey' }] })] }),
+    c({ nombre: 'Alejandra Vega Ruiz', telefono: '81 2290 1174', whatsapp: '8122901174', ocupacion: 'Médica pediatra', edad: '36-45', civil: 'Soltero(a)', hijos: 0,
+      prioridad: 'Media', ramo: 'Gastos Médicos', prima: 32000, moneda: 'MXN', etapa: 'prospecto', estado: 'Contactado',
+      notas: [nota(-1, 'Contestó el WhatsApp. Pidió que le llame el lunes después de consulta.')] }),
+    c({ nombre: 'Sofía Castañeda Lozano', telefono: '55 9087 3321', whatsapp: '5590873321', email: 'sofia.cl@correo.mx', ocupacion: 'Contadora', edad: '36-45', hijos: 2,
+      prioridad: 'Media', ramo: 'Gastos Médicos', aseguradora: 'GNP', poliza: 'GMM-0048213', formaPago: 'Mensual', inicioVigencia: inicioSofia,
+      proxVencimiento: addMonths(inicioSofia, 1), prima: 38400, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
+      hitos: { cita1: addDays(T, -35), cita2: addDays(T, -22), cierre: addDays(T, -12) },
+      notas: [nota(-12, 'Póliza emitida. Plan familiar, deducible 25k. Le enviaré la tarjeta digital.')], pagos: [{ id: uid(), fecha: addDays(T, -12), monto: 3200, moneda: 'MXN', recibo: inicioSofia }] }),
+    c({ nombre: 'Ricardo Ibarra Solís', telefono: '55 4410 7782', whatsapp: '5544107782', email: 'ribarra@correo.mx', ocupacion: 'Empresario restaurantero', edad: '46-55', hijos: 3,
+      prioridad: 'Alta', ramo: 'Vida', aseguradora: 'MetLife', poliza: 'VID-77120934', formaPago: 'Trimestral', inicioVigencia: inicioRicardo,
+      proxVencimiento: addDays(T, 6), prima: 3200, moneda: 'USD', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
+      hitos: { cita1: addMonths(T, -17), cita2: addMonths(T, -16), cierre: inicioRicardo },
+      notas: [nota(-2, 'Le recordé por WhatsApp el recibo trimestral; paga por transferencia.')] }),
+    c({ nombre: 'Daniela Fuentes Arriaga', telefono: '22 2318 0456', whatsapp: '2223180456', email: 'dani.fuentes@correo.mx', ocupacion: 'Gerente de RH', edad: '36-45', civil: 'Divorciado(a)', hijos: 1,
+      prioridad: 'Alta', ramo: 'Retiro', aseguradora: 'Seguros Monterrey NY Life', poliza: 'RET-3390127', formaPago: 'Semestral', inicioVigencia: inicioDaniela,
+      proxVencimiento: addDays(T, -12), prima: 6500, moneda: 'UDIs', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
+      hitos: { cita1: addMonths(T, -20), cita2: addMonths(T, -19), cierre: inicioDaniela },
+      notas: [nota(-5, 'No ha pagado el recibo semestral. Dice que cambió de tarjeta. Mandar liga de pago.')] }),
+    c({ nombre: 'Patricia León Garza', telefono: '55 6655 2098', whatsapp: '5566552098', ocupacion: 'Abogada', edad: '56-65', hijos: 2,
+      prioridad: 'Media', ramo: 'Ahorro/Inversión', aseguradora: 'AXA', poliza: 'AHO-1102984', formaPago: 'Anual', inicioVigencia: inicioPatricia,
+      proxVencimiento: addDays(T, 25), prima: 85000, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true, renovaciones: 2,
+      hitos: { cita1: addMonths(T, -38), cita2: addMonths(T, -37), cierre: inicioPatricia } }),
+    c({ nombre: 'Fernando Aguilar Paz', telefono: '44 2187 6650', whatsapp: '4421876650', email: 'fer.aguilar@correo.mx', ocupacion: 'Ingeniero de software', edad: '26-35', civil: 'Unión libre', hijos: 0,
+      prioridad: 'Baja', ramo: 'Vida', aseguradora: 'GNP', poliza: 'VID-5520871', formaPago: 'Anual', inicioVigencia: inicioFernando,
+      proxVencimiento: addMonths(inicioFernando, 36), prima: 14500, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
+      renovadoEn: addDays(T, -20), renovaciones: 1, hitos: { cita1: addMonths(T, -26), cita2: addMonths(T, -25), cierre: inicioFernando },
+      pagos: [{ id: uid(), fecha: addDays(T, -21), monto: 14500, moneda: 'MXN', recibo: addDays(T, -20) }],
+      citas: [cita({ tipo: 'anual', fecha: addDays(T, 5), hora: '18:00', modalidad: 'Virtual', link: 'https://zoom.us/', objetivo: 'Revisar beneficiarios: se va a casar' })] }),
+    c({ nombre: 'Héctor Salinas Ochoa', telefono: '55 7720 1189', whatsapp: '5577201189', ocupacion: 'Comerciante', edad: '36-45', hijos: 2,
+      prioridad: 'Baja', ramo: 'Gastos Médicos', prima: 28000, moneda: 'MXN', etapa: 'standby', estado: 'Standby',
+      notas: [nota(-3, 'No se conectó a la llamada. Retomar en enero, después de aguinaldos.')],
+      citas: [cita({ tipo: 'cita1', fecha: addDays(T, -3), hora: '12:00', modalidad: 'Virtual', status: 'noasistio', objetivo: 'Cotizar GMM familiar' })] }),
+    c({ nombre: 'Luis Ortega Valdés', telefono: '55 1209 4433', ocupacion: 'Consultor', edad: '46-55', prioridad: 'Baja', ramo: 'Vida', aseguradora: 'MetLife', poliza: 'VID-1180023',
+      formaPago: 'Anual', inicioVigencia: addMonths(T, -14), prima: 12000, moneda: 'MXN', etapa: 'cancelada', estado: 'Cancelada', fueCliente: true,
+      hitos: { cita1: addMonths(T, -16), cita2: addMonths(T, -15), cierre: addMonths(T, -14) },
+      notas: [nota(-50, 'Canceló al aniversario: se quedó sin trabajo. Volver a contactar en 6 meses.')] }),
+  ];
+}
+
+/* ---------- Guardado ---------- */
+let db;
+function cargar() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { const d = JSON.parse(raw); if (d && Array.isArray(d.contactos)) return d; }
+  } catch (e) { console.warn('No se pudo leer el guardado', e); }
+  return null;
+}
+function guardar() {
+  db.guardadoEn = new Date().toISOString();
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); estadoGuardado(true); }
+  catch (e) { estadoGuardado(false); toast('No se pudo guardar en este navegador. Descarga un respaldo desde Ajustes.', { tono: 'bad' }); }
+}
+function estadoGuardado(ok) {
+  document.querySelectorAll('[data-saved]').forEach(el => {
+    el.innerHTML = ok ? `${icon('cloud-check', 'w-3.5 h-3.5')} Guardado ${new Date().toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit' })}` : `${icon('cloud-off', 'w-3.5 h-3.5')} Sin guardar`;
+  });
+  pintarIconos();
+}
+db = cargar() || { version: 1, ajustes: { usd: 18.5, udi: 8.45, nombre: 'Lirios Agencia de Vida' }, contactos: semilla(), esDemo: true };
+if (!cargar()) guardar();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+
+/* Deshacer: foto del estado antes de cada acción reversible */
+let fotoPrevia = null;
+function foto() { fotoPrevia = JSON.stringify(db); }
+function deshacer() { if (!fotoPrevia) return; db = JSON.parse(fotoPrevia); fotoPrevia = null; guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true); toast('Cambio deshecho'); }
+
+/* ---------- Estado de interfaz ---------- */
+const ui = {
+  vista: (location.hash.slice(1) || 'hoy'),
+  busqueda: '', filtro: 'todos',
+  etapaMovil: 'prospecto', cubetaMovil: 'gracia',
+  semana: lunesDe(hoy()), filtroCitas: 'todas',
+  detalle: null,
+};
+const getC = id => db.contactos.find(c => c.id === id);
+
+/* ---------- Toast ---------- */
+let toastTimer;
+function toast(msg, { deshacer: puedeDeshacer = false, tono = 'ok' } = {}) {
+  clearTimeout(toastTimer);
+  const root = document.getElementById('toast-root');
+  root.innerHTML = `<div role="status" class="fade-in flex items-center gap-3 rounded-2xl px-4 py-3 shadow-lg ${tono === 'bad' ? 'bg-bad text-white' : 'bg-ink text-bg'}">
+    ${icon(tono === 'bad' ? 'alert-triangle' : 'check-circle-2', 'w-4 h-4 shrink-0')}
+    <p class="text-sm flex-1 min-w-0">${esc(msg)}</p>
+    ${puedeDeshacer ? `<button class="text-sm font-semibold underline underline-offset-4 shrink-0" data-act="deshacer">Deshacer</button>` : ''}
+  </div>`;
+  pintarIconos();
+  toastTimer = setTimeout(() => (root.innerHTML = ''), puedeDeshacer ? 6500 : 3200);
+}
+
+function pintarIconos() { if (window.lucide) lucide.createIcons(); }
+
+/* =========================================================
+   VISTAS
+   ========================================================= */
+const NAV = [
+  { id: 'hoy', nombre: 'Hoy', icono: 'sun' },
+  { id: 'ventas', nombre: 'Ventas', icono: 'kanban-square' },
+  { id: 'posventa', nombre: 'Posventa', icono: 'shield-check' },
+  { id: 'citas', nombre: 'Citas', icono: 'calendar-days' },
+  { id: 'contactos', nombre: 'Contactos', icono: 'users' },
+];
+
+function render() {
+  const app = document.getElementById('app');
+  const alertas = db.contactos.filter(c => esCliente(c) && cubeta(c) === 'gracia').length;
+  app.innerHTML = `
+  <aside class="hidden md:flex fixed inset-y-0 left-0 w-64 bg-brand text-on-brand flex-col p-4 gap-1 z-20">
+    <div class="flex items-center gap-3 px-2 pt-2 pb-6">
+      <div class="grid place-items-center w-10 h-10 rounded-xl bg-on-brand text-brand">${icon('flower-2', 'w-5 h-5')}</div>
+      <div class="min-w-0"><p class="font-display text-[19px] leading-tight">Lirios</p><p class="text-[12px] text-on-brand2">Agencia de Vida · CRM</p></div>
+    </div>
+    ${NAV.map(n => `<a href="#${n.id}" class="navlink" ${ui.vista === n.id ? 'aria-current="page"' : ''}>${icon(n.icono, 'w-[18px] h-[18px]')}<span class="flex-1">${n.nombre}</span>${n.id === 'posventa' && alertas ? `<span class="tag bg-bad text-white">${alertas}</span>` : ''}</a>`).join('')}
+    <div class="mt-auto flex flex-col gap-2">
+      <button class="btn bg-on-brand text-brand hover:bg-white" data-act="nuevo">${icon('user-plus', 'w-4 h-4')} Nuevo contacto</button>
+      <button class="navlink" data-act="ajustes">${icon('settings-2', 'w-[18px] h-[18px]')} Ajustes y respaldo</button>
+      <p class="px-3 text-[11.5px] text-on-brand2 flex items-center gap-1.5" data-saved></p>
+    </div>
+  </aside>
+
+  <header class="md:hidden sticky top-0 z-20 bg-brand text-on-brand px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 flex items-center gap-3">
+    <div class="grid place-items-center w-9 h-9 rounded-xl bg-on-brand text-brand">${icon('flower-2', 'w-[18px] h-[18px]')}</div>
+    <div class="flex-1 min-w-0"><p class="font-display text-[18px] leading-tight">Lirios CRM</p><p class="text-[11.5px] text-on-brand2 flex items-center gap-1" data-saved></p></div>
+    <button class="grid place-items-center w-11 h-11 rounded-xl hover:bg-white/10" data-act="ajustes" aria-label="Ajustes y respaldo">${icon('settings-2', 'w-5 h-5')}</button>
+    <button class="grid place-items-center w-11 h-11 rounded-xl bg-on-brand text-brand" data-act="nuevo" aria-label="Nuevo contacto">${icon('user-plus', 'w-5 h-5')}</button>
+  </header>
+
+  <main class="md:ml-64 min-w-0 px-4 md:px-8 pt-5 md:pt-8 pb-28 md:pb-12 max-w-[1400px]">
+    ${({ hoy: vistaHoy, ventas: vistaVentas, posventa: vistaPosventa, citas: vistaCitas, contactos: vistaContactos }[ui.vista] || vistaHoy)()}
+  </main>
+
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-20 bg-surface/95 backdrop-blur border-t border-line flex px-1 pb-[env(safe-area-inset-bottom)]" aria-label="Secciones">
+    ${NAV.map(n => `<a href="#${n.id}" class="tabbtn" ${ui.vista === n.id ? 'aria-current="page"' : ''}><span class="tabdot relative">${icon(n.icono, 'w-5 h-5')}${n.id === 'posventa' && alertas ? '<span class="absolute top-0 right-2 w-2 h-2 rounded-full bg-bad"></span>' : ''}</span>${n.nombre}</a>`).join('')}
+  </nav>`;
+  estadoGuardado(true);
+  pintarIconos();
+}
+
+function encabezado(titulo, sub, acciones = '') {
+  return `<div class="flex items-end justify-between gap-4 mb-5 fade-in">
+    <div class="min-w-0"><h1 class="text-[28px] md:text-[34px] leading-[1.1]">${titulo}</h1>${sub ? `<p class="text-ink2 text-[14px] mt-1">${sub}</p>` : ''}</div>
+    ${acciones ? `<div class="flex gap-2 shrink-0">${acciones}</div>` : ''}
+  </div>`;
+}
+
+const TONOS = {
+  ok: { dot: 'bg-ok', tag: 'bg-ok-soft text-ok', texto: 'Al día' },
+  warn: { dot: 'bg-warn', tag: 'bg-warn-soft text-warn', texto: 'Por vencer' },
+  bad: { dot: 'bg-bad', tag: 'bg-bad-soft text-bad', texto: 'En riesgo' },
+};
+const prioridadTag = p => `<span class="tag ${p === 'Alta' ? 'bg-bad-soft text-bad' : p === 'Media' ? 'bg-warn-soft text-warn' : 'bg-sunken text-ink2'}">${esc(p)}</span>`;
+const ramoTag = r => `<span class="tag bg-brand-soft text-brand">${icon(RAMO_ICON[r] || 'shield', 'w-3 h-3')} ${esc(r)}</span>`;
+const avatar = (c, size = 'w-10 h-10 text-[13px]') => `<div class="${size} rounded-full grid place-items-center bg-brand-soft text-brand font-semibold shrink-0">${esc(iniciales(c.nombre))}</div>`;
+
+/* ---------- HOY ---------- */
+function vistaHoy() {
+  const T = hoy();
+  const citas = todasCitas();
+  const deHoy = citas.filter(x => x.status === 'programada' && x.fecha === T).sort((a, b) => a.hora.localeCompare(b.hora));
+  const semanaFin = addDays(T, 7);
+  const deSemana = citas.filter(x => x.status === 'programada' && x.fecha > T && x.fecha <= semanaFin);
+  const porReagendar = citas.filter(x => x.status === 'noasistio' || (x.status === 'programada' && x.fecha < T));
+  const clientes = db.contactos.filter(esCliente);
+  const sem = { bad: 0, warn: 0, ok: 0 };
+  clientes.forEach(c => sem[semaforo(c)]++);
+  const k = kpis();
+  const cobranza = clientes.filter(c => ['pago', 'gracia'].includes(cubeta(c))).sort((a, b) => a.proxVencimiento.localeCompare(b.proxVencimiento));
+
+  return `
+  ${encabezado('Tu día', `${fFechaLarga(T)} · ${deHoy.length ? `${deHoy.length} ${deHoy.length === 1 ? 'cita' : 'citas'} hoy` : 'sin citas hoy'}${sem.bad ? ` · <span class="text-bad font-medium">${sem.bad} en periodo de gracia</span>` : ''}`)}
+
+  <div class="grid gap-4 lg:grid-cols-3 stagger">
+    <section class="card p-5 lg:col-span-2 bg-brand! text-on-brand border-brand!" aria-labelledby="h-citashoy">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h2 id="h-citashoy" class="text-[20px]">Citas de hoy</h2>
+        <a href="#citas" class="text-[13px] text-on-brand2 hover:text-on-brand flex items-center gap-1">Agenda ${icon('arrow-right', 'w-3.5 h-3.5')}</a>
+      </div>
+      ${deHoy.length ? `<ul class="flex flex-col gap-2">${deHoy.map(x => `
+        <li class="rounded-xl bg-white/8 border border-white/10 p-3 flex flex-col sm:flex-row sm:items-center gap-3">
+          <button class="flex items-center gap-3 flex-1 min-w-0 text-left" data-act="detalle" data-id="${x.contacto.id}">
+            <div class="text-center w-14 shrink-0"><p class="font-display text-[20px] leading-none">${fHora(x.hora).split(' ')[0]}</p><p class="text-[11px] text-on-brand2 mt-1">${fHora(x.hora).split(' ')[1]}</p></div>
+            <div class="min-w-0"><p class="font-medium truncate">${esc(x.contacto.nombre)}</p><p class="text-[12.5px] text-on-brand2 truncate">${TIPOS_CITA[x.tipo]} · ${x.modalidad === 'Virtual' ? 'Virtual' : 'Presencial'}</p></div>
+          </button>
+          <div class="flex gap-1.5">${botonesAsistencia(x.contacto.id, x.id, true)}</div>
+        </li>`).join('')}</ul>`
+      : `<div class="rounded-xl bg-white/8 border border-white/10 p-4 flex items-center gap-3"><div class="icon-chip bg-white/10">${icon('calendar-plus', 'w-5 h-5')}</div><div class="flex-1 min-w-0"><p class="font-medium">Hoy tienes la agenda libre</p><p class="text-[13px] text-on-brand2">Buen momento para llamar a tus prospectos.</p></div><a href="#ventas" class="btn btn-sm bg-on-brand text-brand shrink-0">Ver prospectos</a></div>`}
+      ${deSemana.length ? `<h3 class="font-sans! text-[12px] font-medium uppercase tracking-[0.06em] text-on-brand2 mt-5 mb-2">Próximos 7 días</h3>
+      <ul class="flex flex-col divide-y divide-white/10">${deSemana.sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora)).slice(0, 4).map(x => `
+        <li><button class="w-full flex items-center gap-3 py-2.5 text-left" data-act="detalle" data-id="${x.contacto.id}">
+          <span class="w-14 shrink-0 text-[12.5px] text-on-brand2 capitalize">${fFecha(x.fecha, { weekday: 'short', day: 'numeric' })}</span>
+          <span class="min-w-0 flex-1"><span class="block text-[14px] truncate">${esc(x.contacto.nombre)}</span><span class="block text-[12px] text-on-brand2 truncate">${TIPOS_CITA[x.tipo]} · ${fHora(x.hora)}</span></span>
+          ${icon(x.modalidad === 'Virtual' ? 'video' : 'map-pin', 'w-4 h-4 text-on-brand2 shrink-0')}
+        </button></li>`).join('')}</ul>` : ''}
+    </section>
+
+    <section class="card p-5" aria-labelledby="h-sem">
+      <h2 id="h-sem" class="text-[20px] mb-1">Semáforo de cartera</h2>
+      <p class="text-[13px] text-ink2 mb-4">${clientes.length} pólizas vigentes</p>
+      <div class="flex flex-col gap-2">
+        ${[['bad', 'Periodo de gracia', 'Riesgo de cancelación', 'gracia'], ['warn', 'Por vencer', 'Recibo ≤15 días o renovación ≤30', 'pago'], ['ok', 'Al día', 'Sin pendientes', 'activa']].map(([t, n, s, cub]) => `
+          <a href="#posventa" data-cubeta="${cub}" class="flex items-center gap-3 rounded-xl p-2.5 hover:bg-sunken transition">
+            <span class="w-11 h-11 rounded-xl grid place-items-center font-display text-[20px] ${TONOS[t].tag}">${sem[t]}</span>
+            <span class="min-w-0 flex-1"><span class="block font-medium text-[14.5px]">${n}</span><span class="block text-[12.5px] text-ink3 truncate">${s}</span></span>
+            ${icon('chevron-right', 'w-4 h-4 text-ink3')}
+          </a>`).join('')}
+      </div>
+    </section>
+
+    <section class="card p-5 lg:col-span-3" aria-labelledby="h-kpi">
+      <h2 id="h-kpi" class="sr-only">Métricas clave</h2>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:divide-x divide-line">
+        ${kpiBloque('Prima en ventas', fDinero(k.pipeline, 'MXN', true), `${k.nPipeline} oportunidades abiertas`, 'trending-up', 'text-brand')}
+        ${kpiBloque('Prima conservada', fDinero(k.conservada, 'MXN', true), `${clientes.length} pólizas en cartera`, 'shield-check', 'text-ok')}
+        ${kpiBloque('En riesgo', fDinero(k.riesgo, 'MXN', true), `${sem.bad} ${sem.bad === 1 ? 'recibo vencido' : 'recibos vencidos'}`, 'alert-triangle', 'text-bad')}
+        ${kpiBloque('Persistencia', k.persistencia === null ? '—' : `${k.persistencia}%`, `${k.renovadas} renovadas · ${k.canceladas} canceladas`, 'repeat', 'text-ink')}
+      </div>
+      <p class="text-[11.5px] text-ink3 mt-4">Montos anuales convertidos a pesos (USD ${db.ajustes.usd} · UDI ${db.ajustes.udi}). Cámbialo en Ajustes.</p>
+    </section>
+
+    <section class="card p-5" aria-labelledby="h-conv">
+      <h2 id="h-conv" class="text-[20px] mb-1">Conversión de citas</h2>
+      <p class="text-[13px] text-ink2 mb-4">De la primera cita al cierre</p>
+      ${embudo(k)}
+    </section>
+
+    <section class="card p-5" aria-labelledby="h-cobr">
+      <div class="flex items-center justify-between mb-3"><h2 id="h-cobr" class="text-[20px]">Cobranza</h2><a href="#posventa" class="text-[13px] text-brand font-medium">Ver todo</a></div>
+      ${cobranza.length ? `<ul class="flex flex-col divide-y divide-line">${cobranza.slice(0, 5).map(c => filaCobranza(c)).join('')}</ul>` : vacioMini('wallet', 'Nadie te debe un recibo', 'Los recibos por vencer en 15 días aparecerán aquí.')}
+    </section>
+
+    <section class="card p-5" aria-labelledby="h-reag">
+      <div class="flex items-center justify-between mb-3"><h2 id="h-reag" class="text-[20px]">Por reagendar</h2><span class="tag bg-sunken text-ink2">${porReagendar.length}</span></div>
+      ${porReagendar.length ? `<ul class="flex flex-col divide-y divide-line">${porReagendar.slice(0, 5).map(x => `
+        <li class="py-2.5 flex items-center gap-3">
+          <button class="flex items-center gap-3 flex-1 min-w-0 text-left" data-act="detalle" data-id="${x.contacto.id}">${avatar(x.contacto, 'w-9 h-9 text-[12px]')}
+            <span class="min-w-0"><span class="block font-medium text-[14px] truncate">${esc(x.contacto.nombre)}</span><span class="block text-[12.5px] text-ink3 truncate">${x.status === 'noasistio' ? 'No asistió' : 'Sin registrar asistencia'} · ${fFecha(x.fecha)}</span></span></button>
+          <button class="btn-soft btn-sm" data-act="reagendar" data-id="${x.contacto.id}" data-cita="${x.id}">${icon('calendar-clock', 'w-4 h-4')} Reagendar</button>
+        </li>`).join('')}</ul>` : vacioMini('calendar-check', 'Todo en orden', 'Ninguna cita pendiente de reagendar.')}
+    </section>
+  </div>`;
+}
+function kpiBloque(label, valor, sub, ic, color) {
+  return `<div class="lg:px-5 first:lg:pl-0 min-w-0"><p class="label flex items-center gap-1.5">${icon(ic, `w-3.5 h-3.5 ${color}`)} ${label}</p>
+    <p class="font-display text-[26px] md:text-[30px] leading-tight mt-1 ${color} truncate" data-count>${valor}</p><p class="text-[12.5px] text-ink3 truncate">${sub}</p></div>`;
+}
+function kpis() {
+  const cs = db.contactos;
+  const pipeline = cs.filter(c => enVentas(c) && c.etapa !== 'standby');
+  const clientes = cs.filter(esCliente);
+  const renovadas = cs.reduce((s, c) => s + (Number(c.renovaciones) || 0), 0);
+  const canceladas = cs.filter(c => c.etapa === 'cancelada' && c.fueCliente).length;
+  return {
+    pipeline: pipeline.reduce((s, c) => s + aMXN(c.prima, c.moneda), 0), nPipeline: pipeline.length,
+    conservada: clientes.reduce((s, c) => s + aMXN(c.prima, c.moneda), 0),
+    riesgo: clientes.filter(c => cubeta(c) === 'gracia').reduce((s, c) => s + aMXN(primaRecibo(c), c.moneda), 0),
+    renovadas, canceladas, persistencia: renovadas + canceladas ? Math.round(renovadas / (renovadas + canceladas) * 100) : null,
+    n1: cs.filter(c => c.hitos?.cita1).length, n2: cs.filter(c => c.hitos?.cita2).length, n3: cs.filter(c => c.hitos?.cierre).length,
+  };
+}
+function embudo(k) {
+  const max = Math.max(k.n1, 1);
+  const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—';
+  const filas = [['Cita 1ª realizada', k.n1, null], ['Cita 2ª realizada', k.n2, pct(k.n2, k.n1)], ['Póliza cerrada', k.n3, pct(k.n3, k.n2)]];
+  return `<div class="flex flex-col gap-3">${filas.map(([n, v, r], i) => `
+    <div><div class="flex items-baseline justify-between text-[13.5px] mb-1"><span class="text-ink2">${n}</span><span><span class="font-semibold">${v}</span>${r ? ` <span class="text-ink3 text-[12px]">· ${r} pasa</span>` : ''}</span></div>
+    <div class="h-2.5 rounded-full bg-sunken overflow-hidden"><div class="bar h-full rounded-full ${i === 2 ? 'bg-ok' : 'bg-brand'}" style="width:${Math.max(4, v / max * 100)}%; animation-delay:${i * 90}ms"></div></div></div>`).join('')}
+    <p class="text-[12.5px] text-ink2 mt-1">${k.n1 ? `De cada 10 primeras citas, <strong class="font-semibold">${Math.round(k.n3 / k.n1 * 10)}</strong> terminan en póliza.` : 'Registra asistencia a tus citas para ver tu conversión.'}</p></div>`;
+}
+function filaCobranza(c) {
+  const dv = diasHasta(c.proxVencimiento), t = semaforo(c);
+  return `<li class="py-2.5 flex items-center gap-3">
+    <button class="flex items-center gap-3 flex-1 min-w-0 text-left" data-act="detalle" data-id="${c.id}">
+      <span class="dot ${TONOS[t].dot}"></span>
+      <span class="min-w-0"><span class="block font-medium text-[14px] truncate">${esc(c.nombre)}</span><span class="block text-[12.5px] ${dv < 0 ? 'text-bad' : 'text-ink3'} truncate">${fDinero(primaRecibo(c), c.moneda)} · ${dv < 0 ? `vencido ${relDias(dv)}` : `vence ${relDias(dv)}`}</span></span></button>
+    <button class="btn-soft btn-sm" data-act="pago" data-id="${c.id}">${icon('badge-dollar-sign', 'w-4 h-4')} Pagó</button>
+  </li>`;
+}
+function vacioMini(ic, t, s) {
+  return `<div class="flex items-center gap-3 rounded-xl bg-sunken/60 p-4"><div class="icon-chip bg-surface text-brand">${icon(ic, 'w-5 h-5')}</div><div class="min-w-0"><p class="font-medium text-[14px]">${t}</p><p class="text-[12.5px] text-ink3">${s}</p></div></div>`;
+}
+
+/* ---------- VENTAS (pipeline) ---------- */
+function vistaVentas() {
+  const lista = db.contactos.filter(c => c.etapa !== 'cancelada');
+  const porEtapa = id => lista.filter(c => c.etapa === id && (id !== 'emitida' || (c.hitos?.cierre && diasEntre(c.hitos.cierre, hoy()) <= 30)));
+  const total = lista.filter(c => enVentas(c) && c.etapa !== 'standby').reduce((s, c) => s + aMXN(c.prima, c.moneda), 0);
+  return `
+  ${encabezado('Pipeline de ventas', `${fDinero(total, 'MXN', true)} en prima anual por cerrar · arrastra las tarjetas para moverlas`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('plus', 'w-4 h-4')} Prospecto</button>`)}
+  <div class="md:hidden scroll-x -mx-4 px-4 flex gap-2 pb-3 mb-1">
+    ${VENTAS.map(e => `<button class="chip" data-act="etapa-movil" data-etapa="${e.id}" aria-pressed="${ui.etapaMovil === e.id}">${e.nombre} <span class="opacity-70">${porEtapa(e.id).length}</span></button>`).join('')}
+  </div>
+  <div class="md:overflow-x-auto md:-mx-8 md:px-8 md:pb-4">
+    <div class="md:grid md:grid-flow-col md:auto-cols-[268px] gap-3 stagger">
+      ${VENTAS.map(e => {
+        const items = porEtapa(e.id);
+        const suma = items.reduce((s, c) => s + aMXN(c.prima, c.moneda), 0);
+        return `<section class="kcol ${ui.etapaMovil === e.id ? '' : 'hidden md:flex'}" data-drop="${e.id}" aria-label="${e.nombre}">
+          <header class="px-1.5 pt-1 pb-1.5">
+            <div class="flex items-center justify-between gap-2"><h2 class="font-sans! text-[14px] font-semibold">${e.nombre}</h2><span class="tag bg-surface text-ink2">${items.length}</span></div>
+            <p class="text-[12px] text-ink3">${e.sub}${suma ? ` · ${fDinero(suma, 'MXN', true)}` : ''}</p>
+          </header>
+          ${items.length ? items.map(tarjetaVenta).join('') : `<p class="text-[12.5px] text-ink3 text-center py-6 px-3 border border-dashed border-line rounded-xl">${e.id === 'prospecto' ? 'Agrega a tu próximo prospecto con el botón +' : 'Suelta aquí una tarjeta'}</p>`}
+        </section>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+function tarjetaVenta(c) {
+  const pc = proximaCita(c);
+  const pend = (c.citas || []).some(x => x.status === 'noasistio');
+  const reag = (c.citas || []).reduce((s, x) => s + (x.reagendas || 0), 0);
+  return `<article class="kcard" draggable="true" data-drag="${c.id}" data-act="detalle" data-id="${c.id}" tabindex="0">
+    <div class="flex items-start gap-2.5">${avatar(c, 'w-8 h-8 text-[11.5px]')}
+      <div class="min-w-0 flex-1"><p class="font-medium text-[14px] leading-snug truncate">${esc(c.nombre)}</p><p class="text-[12px] text-ink3 truncate">${esc(c.ocupacion || estadoDe(c))}</p></div>
+      ${prioridadTag(c.prioridad)}
+    </div>
+    <div class="flex items-center gap-1.5 flex-wrap mt-2.5">${ramoTag(c.ramo)}${c.prima ? `<span class="text-[12.5px] font-medium text-ink2">${fDinero(c.prima, c.moneda, true)}/año</span>` : ''}</div>
+    ${pc ? `<p class="text-[12px] mt-2 flex items-center gap-1.5 ${pc.fecha === hoy() ? 'text-brand font-medium' : 'text-ink2'}">${icon(pc.modalidad === 'Virtual' ? 'video' : 'map-pin', 'w-3.5 h-3.5')} ${fFecha(pc.fecha)} · ${fHora(pc.hora)}${reag ? ` <span class="tag bg-warn-soft text-warn ml-auto">${icon('rotate-ccw', 'w-3 h-3')}${reag}</span>` : ''}</p>` : ''}
+    ${pend ? `<p class="text-[12px] mt-2 text-bad flex items-center gap-1.5">${icon('calendar-x', 'w-3.5 h-3.5')} Faltó a su cita · reagendar</p>` : ''}
+  </article>`;
+}
+
+/* ---------- POSVENTA ---------- */
+function vistaPosventa() {
+  const clientes = db.contactos.filter(esCliente);
+  const grupos = Object.fromEntries(POSVENTA.map(p => [p.id, []]));
+  clientes.forEach(c => grupos[cubeta(c)].push(c));
+  Object.values(grupos).forEach(g => g.sort((a, b) => (a.proxVencimiento || '').localeCompare(b.proxVencimiento || '')));
+  const orden = ['gracia', 'pago', 'renovacion', 'activa', 'conservada'];
+  return `
+  ${encabezado('Posventa', `${clientes.length} pólizas · el sistema las mueve solo según sus fechas de pago y aniversario`)}
+  <div class="md:hidden scroll-x -mx-4 px-4 flex gap-2 pb-3 mb-1">
+    ${orden.map(id => { const p = POSVENTA.find(x => x.id === id); return `<button class="chip" data-act="cubeta-movil" data-cubeta="${id}" aria-pressed="${ui.cubetaMovil === id}"><span class="dot ${TONOS[p.tono].dot}"></span>${p.nombre} <span class="opacity-70">${grupos[id].length}</span></button>`; }).join('')}
+  </div>
+  <div class="grid md:grid-cols-2 xl:grid-cols-5 gap-3 stagger">
+    ${orden.map(id => {
+      const p = POSVENTA.find(x => x.id === id);
+      return `<section class="kcol ${ui.cubetaMovil === id ? '' : 'hidden md:flex'}" aria-label="${p.nombre}">
+        <header class="px-1.5 pt-1 pb-1.5"><div class="flex items-center gap-2"><span class="dot ${TONOS[p.tono].dot}"></span><h2 class="font-sans! text-[14px] font-semibold flex-1">${p.nombre}</h2><span class="tag bg-surface text-ink2">${grupos[id].length}</span></div>
+        <p class="text-[12px] text-ink3">${p.sub}</p></header>
+        ${grupos[id].length ? grupos[id].map(tarjetaPosventa).join('') : `<p class="text-[12.5px] text-ink3 text-center py-6 px-3 border border-dashed border-line rounded-xl">${id === 'gracia' ? 'Ningún recibo vencido. Así se cuida una cartera.' : 'Sin pólizas aquí por ahora'}</p>`}
+      </section>`;
+    }).join('')}
+  </div>`;
+}
+function tarjetaPosventa(c) {
+  const b = cubeta(c), t = semaforo(c), dv = diasHasta(c.proxVencimiento);
+  const ani = c.inicioVigencia ? proximoAniversario(c.inicioVigencia) : null;
+  let linea;
+  if (b === 'gracia') linea = `<span class="text-bad font-medium">${lineaGracia(c)}</span>`;
+  else if (b === 'pago') linea = `<span class="text-warn font-medium">Recibo vence ${relDias(dv)} · ${fFecha(c.proxVencimiento)}</span>`;
+  else if (b === 'renovacion') linea = `<span class="${diasHasta(ani) < 30 ? 'text-warn font-medium' : 'text-ink2'}">Aniversario ${relDias(diasHasta(ani))} · ${fFecha(ani)}</span>`;
+  else if (b === 'conservada') linea = `<span class="text-ok font-medium">Renovada el ${fFecha(c.renovadoEn)}</span>`;
+  else linea = `<span class="text-ink2">Próximo recibo ${fFecha(c.proxVencimiento)}</span>`;
+  return `<article class="kcard" data-act="detalle" data-id="${c.id}" tabindex="0">
+    <div class="flex items-start gap-2"><span class="dot mt-1.5 ${TONOS[t].dot}"></span>
+      <div class="min-w-0 flex-1"><p class="font-medium text-[14px] leading-snug truncate">${esc(c.nombre)}</p><p class="text-[12px] text-ink3 truncate">${esc(c.aseguradora)} · ${esc(c.poliza)}</p></div></div>
+    <div class="flex items-center gap-1.5 flex-wrap mt-2">${ramoTag(c.ramo)}<span class="text-[12px] text-ink2">${esc(c.formaPago)} · ${fDinero(primaRecibo(c), c.moneda)}</span></div>
+    <p class="text-[12px] mt-2">${linea}</p>
+    <div class="flex gap-1.5 mt-2.5" data-stop>
+      ${['pago', 'gracia'].includes(b) ? `<button class="btn-primary btn-sm flex-1" data-act="pago" data-id="${c.id}">${icon('badge-dollar-sign', 'w-4 h-4')} Registrar pago</button>` : ''}
+      ${b === 'renovacion' ? `<button class="btn-primary btn-sm flex-1" data-act="cita" data-id="${c.id}" data-tipo="anual">${icon('calendar-heart', 'w-4 h-4')} Revisión anual</button>` : ''}
+      ${b === 'pago' ? `<button class="btn-soft btn-sm" data-act="gracia" data-id="${c.id}" aria-label="Marcar en periodo de gracia" title="Marcar en periodo de gracia">${icon('hourglass', 'w-4 h-4')}</button>` : ''}
+      ${c.whatsapp ? `<a class="btn-soft btn-sm" href="${waLink(c, b)}" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">${icon('message-circle', 'w-4 h-4')}</a>` : ''}
+    </div>
+  </article>`;
+}
+function waLink(c, b) {
+  const nombre = c.nombre.split(' ')[0];
+  let msg = `Hola ${nombre}, ¿cómo estás?`;
+  if (b === 'pago' || b === 'gracia') msg = `Hola ${nombre}, te escribo para recordarte el recibo de tu póliza ${c.poliza} por ${fDinero(primaRecibo(c), c.moneda)} con fecha ${fFecha(c.proxVencimiento, { day: 'numeric', month: 'long' })}. ¿Te comparto la liga de pago?`;
+  if (b === 'renovacion') msg = `Hola ${nombre}, se acerca el aniversario de tu póliza ${c.poliza}. Me gustaría agendar 20 minutos para revisar tu suma asegurada y beneficiarios. ¿Qué día te acomoda?`;
+  return `https://wa.me/52${soloDigitos(c.whatsapp).slice(-10)}?text=${encodeURIComponent(msg)}`;
+}
+
+/* ---------- CITAS ---------- */
+function vistaCitas() {
+  const ini = ui.semana, fin = addDays(ini, 6), T = hoy();
+  const filtro = ui.filtroCitas;
+  const pasaFiltro = x => filtro === 'todas' || (filtro === 'ventas' ? ['cita1', 'cita2'].includes(x.tipo) : ['anual', 'posventa'].includes(x.tipo));
+  const citas = todasCitas().filter(pasaFiltro);
+  const semana = citas.filter(x => x.fecha >= ini && x.fecha <= fin).sort((a, b) => (a.fecha + a.hora).localeCompare(b.fecha + b.hora));
+  const pendientes = citas.filter(x => x.status === 'noasistio' || (x.status === 'programada' && x.fecha < T));
+  const dias = Array.from({ length: 7 }, (_, i) => addDays(ini, i));
+  const rango = `${fFecha(ini, { day: 'numeric', month: 'short' })} – ${fFecha(fin, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  return `
+  ${encabezado('Citas', (n => `${n} ${n === 1 ? 'programada' : 'programadas'} esta semana`)(semana.filter(x => x.status === 'programada').length), `<button class="btn-primary" data-act="cita">${icon('calendar-plus', 'w-4 h-4')} <span class="hidden sm:inline">Agendar cita</span><span class="sm:hidden">Agendar</span></button>`)}
+  <div class="flex flex-wrap items-center gap-2 mb-4">
+    <div class="flex items-center gap-1 card px-1 py-1 rounded-xl!">
+      <button class="btn-ghost btn-sm px-2!" data-act="semana" data-delta="-7" aria-label="Semana anterior">${icon('chevron-left', 'w-4 h-4')}</button>
+      <p class="text-[14px] font-medium px-1 min-w-[150px] text-center">${rango}</p>
+      <button class="btn-ghost btn-sm px-2!" data-act="semana" data-delta="7" aria-label="Semana siguiente">${icon('chevron-right', 'w-4 h-4')}</button>
+    </div>
+    ${ini !== lunesDe(T) ? `<button class="btn-ghost btn-sm" data-act="semana" data-delta="0">Hoy</button>` : ''}
+    <div class="flex gap-2 scroll-x">${[['todas', 'Todas'], ['ventas', 'De venta'], ['posventa', 'Posventa']].map(([id, n]) => `<button class="chip" data-act="filtro-citas" data-f="${id}" aria-pressed="${filtro === id}">${n}</button>`).join('')}</div>
+  </div>
+
+  ${pendientes.length ? `<section class="card p-4 mb-4 border-bad/30! fade-in" aria-labelledby="h-pend">
+    <h2 id="h-pend" class="font-sans! text-[14px] font-semibold text-bad flex items-center gap-2 mb-2">${icon('calendar-x', 'w-4 h-4')} Por reagendar (${pendientes.length})</h2>
+    <ul class="divide-y divide-line">${pendientes.map(x => filaCita(x, true)).join('')}</ul></section>` : ''}
+
+  <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3 stagger">
+    ${dias.map(d => {
+      const items = semana.filter(x => x.fecha === d);
+      const esHoy = d === T;
+      if (!items.length && !esHoy) return '';
+      return `<section class="card p-4 min-w-0 ${esHoy ? 'ring-2 ring-brand/30' : ''}">
+        <h2 class="font-sans! text-[13px] font-semibold uppercase tracking-[0.06em] ${esHoy ? 'text-brand' : 'text-ink3'} mb-1 capitalize">${esHoy ? 'Hoy · ' : ''}${fFecha(d, { weekday: 'long', day: 'numeric', month: 'short' })}</h2>
+        ${items.length ? `<ul class="divide-y divide-line">${items.map(x => filaCita(x)).join('')}</ul>` : `<p class="text-[13px] text-ink3 py-2">Sin citas hoy.</p>`}
+      </section>`;
+    }).join('') || ''}
+  </div>
+  ${!semana.length ? `<div class="card p-8 text-center mt-3"><div class="icon-chip bg-brand-soft text-brand mx-auto mb-3">${icon('calendar-search', 'w-5 h-5')}</div><p class="font-display text-[20px]">Semana despejada</p><p class="text-[13.5px] text-ink2 mt-1 mb-4">No hay citas entre ${rango}.</p><button class="btn-primary" data-act="cita">${icon('calendar-plus', 'w-4 h-4')} Agendar cita</button></div>` : ''}`;
+}
+function estadoCitaTag(x) {
+  const m = { programada: ['bg-brand-soft text-brand', 'Programada'], asistio: ['bg-ok-soft text-ok', 'Asistió'], noasistio: ['bg-bad-soft text-bad', 'No asistió'], cancelada: ['bg-sunken text-ink3', 'Cancelada'] };
+  const [cls, t] = m[x.status] || m.programada;
+  return `<span class="tag ${cls}">${t}</span>`;
+}
+function filaCita(x, pendiente = false) {
+  return `<li class="py-3 flex flex-col gap-2">
+    <button class="flex items-start gap-3 text-left" data-act="detalle" data-id="${x.contacto.id}">
+      <div class="w-[68px] shrink-0"><p class="text-[13.5px] font-semibold whitespace-nowrap">${fHora(x.hora)}</p>${pendiente ? `<p class="text-[11.5px] text-ink3">${fFecha(x.fecha)}</p>` : ''}</div>
+      <div class="min-w-0 flex-1"><p class="font-medium text-[14px] truncate">${esc(x.contacto.nombre)}</p>
+        <p class="text-[12.5px] text-ink2 truncate">${TIPOS_CITA[x.tipo]}${x.objetivo ? ` · ${esc(x.objetivo)}` : ''}</p>
+        <p class="text-[12px] text-ink3 flex items-center gap-1.5 mt-0.5">${icon(x.modalidad === 'Virtual' ? 'video' : 'map-pin', 'w-3.5 h-3.5')} ${x.modalidad}${x.reagendas ? ` · <span class="text-warn">reagendada ${x.reagendas}×</span>` : ''}</p></div>
+      ${estadoCitaTag(x)}
+    </button>
+    ${x.status === 'programada' || pendiente ? `<div class="flex gap-1.5 flex-wrap pl-[80px]">${x.link && x.status === 'programada' ? `<a class="btn-soft btn-sm" href="${esc(x.link)}" target="_blank" rel="noopener">${icon('video', 'w-4 h-4')} Entrar</a>` : ''}${pendiente ? `<button class="btn-primary btn-sm" data-act="reagendar" data-id="${x.contacto.id}" data-cita="${x.id}">${icon('calendar-clock', 'w-4 h-4')} Reagendar</button>` : botonesAsistencia(x.contacto.id, x.id)}</div>` : ''}
+  </li>`;
+}
+function botonesAsistencia(cid, xid, sobreMarca = false) {
+  const base = sobreMarca ? 'btn btn-sm bg-white/12 text-on-brand hover:bg-white/20' : 'btn-soft btn-sm';
+  return `<button class="${sobreMarca ? 'btn btn-sm bg-on-brand text-brand' : 'btn-sm btn bg-ok-soft text-ok hover:bg-ok hover:text-white'}" data-act="asistio" data-id="${cid}" data-cita="${xid}">${icon('check', 'w-4 h-4')} Asistió</button>
+    <button class="${base}" data-act="noasistio" data-id="${cid}" data-cita="${xid}" aria-label="No asistió">${icon('user-x', 'w-4 h-4')}<span class="hidden sm:inline">Plantón</span></button>
+    <button class="${base}" data-act="reagendar" data-id="${cid}" data-cita="${xid}" aria-label="Solicitó reagendar">${icon('calendar-clock', 'w-4 h-4')}<span class="hidden sm:inline">Reagendar</span></button>`;
+}
+
+/* ---------- CONTACTOS ---------- */
+const FILTROS = [
+  ['todos', 'Todos'], ['prospectos', 'Prospectos'], ['clientes', 'Clientes'], ['alta', 'Prioridad alta'],
+  ['vencidas', 'Prima vencida este mes'], ['renov30', 'Renovaciones 30 días'], ['citaspos', 'Citas posventa'], ['inactivos', 'Standby / canceladas'],
+];
+function aplicaFiltro(c, f) {
+  switch (f) {
+    case 'prospectos': return enVentas(c) && c.etapa !== 'standby';
+    case 'clientes': return esCliente(c);
+    case 'alta': return c.prioridad === 'Alta';
+    case 'vencidas': return esCliente(c) && cubeta(c) === 'gracia';
+    case 'renov30': { if (!esCliente(c) || !c.inicioVigencia) return false; const a = proximoAniversario(c.inicioVigencia); return a && diasHasta(a) <= 30; }
+    case 'citaspos': return (c.citas || []).some(x => ['anual', 'posventa'].includes(x.tipo) && x.status === 'programada');
+    case 'inactivos': return ['standby', 'cancelada'].includes(c.etapa);
+    default: return true;
+  }
+}
+function vistaContactos() {
+  const q = ui.busqueda.trim().toLowerCase();
+  const lista = db.contactos.filter(c => aplicaFiltro(c, ui.filtro)).filter(c => !q || [c.nombre, c.poliza, c.prioridad, c.telefono, c.email, c.aseguradora, c.ramo].join(' ').toLowerCase().includes(q))
+    .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  return `
+  ${encabezado('Contactos', `${db.contactos.length} en total`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('user-plus', 'w-4 h-4')} Nuevo contacto</button>`)}
+  <div class="relative mb-3">
+    ${icon('search', 'w-[18px] h-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 text-ink3')}
+    <input id="buscador" type="search" class="input pl-11! bg-surface!" placeholder="Busca por nombre, póliza o prioridad" value="${esc(ui.busqueda)}" aria-label="Buscar contactos" autocomplete="off" />
+  </div>
+  <div class="scroll-x -mx-4 px-4 md:mx-0 md:px-0 flex md:flex-wrap gap-2 pb-3">
+    ${FILTROS.map(([id, n]) => `<button class="chip" data-act="filtro" data-f="${id}" aria-pressed="${ui.filtro === id}">${n} <span class="opacity-70">${db.contactos.filter(c => aplicaFiltro(c, id)).length}</span></button>`).join('')}
+  </div>
+  <div id="lista-contactos">${listaContactos(lista)}</div>`;
+}
+function listaContactos(lista) {
+  if (!lista.length) return `<div class="card p-8 text-center"><div class="icon-chip bg-brand-soft text-brand mx-auto mb-3">${icon('search-x', 'w-5 h-5')}</div><p class="font-display text-[20px]">Nadie coincide</p><p class="text-[13.5px] text-ink2 mt-1 mb-4">Prueba con otro nombre o quita el filtro.</p><button class="btn-soft" data-act="limpiar">Ver todos</button></div>`;
+  return `<ul class="card divide-y divide-line overflow-hidden">${lista.map(c => {
+    const t = semaforo(c);
+    const pc = proximaCita(c);
+    let sub = esCliente(c) ? `${esc(c.aseguradora)} · ${esc(c.poliza)}` : estadoDe(c);
+    if (pc) sub += ` · cita ${fFecha(pc.fecha)}`;
+    return `<li><button class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sunken/60 transition" data-act="detalle" data-id="${c.id}">
+      ${avatar(c)}
+      <span class="min-w-0 flex-1"><span class="flex items-center gap-2"><span class="font-medium text-[14.5px] truncate">${esc(c.nombre)}</span>${t ? `<span class="dot ${TONOS[t].dot}" title="${TONOS[t].texto}"></span>` : ''}</span>
+      <span class="block text-[12.5px] text-ink3 truncate">${sub}</span></span>
+      <span class="hidden sm:flex items-center gap-1.5">${ramoTag(c.ramo)}${prioridadTag(c.prioridad)}</span>
+      ${icon('chevron-right', 'w-4 h-4 text-ink3 shrink-0')}
+    </button></li>`;
+  }).join('')}</ul>`;
+}
+
+/* =========================================================
+   MODALES
+   ========================================================= */
+function abrirModal(html, { ancho = 'max-w-lg', lateral = false } = {}) {
+  const root = document.getElementById('modal-root');
+  root.innerHTML = `<div class="fixed inset-0 z-40 flex ${lateral ? 'md:justify-end' : 'md:items-center md:justify-center'} items-end" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-ink/40 backdrop-blur-[2px] fade-in" data-act="cerrar"></div>
+    <div class="sheet relative w-full ${lateral ? 'md:max-w-xl md:h-full md:rounded-none md:rounded-l-3xl' : `${ancho} md:rounded-3xl md:max-h-[90dvh]`} max-h-[94dvh] bg-bg rounded-t-3xl overflow-y-auto shadow-2xl">
+      ${html}
+    </div></div>`;
+  document.body.style.overflow = 'hidden';
+  pintarIconos();
+  const first = root.querySelector('input:not([type=hidden]), select, textarea');
+  if (first && !lateral && window.matchMedia('(min-width: 768px)').matches) first.focus();
+}
+function cerrarModal() { document.getElementById('modal-root').innerHTML = ''; document.body.style.overflow = ''; ui.detalle = null; }
+const cabeceraModal = (titulo, sub = '') => `<div class="sticky top-0 z-10 bg-bg/95 backdrop-blur px-5 pt-5 pb-3 flex items-start gap-3 border-b border-line">
+  <div class="flex-1 min-w-0"><h2 class="text-[22px] leading-tight">${titulo}</h2>${sub ? `<p class="text-[13px] text-ink2 mt-0.5">${sub}</p>` : ''}</div>
+  <button class="grid place-items-center w-11 h-11 -mr-2 -mt-1 rounded-xl hover:bg-sunken" data-act="cerrar" aria-label="Cerrar">${icon('x', 'w-5 h-5')}</button></div>`;
+const opciones = (arr, sel) => arr.map(o => { const [v, t] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(sel) ? 'selected' : ''}>${esc(t)}</option>`; }).join('');
+
+/* ---------- Detalle del contacto ---------- */
+function abrirDetalle(id, refrescar = false) {
+  const c = getC(id); if (!c) return;
+  ui.detalle = id;
+  const t = semaforo(c), b = esCliente(c) ? cubeta(c) : null;
+  const citas = [...(c.citas || [])].sort((a, b2) => (b2.fecha + b2.hora).localeCompare(a.fecha + a.hora));
+  const notas = [...(c.notas || [])].sort((a, b2) => (b2.fecha + (b2.hora || '')).localeCompare(a.fecha + (a.hora || '')));
+  const etapas = [...VENTAS.map(e => [e.id, e.id === 'emitida' ? 'Póliza emitida (cliente)' : e.nombre]), ['cancelada', 'Cancelada']];
+  const html = `
+  ${cabeceraModal(esc(c.nombre), `${estadoDe(c)}${c.ocupacion ? ` · ${esc(c.ocupacion)}` : ''}`)}
+  <div class="px-5 py-4 flex flex-col gap-4">
+    <div class="flex flex-wrap items-center gap-1.5">${prioridadTag(c.prioridad)}${ramoTag(c.ramo)}${t ? `<span class="tag ${TONOS[t].tag}"><span class="dot ${TONOS[t].dot}"></span>${b === 'gracia' ? 'Periodo de gracia' : TONOS[t].texto}</span>` : ''}</div>
+
+    <div class="grid grid-cols-4 gap-2">
+      ${c.whatsapp ? `<a class="btn-soft flex-col gap-1! py-2 text-[12px]" href="${waLink(c, b)}" target="_blank" rel="noopener">${icon('message-circle', 'w-5 h-5 text-ok')}WhatsApp</a>` : `<span class="btn-soft flex-col gap-1! py-2 text-[12px] opacity-50">${icon('message-circle', 'w-5 h-5')}Sin WhatsApp</span>`}
+      ${c.telefono ? `<a class="btn-soft flex-col gap-1! py-2 text-[12px]" href="tel:${soloDigitos(c.telefono)}">${icon('phone', 'w-5 h-5 text-brand')}Llamar</a>` : `<span class="btn-soft flex-col gap-1! py-2 text-[12px] opacity-50">${icon('phone', 'w-5 h-5')}Sin teléfono</span>`}
+      <button class="btn-soft flex-col gap-1! py-2 text-[12px]" data-act="cita" data-id="${c.id}">${icon('calendar-plus', 'w-5 h-5 text-brand')}Cita</button>
+      <button class="btn-soft flex-col gap-1! py-2 text-[12px]" data-act="nota" data-id="${c.id}">${icon('notebook-pen', 'w-5 h-5 text-brand')}Nota</button>
+    </div>
+
+    <label class="field"><span>Etapa en el pipeline</span>
+      <select class="input" data-change="etapa" data-id="${c.id}">${opciones(etapas, c.etapa)}</select></label>
+    ${!esCliente(c) && !['standby', 'cancelada'].includes(c.etapa) ? `<label class="field"><span>Estado en el embudo</span><select class="input" data-change="estado" data-id="${c.id}">${opciones(ESTADOS.slice(0, 7), c.estado)}</select></label>` : ''}
+
+    ${esCliente(c) ? `
+    <section class="card p-4 ${b === 'gracia' ? 'border-bad/40!' : ''}">
+      <div class="flex items-center justify-between mb-3"><h3 class="text-[17px]">Póliza y cobranza</h3><span class="text-[12px] text-ink3">${esc(c.aseguradora)}</span></div>
+      <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-[13.5px]">
+        <div><dt class="label">Póliza</dt><dd class="font-medium">${esc(c.poliza) || '—'}</dd></div>
+        <div><dt class="label">Forma de pago</dt><dd class="font-medium">${esc(c.formaPago)}</dd></div>
+        <div><dt class="label">Prima anual</dt><dd class="font-medium">${fDinero(c.prima, c.moneda)}</dd></div>
+        <div><dt class="label">Cada recibo</dt><dd class="font-medium">${fDinero(primaRecibo(c), c.moneda)}</dd></div>
+        <div><dt class="label">Próximo recibo</dt><dd class="font-medium ${b === 'gracia' ? 'text-bad' : b === 'pago' ? 'text-warn' : ''}">${fFecha(c.proxVencimiento, { day: 'numeric', month: 'short', year: 'numeric' })}<span class="block text-[12px] font-normal text-ink3">${c.proxVencimiento ? relDias(diasHasta(c.proxVencimiento)) : ''}</span></dd></div>
+        <div><dt class="label">Aniversario</dt><dd class="font-medium">${c.inicioVigencia ? fFecha(proximoAniversario(c.inicioVigencia), { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}<span class="block text-[12px] font-normal text-ink3">Vigente desde ${fFecha(c.inicioVigencia, { month: 'short', year: 'numeric' })}</span></dd></div>
+      </dl>
+      ${b === 'gracia' ? `<p class="mt-3 text-[13px] text-bad bg-bad-soft rounded-xl px-3 py-2">${icon('alert-triangle', 'w-4 h-4 inline -mt-0.5')} ${lineaGracia(c)}</p>` : ''}
+      <div class="grid grid-cols-2 gap-2 mt-4">
+        <button class="btn-primary btn-sm" data-act="pago" data-id="${c.id}">${icon('badge-dollar-sign', 'w-4 h-4')} Registrar pago</button>
+        <button class="btn-soft btn-sm" data-act="cita" data-id="${c.id}" data-tipo="anual">${icon('calendar-heart', 'w-4 h-4')} Revisión anual</button>
+        ${b !== 'gracia' ? `<button class="btn-ghost btn-sm col-span-2" data-act="gracia" data-id="${c.id}">${icon('hourglass', 'w-4 h-4')} Marcar en periodo de gracia</button>` : c.gracia ? `<button class="btn-ghost btn-sm col-span-2" data-act="quitar-gracia" data-id="${c.id}">Quitar marca de gracia</button>` : ''}
+      </div>
+      ${(c.pagos || []).length ? `<details class="mt-3"><summary class="text-[13px] text-brand font-medium cursor-pointer py-1">Historial de pagos (${c.pagos.length})</summary>
+        <ul class="mt-2 divide-y divide-line text-[13px]">${[...c.pagos].sort((a, b2) => b2.fecha.localeCompare(a.fecha)).map(p => `<li class="py-1.5 flex justify-between gap-2"><span>${fFecha(p.fecha, { day: 'numeric', month: 'short', year: 'numeric' })}<span class="text-ink3"> · recibo ${fFecha(p.recibo)}</span></span><span class="font-medium">${fDinero(p.monto, p.moneda)}</span></li>`).join('')}</ul></details>` : ''}
+    </section>` : ''}
+
+    <section class="card p-4">
+      <div class="flex items-center justify-between mb-2"><h3 class="text-[17px]">Citas</h3><button class="btn-ghost btn-sm" data-act="cita" data-id="${c.id}">${icon('plus', 'w-4 h-4')} Agendar</button></div>
+      ${citas.length ? `<ul class="divide-y divide-line">${citas.map(x => `
+        <li class="py-2.5">
+          <div class="flex items-start gap-2"><div class="min-w-0 flex-1"><p class="text-[14px] font-medium">${TIPOS_CITA[x.tipo]}</p>
+            <p class="text-[12.5px] text-ink2">${fFecha(x.fecha, { weekday: 'short', day: 'numeric', month: 'short' })} · ${fHora(x.hora)} · ${x.modalidad}</p>
+            ${x.objetivo ? `<p class="text-[12.5px] text-ink3">${esc(x.objetivo)}</p>` : ''}</div>${estadoCitaTag(x)}</div>
+          ${x.status === 'programada' ? `<div class="flex gap-1.5 mt-2 flex-wrap">${botonesAsistencia(c.id, x.id)}</div>` : x.status === 'noasistio' ? `<button class="btn-primary btn-sm mt-2" data-act="reagendar" data-id="${c.id}" data-cita="${x.id}">${icon('calendar-clock', 'w-4 h-4')} Reagendar</button>` : ''}
+          ${x.reagendas ? `<details class="mt-1.5"><summary class="text-[12.5px] text-warn cursor-pointer">Reagendada ${x.reagendas} ${x.reagendas === 1 ? 'vez' : 'veces'} · ver motivos</summary>
+            <ul class="mt-1 text-[12.5px] text-ink2 flex flex-col gap-1">${x.bitacora.map(r => `<li>${fFecha(r.fecha)}: de ${fFecha(r.de)} a ${fFecha(r.a)}${r.motivo ? ` — “${esc(r.motivo)}”` : ''}</li>`).join('')}</ul></details>` : ''}
+        </li>`).join('')}</ul>` : `<p class="text-[13px] text-ink3 py-1">Sin citas todavía. Agenda la primera para avanzarlo en el pipeline.</p>`}
+    </section>
+
+    <section class="card p-4">
+      <div class="flex items-center justify-between mb-2"><h3 class="text-[17px]">Bitácora</h3><button class="btn-ghost btn-sm" data-act="nota" data-id="${c.id}">${icon('plus', 'w-4 h-4')} Nota</button></div>
+      ${notas.length ? `<ol class="relative border-l border-line ml-1.5 flex flex-col gap-3 py-1">${notas.map(n => `<li class="pl-4 relative"><span class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-brand ring-4 ring-surface"></span>
+        <p class="text-[12px] text-ink3">${fFecha(n.fecha, { day: 'numeric', month: 'short', year: 'numeric' })}${n.hora ? ` · ${fHora(n.hora)}` : ''}</p><p class="text-[14px] whitespace-pre-line">${esc(n.texto)}</p></li>`).join('')}</ol>`
+      : `<p class="text-[13px] text-ink3 py-1">Anota aquí cada llamada, acuerdo o detalle personal. Tu yo del próximo año te lo agradecerá.</p>`}
+    </section>
+
+    <section class="card p-4">
+      <div class="flex items-center justify-between mb-2"><h3 class="text-[17px]">Datos personales</h3><button class="btn-ghost btn-sm" data-act="editar" data-id="${c.id}">${icon('pencil', 'w-4 h-4')} Editar</button></div>
+      <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-[13.5px]">
+        ${[['Teléfono', c.telefono], ['WhatsApp', c.whatsapp], ['Email', c.email], ['Edad', c.edad], ['Estado civil', c.civil], ['Hijos', c.hijos], ['Aseguradora', c.aseguradora], ['Prima anual', c.prima ? fDinero(c.prima, c.moneda) : '']]
+          .map(([k, v]) => `<div class="min-w-0"><dt class="label">${k}</dt><dd class="truncate">${v === '' || v == null ? '<span class="text-ink3">—</span>' : esc(v)}</dd></div>`).join('')}
+      </dl>
+    </section>
+
+    <button class="btn-ghost text-bad! self-start" data-act="eliminar" data-id="${c.id}">${icon('trash-2', 'w-4 h-4')} Eliminar contacto</button>
+  </div>`;
+  if (refrescar && document.querySelector('#modal-root [role=dialog]')) {
+    const panel = document.querySelector('#modal-root .sheet'); const top = panel.scrollTop;
+    panel.innerHTML = html; panel.scrollTop = top; pintarIconos();
+  } else abrirModal(html, { lateral: true });
+}
+
+/* ---------- Nuevo / editar contacto ---------- */
+function abrirFormContacto(id, aviso = '') {
+  const c = id ? getC(id) : { prioridad: 'Media', ramo: 'Vida', formaPago: 'Anual', moneda: 'MXN', edad: '36-45', civil: 'Casado(a)', hijos: 0, etapa: 'prospecto' };
+  const sel = (name, arr, val) => `<select class="input" name="${name}">${opciones(arr, val)}</select>`;
+  const inp = (name, val, type = 'text', extra = '') => `<input class="input" name="${name}" type="${type}" value="${esc(val ?? '')}" ${extra} />`;
+  abrirModal(`
+  ${cabeceraModal(id ? 'Editar contacto' : 'Nuevo contacto', id ? esc(c.nombre) : 'Solo el nombre es obligatorio; lo demás lo completas cuando lo sepas')}
+  <form data-form="contacto" data-id="${id || ''}" class="px-5 py-4 flex flex-col gap-5" novalidate>
+    ${aviso ? `<p class="text-[13px] bg-warn-soft text-warn rounded-xl px-3 py-2">${aviso}</p>` : ''}
+    <fieldset class="flex flex-col gap-3"><legend class="label mb-2">Persona</legend>
+      <label class="field"><span>Nombre completo *</span>${inp('nombre', c.nombre, 'text', 'required autocomplete="off"')}<small class="text-bad text-[12px] hidden" data-err="nombre">Escribe el nombre para poder guardarlo.</small></label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="field"><span>Teléfono</span>${inp('telefono', c.telefono, 'tel', 'inputmode="tel"')}</label>
+        <label class="field"><span>WhatsApp</span>${inp('whatsapp', c.whatsapp, 'tel', 'inputmode="tel" placeholder="10 dígitos"')}</label>
+      </div>
+      <label class="field"><span>Email</span>${inp('email', c.email, 'email', 'inputmode="email"')}</label>
+      <label class="field"><span>Ocupación</span>${inp('ocupacion', c.ocupacion)}</label>
+      <div class="grid grid-cols-3 gap-3">
+        <label class="field"><span>Edad</span>${sel('edad', EDADES, c.edad)}</label>
+        <label class="field col-span-1"><span>Estado civil</span>${sel('civil', CIVILES, c.civil)}</label>
+        <label class="field"><span>Hijos</span>${inp('hijos', c.hijos, 'number', 'min="0" max="15" inputmode="numeric"')}</label>
+      </div>
+    </fieldset>
+    <fieldset class="flex flex-col gap-3"><legend class="label mb-2">Oportunidad</legend>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="field"><span>Prioridad</span>${sel('prioridad', PRIORIDADES, c.prioridad)}</label>
+        <label class="field"><span>Ramo</span>${sel('ramo', RAMOS, c.ramo)}</label>
+      </div>
+      ${!id ? `<label class="field"><span>Etapa</span>${sel('etapa', VENTAS.map(e => [e.id, e.nombre]), c.etapa)}</label>` : ''}
+      <div class="grid grid-cols-[1fr_110px] gap-3">
+        <label class="field"><span>Prima anual ${c.etapa === 'emitida' ? '' : '(estimada)'}</span>${inp('prima', c.prima || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
+        <label class="field"><span>Moneda</span>${sel('moneda', MONEDAS, c.moneda)}</label>
+      </div>
+    </fieldset>
+    <fieldset class="flex flex-col gap-3"><legend class="label mb-2">Póliza y pagos <span class="normal-case tracking-normal font-normal">(cuando se emita)</span></legend>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="field"><span>Aseguradora</span>${inp('aseguradora', c.aseguradora, 'text', 'list="aseguradoras"')}</label>
+        <label class="field"><span>Núm. de póliza</span>${inp('poliza', c.poliza)}</label>
+        <label class="field"><span>Forma de pago</span>${sel('formaPago', Object.keys(FORMAS), c.formaPago)}</label>
+        <label class="field"><span>Inicio de vigencia</span>${inp('inicioVigencia', c.inicioVigencia, 'date')}</label>
+      </div>
+      <label class="field"><span>Próximo vencimiento de prima</span>
+        <div class="flex gap-2">${inp('proxVencimiento', c.proxVencimiento, 'date')}<button type="button" class="btn-soft shrink-0" data-act="calcular">${icon('calculator', 'w-4 h-4')} Calcular</button></div>
+        <small class="text-[12px] text-ink3">Si lo dejas vacío, lo calculo con el inicio de vigencia y la forma de pago.</small></label>
+    </fieldset>
+    <datalist id="aseguradoras">${['GNP', 'AXA', 'MetLife', 'Seguros Monterrey NY Life', 'Allianz', 'Mapfre', 'Banorte', 'Zurich', 'SMNYL', 'Plan Seguro'].map(a => `<option value="${a}">`).join('')}</datalist>
+    <div class="sticky bottom-0 -mx-5 px-5 py-3 bg-bg/95 backdrop-blur border-t border-line flex gap-2">
+      <button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button>
+      <button type="submit" class="btn-primary flex-1">${icon('check', 'w-4 h-4')} ${id ? 'Guardar cambios' : 'Agregar contacto'}</button>
+    </div>
+  </form>`);
+}
+
+/* ---------- Agendar cita ---------- */
+function abrirFormCita(id, tipo) {
+  const c = id ? getC(id) : null;
+  const sugerido = tipo || (!c ? 'cita1' : esCliente(c) ? 'anual' : c.etapa === 'propuesta' || c.etapa === 'cita2' || c.hitos?.cita1 ? 'cita2' : 'cita1');
+  const contactos = [...db.contactos].filter(x => x.etapa !== 'cancelada').sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  abrirModal(`
+  ${cabeceraModal('Agendar cita', c ? esc(c.nombre) : '')}
+  <form data-form="cita" class="px-5 py-4 flex flex-col gap-3" novalidate>
+    ${c ? `<input type="hidden" name="cid" value="${c.id}">` : `<label class="field"><span>Contacto</span><select class="input" name="cid">${opciones(contactos.map(x => [x.id, x.nombre]))}</select></label>`}
+    <label class="field"><span>Tipo de cita</span><select class="input" name="tipo">${opciones(Object.entries(TIPOS_CITA), sugerido)}</select></label>
+    <div class="grid grid-cols-2 gap-3">
+      <label class="field"><span>Fecha</span><input class="input" type="date" name="fecha" value="${addDays(hoy(), 1)}" min="${addDays(hoy(), -30)}" required></label>
+      <label class="field"><span>Hora</span><input class="input" type="time" name="hora" value="10:00" step="900" required></label>
+    </div>
+    <fieldset class="field"><span class="text-[12.5px] font-medium text-ink2">Modalidad</span>
+      <div class="grid grid-cols-2 gap-2">${['Virtual', 'Presencial'].map((m, i) => `<label class="chip justify-center has-[:checked]:bg-brand has-[:checked]:text-on-brand has-[:checked]:border-brand min-h-11!"><input type="radio" name="modalidad" value="${m}" class="sr-only" ${i === 0 ? 'checked' : ''}>${icon(m === 'Virtual' ? 'video' : 'map-pin', 'w-4 h-4')} ${m === 'Virtual' ? 'Virtual (Meet/Zoom)' : 'Presencial'}</label>`).join('')}</div></fieldset>
+    <label class="field"><span>Liga o lugar</span><input class="input" name="link" placeholder="https://meet.google.com/… o dirección"></label>
+    <label class="field"><span>Objetivo de la reunión</span><input class="input" name="objetivo" placeholder="Ej. Diagnóstico de protección familiar"></label>
+    <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('calendar-check', 'w-4 h-4')} Agendar</button></div>
+  </form>`);
+}
+
+/* ---------- Reagendar ---------- */
+function abrirReagendar(cid, xid) {
+  const c = getC(cid), x = c.citas.find(y => y.id === xid);
+  abrirModal(`
+  ${cabeceraModal('Reagendar cita', `${esc(c.nombre)} · ${TIPOS_CITA[x.tipo]}${x.reagendas ? ` · ya se movió ${x.reagendas}×` : ''}`)}
+  <form data-form="reagendar" data-id="${cid}" data-cita="${xid}" class="px-5 py-4 flex flex-col gap-3" novalidate>
+    <p class="text-[13px] text-ink2">Antes: ${fFecha(x.fecha, { weekday: 'long', day: 'numeric', month: 'long' })} · ${fHora(x.hora)}</p>
+    <div class="grid grid-cols-2 gap-3">
+      <label class="field"><span>Nueva fecha</span><input class="input" type="date" name="fecha" value="${addDays(hoy(), 2)}" required></label>
+      <label class="field"><span>Hora</span><input class="input" type="time" name="hora" value="${x.hora}" step="900" required></label>
+    </div>
+    <label class="field"><span>Motivo</span><input class="input" name="motivo" placeholder="Ej. Se le cruzó una junta"></label>
+    <div class="flex flex-wrap gap-2">${['Se le cruzó otra reunión', 'Enfermedad', 'Viaje', 'No contestó', 'Lo pidió el cliente'].map(m => `<button type="button" class="chip" data-act="motivo" data-m="${m}">${m}</button>`).join('')}</div>
+    <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('calendar-clock', 'w-4 h-4')} Guardar nueva fecha</button></div>
+  </form>`);
+}
+
+/* ---------- Registrar pago ---------- */
+function abrirPago(cid) {
+  const c = getC(cid);
+  if (!c.inicioVigencia || !c.proxVencimiento) { abrirFormContacto(cid, 'Completa el inicio de vigencia y el próximo vencimiento para poder registrar pagos.'); return; }
+  const nuevo = siguienteRecibo(c.inicioVigencia, c.formaPago, c.proxVencimiento);
+  const esAniv = mesesEntre(c.inicioVigencia, c.proxVencimiento) > 0 && mesesEntre(c.inicioVigencia, c.proxVencimiento) % 12 === 0;
+  abrirModal(`
+  ${cabeceraModal('Registrar pago', `${esc(c.nombre)} · póliza ${esc(c.poliza)}`)}
+  <form data-form="pago" data-id="${cid}" class="px-5 py-4 flex flex-col gap-3" novalidate>
+    <div class="card p-4 flex items-center gap-3"><div class="icon-chip bg-ok-soft text-ok">${icon('receipt', 'w-5 h-5')}</div>
+      <div class="min-w-0"><p class="text-[13px] text-ink2">Recibo del ${fFecha(c.proxVencimiento, { day: 'numeric', month: 'long', year: 'numeric' })}</p><p class="font-display text-[24px] leading-tight">${fDinero(primaRecibo(c), c.moneda)}</p></div></div>
+    <div class="grid grid-cols-2 gap-3">
+      <label class="field"><span>Fecha de pago</span><input class="input" type="date" name="fecha" value="${hoy()}" max="${hoy()}" required></label>
+      <label class="field"><span>Monto (${esc(c.moneda)})</span><input class="input" type="number" step="any" min="0" name="monto" value="${Math.round(primaRecibo(c) * 100) / 100}" inputmode="decimal" required></label>
+    </div>
+    <p class="text-[13px] text-ink2 bg-sunken rounded-xl px-3 py-2">${icon('arrow-right-circle', 'w-4 h-4 inline -mt-0.5 text-brand')} El siguiente recibo quedará para el <strong class="font-semibold">${fFecha(nuevo, { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.${esAniv ? ' Este pago es la <strong class="font-semibold">renovación anual</strong>: la póliza contará como conservada.' : ''}</p>
+    <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} Confirmar pago</button></div>
+  </form>`);
+}
+
+/* ---------- Nota ---------- */
+function abrirNota(cid) {
+  const c = getC(cid);
+  const ahora = new Date();
+  abrirModal(`
+  ${cabeceraModal('Nota de seguimiento', esc(c.nombre))}
+  <form data-form="nota" data-id="${cid}" class="px-5 py-4 flex flex-col gap-3" novalidate>
+    <div class="grid grid-cols-2 gap-3">
+      <label class="field"><span>Fecha</span><input class="input" type="date" name="fecha" value="${hoy()}"></label>
+      <label class="field"><span>Hora</span><input class="input" type="time" name="hora" value="${pad(ahora.getHours())}:${pad(ahora.getMinutes())}"></label>
+    </div>
+    <label class="field"><span>¿Qué pasó?</span><textarea class="input" name="texto" rows="4" placeholder="Ej. Llamé, quedó de revisar la propuesta con su esposa el fin de semana."></textarea><small class="text-bad text-[12px] hidden" data-err="texto">Escribe algo antes de guardar.</small></label>
+    <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} Guardar nota</button></div>
+  </form>`);
+}
+
+/* ---------- Ajustes y respaldo ---------- */
+function abrirAjustes() {
+  const fecha = db.guardadoEn ? new Date(db.guardadoEn).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  abrirModal(`
+  ${cabeceraModal('Ajustes y respaldo', `Último guardado: ${fecha}`)}
+  <div class="px-5 py-4 flex flex-col gap-4">
+    <section class="card p-4 flex gap-3"><div class="icon-chip bg-brand-soft text-brand">${icon('hard-drive', 'w-5 h-5')}</div>
+      <div class="min-w-0 text-[13.5px] text-ink2"><p class="font-medium text-ink text-[14.5px] mb-1">Dónde vive tu información</p>
+      Todo se guarda solo, al instante, en <strong class="font-semibold">este navegador de este equipo</strong>. Si borras el historial del navegador o abres el CRM en otro celular, no verás tus datos. Por eso: <strong class="font-semibold">descarga un respaldo cada viernes</strong>.</div></section>
+    <div class="grid grid-cols-2 gap-2">
+      <button class="btn-primary" data-act="exportar">${icon('download', 'w-4 h-4')} Descargar respaldo</button>
+      <label class="btn-soft">${icon('upload', 'w-4 h-4')} Cargar respaldo<input type="file" accept="application/json,.json" class="sr-only" data-change="importar"></label>
+    </div>
+    <form data-form="ajustes" class="card p-4 flex flex-col gap-3">
+      <p class="font-medium text-[14.5px]">Conversión a pesos para tus métricas</p>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="field"><span>1 USD =</span><input class="input" type="number" step="0.01" min="0" name="usd" value="${db.ajustes.usd}" inputmode="decimal"></label>
+        <label class="field"><span>1 UDI =</span><input class="input" type="number" step="0.0001" min="0" name="udi" value="${db.ajustes.udi}" inputmode="decimal"></label>
+      </div>
+      <button class="btn-soft">${icon('check', 'w-4 h-4')} Guardar valores</button>
+    </form>
+    <section class="flex flex-col gap-2">
+      ${db.esDemo ? `<button class="btn-soft" data-act="vaciar">${icon('eraser', 'w-4 h-4')} Borrar los ejemplos y empezar con mis clientes</button>` : ''}
+      <button class="btn-ghost" data-act="demo">${icon('rotate-ccw', 'w-4 h-4')} Volver a cargar los ejemplos</button>
+    </section>
+  </div>`);
+}
+
+/* =========================================================
+   ACCIONES
+   ========================================================= */
+function moverEtapa(c, etapa) {
+  if (c.etapa === etapa) return;
+  if (etapa === 'emitida') {
+    if (!c.aseguradora || !c.poliza || !c.inicioVigencia) {
+      c._pendienteEmitir = true; guardar();
+      abrirFormContacto(c.id, 'Para pasar a posventa completa aseguradora, número de póliza e inicio de vigencia.');
+      return 'pendiente';
+    }
+    c.hitos = { ...c.hitos, cierre: c.hitos?.cierre || hoy() };
+    c.fueCliente = true;
+    if (!c.proxVencimiento) c.proxVencimiento = reciboVigente(c.inicioVigencia, c.formaPago);
+    c.estado = 'Cliente Activo';
+  } else if (etapa === 'standby') c.estado = 'Standby';
+  else if (etapa === 'cancelada') c.estado = 'Cancelada';
+  else {
+    const mapa = { prospecto: c.estado === 'Contactado' ? 'Contactado' : 'Prospecto Frío', cita1: 'Cita 1 Agendada', propuesta: 'Cita 1 Realizada', cita2: 'Cita 2 Agendada', tramite: 'En Trámite' };
+    c.estado = mapa[etapa];
+  }
+  c.etapa = etapa;
+}
+
+const acciones = {
+  nuevo: () => abrirFormContacto(),
+  editar: d => abrirFormContacto(d.id),
+  detalle: d => abrirDetalle(d.id),
+  cerrar: () => cerrarModal(),
+  ajustes: () => abrirAjustes(),
+  cita: d => abrirFormCita(d.id, d.tipo),
+  nota: d => abrirNota(d.id),
+  pago: d => abrirPago(d.id),
+  reagendar: d => abrirReagendar(d.id, d.cita),
+  deshacer: () => deshacer(),
+  'etapa-movil': d => { ui.etapaMovil = d.etapa; render(); },
+  'cubeta-movil': d => { ui.cubetaMovil = d.cubeta; render(); },
+  filtro: d => { ui.filtro = d.f; render(); },
+  'filtro-citas': d => { ui.filtroCitas = d.f; render(); },
+  limpiar: () => { ui.filtro = 'todos'; ui.busqueda = ''; render(); },
+  semana: d => { ui.semana = d.delta === '0' ? lunesDe(hoy()) : addDays(ui.semana, Number(d.delta)); render(); },
+  motivo: (d, el) => { const f = el.closest('form'); f.motivo.value = d.m; },
+  calcular: (d, el) => {
+    const f = el.closest('form');
+    if (!f.inicioVigencia.value) { toast('Primero escribe el inicio de vigencia.', { tono: 'bad' }); return; }
+    f.proxVencimiento.value = reciboVigente(f.inicioVigencia.value, f.formaPago.value);
+  },
+  asistio: d => {
+    foto();
+    const c = getC(d.id), x = c.citas.find(y => y.id === d.cita);
+    x.status = 'asistio';
+    let msg = 'Asistencia registrada';
+    if (x.tipo === 'cita1') { c.hitos = { ...c.hitos, cita1: x.fecha }; if (enVentas(c)) { moverEtapa(c, 'propuesta'); msg = `${c.nombre.split(' ')[0]} pasó a Propuesta`; } }
+    if (x.tipo === 'cita2') { c.hitos = { ...c.hitos, cita2: x.fecha }; if (enVentas(c)) { moverEtapa(c, 'tramite'); c.estado = 'En Trámite'; msg = `${c.nombre.split(' ')[0]} pasó a En trámite`; } }
+    guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true);
+    toast(msg, { deshacer: true });
+  },
+  noasistio: d => {
+    foto();
+    const c = getC(d.id), x = c.citas.find(y => y.id === d.cita);
+    x.status = 'noasistio';
+    c.notas.push({ id: uid(), fecha: hoy(), hora: new Date().toTimeString().slice(0, 5), texto: `No asistió a ${TIPOS_CITA[x.tipo]} del ${fFecha(x.fecha)}.` });
+    guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true);
+    toast('Quedó en "Por reagendar"', { deshacer: true });
+  },
+  gracia: d => { foto(); const c = getC(d.id); c.gracia = true; guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true); toast('Marcada en periodo de gracia', { deshacer: true }); },
+  'quitar-gracia': d => { foto(); const c = getC(d.id); c.gracia = false; guardar(); render(); abrirDetalle(d.id, true); toast('Marca de gracia retirada', { deshacer: true }); },
+  eliminar: d => {
+    const c = getC(d.id);
+    if (!confirm(`¿Eliminar a ${c.nombre}? Se borran también sus citas, notas y pagos.`)) return;
+    foto(); db.contactos = db.contactos.filter(x => x.id !== d.id); guardar(); cerrarModal(); render();
+    toast('Contacto eliminado', { deshacer: true });
+  },
+  exportar: () => {
+    const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `lirios-crm-respaldo-${hoy()}.json`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Respaldo descargado. Guárdalo en tu Drive o correo.');
+  },
+  vaciar: () => {
+    if (!confirm('¿Borrar los 10 contactos de ejemplo? Podrás recuperarlos desde Ajustes.')) return;
+    foto(); db.contactos = []; db.esDemo = false; guardar(); cerrarModal(); render(); toast('Listo, empieza a agregar tus contactos', { deshacer: true });
+  },
+  demo: () => {
+    if (db.contactos.length && !db.esDemo && !confirm('Esto reemplaza tus contactos por los ejemplos. ¿Descargaste tu respaldo?')) return;
+    foto(); db.contactos = semilla(); db.esDemo = true; guardar(); cerrarModal(); render(); toast('Ejemplos cargados', { deshacer: true });
+  },
+};
+
+const formularios = {
+  contacto: (f, fd) => {
+    const nombre = (fd.get('nombre') || '').trim();
+    const err = f.querySelector('[data-err=nombre]');
+    if (!nombre) { err.classList.remove('hidden'); f.nombre.focus(); return; }
+    const datos = {
+      nombre, telefono: fd.get('telefono').trim(), whatsapp: fd.get('whatsapp').trim(), email: fd.get('email').trim(), ocupacion: fd.get('ocupacion').trim(),
+      edad: fd.get('edad'), civil: fd.get('civil'), hijos: Number(fd.get('hijos')) || 0, prioridad: fd.get('prioridad'), ramo: fd.get('ramo'),
+      prima: Number(fd.get('prima')) || 0, moneda: fd.get('moneda'), aseguradora: fd.get('aseguradora').trim(), poliza: fd.get('poliza').trim(),
+      formaPago: fd.get('formaPago'), inicioVigencia: fd.get('inicioVigencia'), proxVencimiento: fd.get('proxVencimiento'),
+    };
+    if (!datos.proxVencimiento && datos.inicioVigencia) datos.proxVencimiento = reciboVigente(datos.inicioVigencia, datos.formaPago);
+    foto();
+    let c;
+    if (f.dataset.id) {
+      c = getC(f.dataset.id); Object.assign(c, datos);
+      if (c._pendienteEmitir) { delete c._pendienteEmitir; if (c.aseguradora && c.poliza && c.inicioVigencia) moverEtapa(c, 'emitida'); }
+    } else {
+      c = { id: uid(), ...datos, etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0, fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: hoy() };
+      db.contactos.push(c);
+      if (moverEtapa(c, fd.get('etapa') || 'prospecto') === 'pendiente') { render(); return; }
+    }
+    guardar(); render(); abrirDetalle(c.id);
+    toast(f.dataset.id ? 'Cambios guardados' : `${c.nombre.split(' ')[0]} agregado`, { deshacer: true });
+  },
+  cita: (f, fd) => {
+    const c = getC(fd.get('cid')); if (!c) return;
+    foto();
+    const x = { id: uid(), tipo: fd.get('tipo'), fecha: fd.get('fecha'), hora: fd.get('hora'), modalidad: fd.get('modalidad'), link: fd.get('link').trim(), objetivo: fd.get('objetivo').trim(), status: 'programada', reagendas: 0, bitacora: [] };
+    c.citas.push(x);
+    if (enVentas(c) && ['cita1', 'cita2'].includes(x.tipo)) moverEtapa(c, x.tipo);
+    guardar(); render(); abrirDetalle(c.id);
+    toast(`Cita agendada para el ${fFecha(x.fecha, { day: 'numeric', month: 'long' })}`, { deshacer: true });
+  },
+  reagendar: (f, fd) => {
+    const c = getC(f.dataset.id), x = c.citas.find(y => y.id === f.dataset.cita);
+    foto();
+    x.bitacora.push({ fecha: hoy(), de: x.fecha, a: fd.get('fecha'), motivo: fd.get('motivo').trim() });
+    x.reagendas = (x.reagendas || 0) + 1; x.fecha = fd.get('fecha'); x.hora = fd.get('hora'); x.status = 'programada';
+    if (c.etapa === 'standby' && ['cita1', 'cita2'].includes(x.tipo)) moverEtapa(c, x.tipo);
+    guardar(); render(); abrirDetalle(c.id);
+    toast(`Reagendada (${x.reagendas}×) para el ${fFecha(x.fecha, { day: 'numeric', month: 'long' })}`, { deshacer: true });
+  },
+  pago: (f, fd) => {
+    const c = getC(f.dataset.id);
+    foto();
+    const recibo = c.proxVencimiento;
+    c.pagos.push({ id: uid(), fecha: fd.get('fecha'), monto: Number(fd.get('monto')) || 0, moneda: c.moneda, recibo });
+    const meses = mesesEntre(c.inicioVigencia, recibo);
+    const esAniv = meses > 0 && meses % 12 === 0;
+    c.proxVencimiento = siguienteRecibo(c.inicioVigencia, c.formaPago, recibo);
+    c.gracia = false;
+    if (esAniv) { c.renovadoEn = fd.get('fecha'); c.renovaciones = (c.renovaciones || 0) + 1; }
+    guardar(); render(); abrirDetalle(c.id);
+    toast(esAniv ? '¡Póliza renovada! Cuenta como conservada' : `Pago registrado · siguiente recibo ${fFecha(c.proxVencimiento)}`, { deshacer: true });
+  },
+  nota: (f, fd) => {
+    const texto = (fd.get('texto') || '').trim();
+    if (!texto) { f.querySelector('[data-err=texto]').classList.remove('hidden'); f.texto.focus(); return; }
+    const c = getC(f.dataset.id);
+    foto();
+    c.notas.push({ id: uid(), fecha: fd.get('fecha') || hoy(), hora: fd.get('hora'), texto });
+    guardar(); render(); abrirDetalle(c.id);
+    toast('Nota guardada', { deshacer: true });
+  },
+  ajustes: (f, fd) => {
+    db.ajustes.usd = Number(fd.get('usd')) || db.ajustes.usd;
+    db.ajustes.udi = Number(fd.get('udi')) || db.ajustes.udi;
+    guardar(); render(); cerrarModal(); toast('Valores actualizados');
+  },
+};
+
+/* ---------- Delegación de eventos ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el) {
+    const cub = e.target.closest('[data-cubeta]');
+    if (cub && cub.tagName === 'A') ui.cubetaMovil = cub.dataset.cubeta;
+    return;
+  }
+  if (el.tagName === 'A' && el.getAttribute('href')?.startsWith('http')) return;
+  const fn = acciones[el.dataset.act];
+  if (!fn) return;
+  e.preventDefault(); e.stopPropagation();
+  fn(el.dataset, el);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.querySelector('#modal-root [role=dialog]')) acciones.cerrar();
+  if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('article[data-act]')) { e.preventDefault(); e.target.click(); }
+});
+document.addEventListener('submit', e => {
+  const f = e.target.closest('[data-form]'); if (!f) return;
+  e.preventDefault();
+  const btn = f.querySelector('button:not([type=button])');
+  if (btn?.disabled) return;
+  if (btn) { btn.disabled = true; setTimeout(() => (btn.disabled = false), 600); }
+  formularios[f.dataset.form](f, new FormData(f));
+});
+document.addEventListener('change', e => {
+  const el = e.target.closest('[data-change]'); if (!el) return;
+  if (el.dataset.change === 'etapa') {
+    foto(); const c = getC(el.dataset.id);
+    const r = moverEtapa(c, el.value);
+    if (r === 'pendiente') return;
+    guardar(); render(); abrirDetalle(c.id, true); toast(`Movido a ${el.selectedOptions[0].text}`, { deshacer: true });
+  }
+  if (el.dataset.change === 'estado') { foto(); const c = getC(el.dataset.id); c.estado = el.value; guardar(); render(); abrirDetalle(c.id, true); toast('Estado actualizado', { deshacer: true }); }
+  if (el.dataset.change === 'importar') {
+    const file = el.files[0]; if (!file) return;
+    file.text().then(t => {
+      const d = JSON.parse(t);
+      if (!d || !Array.isArray(d.contactos)) throw new Error('formato');
+      if (!confirm(`Este respaldo tiene ${d.contactos.length} contactos y reemplazará lo que ves ahora. ¿Continuar?`)) return;
+      foto(); db = d; db.ajustes = db.ajustes || { usd: 18.5, udi: 8.45 }; guardar(); cerrarModal(); render(); toast('Respaldo cargado', { deshacer: true });
+    }).catch(() => toast('Ese archivo no es un respaldo de Lirios CRM.', { tono: 'bad' }));
+  }
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'buscador') {
+    ui.busqueda = e.target.value;
+    const q = ui.busqueda.trim().toLowerCase();
+    const lista = db.contactos.filter(c => aplicaFiltro(c, ui.filtro)).filter(c => !q || [c.nombre, c.poliza, c.prioridad, c.telefono, c.email, c.aseguradora, c.ramo].join(' ').toLowerCase().includes(q)).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    document.getElementById('lista-contactos').innerHTML = listaContactos(lista);
+    pintarIconos();
+  }
+  const err = e.target.closest('.field')?.querySelector('[data-err]');
+  if (err) err.classList.add('hidden');
+});
+
+/* Arrastrar y soltar en el pipeline (computadora) */
+document.addEventListener('dragstart', e => { const card = e.target.closest('[data-drag]'); if (card) { e.dataTransfer.setData('text/plain', card.dataset.drag); e.dataTransfer.effectAllowed = 'move'; } });
+document.addEventListener('dragover', e => { const col = e.target.closest('[data-drop]'); if (col) { e.preventDefault(); document.querySelectorAll('.drop-target').forEach(x => x !== col && x.classList.remove('drop-target')); col.classList.add('drop-target'); } });
+document.addEventListener('dragleave', e => { const col = e.target.closest('[data-drop]'); if (col && !col.contains(e.relatedTarget)) col.classList.remove('drop-target'); });
+document.addEventListener('drop', e => {
+  const col = e.target.closest('[data-drop]'); if (!col) return;
+  e.preventDefault(); col.classList.remove('drop-target');
+  const c = getC(e.dataTransfer.getData('text/plain')); if (!c || c.etapa === col.dataset.drop) return;
+  foto();
+  const r = moverEtapa(c, col.dataset.drop);
+  if (r === 'pendiente') return;
+  guardar(); render();
+  toast(`${c.nombre.split(' ')[0]} → ${VENTAS.find(v => v.id === col.dataset.drop).nombre}`, { deshacer: true });
+});
+
+window.addEventListener('hashchange', () => { ui.vista = location.hash.slice(1) || 'hoy'; cerrarModal(); render(); window.scrollTo(0, 0); });
+window.addEventListener('storage', e => { if (e.key === STORAGE_KEY && e.newValue) { db = JSON.parse(e.newValue); render(); } });
+
+render();
+</script>
+</body>
+</html>

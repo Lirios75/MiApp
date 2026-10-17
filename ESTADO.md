@@ -1,6 +1,8 @@
 # ESTADO — Respira
 Última actualización: 2026-10-15 | Sesión actual: 6
 
+> 📎 PROYECTO APARTE (2026-10-17): `crm-lirios/index.html` es el CRM personal de la usuaria para su agencia de seguros (Lirios Agencia de Vida). NO es parte de Respira: archivo único (Tailwind v4 browser + Lucide por CDN), datos en localStorage del navegador con respaldo JSON descargable. Marca: beige #F5F1E8 / petróleo #3A6478, Fraunces + Poppins.
+
 ⏸️ CHECKPOINT (2026-10-15): tras migrar Hoy/Semana/Meta/Cuenta a Supabase real, las 3 pantallas
 quedaron con el skeleton de carga pegado — causa real: faltaban los GRANT base de Postgres para
 el rol `authenticated` sobre `perfiles`/`checkins`/`metas` (RLS solo filtra filas, no da acceso a
