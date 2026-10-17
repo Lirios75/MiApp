@@ -383,8 +383,11 @@ async function conectarNube() {
   if (!store) { sinNube(); return; }
   nube.db = store;
   const fallo = () => { nube.db = null; sinNube(); toast('No pude conectar con tu cuenta. Por ahora se guarda en este navegador.', { tono: 'bad' }); };
-  store.doc(RUTA_NUBE).onSnapshot(s => { nube.meta = s.exists ? s.data() : null; aplicarNube(); }, fallo);
-  store.collection(RUTA_NUBE + '/contactos').onSnapshot(s => { nube.remotos = s.docs.map(d => JSON.parse(JSON.stringify(d.data()))); aplicarNube(); }, fallo);
+  /* La primera entrega puede venir de una copia previa (fromCache); para arrancar se espera la definitiva */
+  const definitiva = s => nube.listo || !(s.metadata && s.metadata.fromCache);
+  store.doc(RUTA_NUBE).onSnapshot(s => { if (!definitiva(s)) return; nube.meta = s.exists ? s.data() : null; aplicarNube(); }, fallo);
+  store.collection(RUTA_NUBE + '/contactos').onSnapshot(s => { if (!definitiva(s)) return; nube.remotos = s.docs.map(d => JSON.parse(JSON.stringify(d.data()))); aplicarNube(); }, fallo);
+  setTimeout(() => { if (ui.cargando) { ui.cargando = false; render(); toast('Tu cuenta está tardando en responder. Te muestro lo último guardado en este equipo; se actualiza solo al llegar.', { tono: 'bad' }); } }, 15000);
 }
 function sinNube() {
   if (!ui.cargando) return;
@@ -394,7 +397,8 @@ function sinNube() {
 }
 function aplicarNube() {
   if (nube.meta === undefined || nube.remotos === null) return;
-  if (!nube.listo) {
+  const primeraVez = !nube.listo;
+  if (primeraVez) {
     nube.listo = true;
     ui.cargando = false;
     if (!nube.meta && !nube.remotos.length) { subirCambios(); render(); return; }
@@ -408,7 +412,7 @@ function aplicarNube() {
   const locales = new Map(db.contactos.map(c => [c.id, JSON.stringify(c)]));
   const igual = remotos.size === locales.size && [...remotos].every(([id, js]) => locales.get(id) === js);
   nube.sincronizado = remotos;
-  if (igual) { estadoGuardado(true); return; }
+  if (igual) { if (primeraVez) render(); estadoGuardado(true); return; }
   db.contactos = nube.remotos.map(c => aFormatoPolizas(JSON.parse(JSON.stringify(c))));
   guardarLocal();
   render();
