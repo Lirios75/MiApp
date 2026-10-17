@@ -115,7 +115,9 @@ const POSVENTA = [
 const ESTADOS = ['Prospecto Frío','Contactado','Cita 1 Agendada','Cita 1 Realizada','Cita 2 Agendada','Cita 2 Realizada','En Trámite','Cliente Activo','En Renovación','Cancelada','Standby'];
 const RAMOS = ['Vida','Retiro','Gastos Médicos','Ahorro/Inversión'];
 const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
-const MONEDAS = ['MXN','USD','UDIs'];
+const MONEDAS = [['COP', 'Pesos (COP)'], ['USD', 'Dólares (USD)']];
+const CODIGOS_MONEDA = MONEDAS.map(m => m[0]);
+const TASA_USD_INICIAL = 4000;
 const ALIADAS = ['MetLife', 'Allianz', 'BMI', 'Skandia'];
 const PRIORIDADES = ['Alta','Media','Baja'];
 const EDADES = ['18-25','26-35','36-45','46-55','56-65','65+'];
@@ -143,7 +145,7 @@ const addMonths = (s, n) => {
 const diasEntre = (a, b) => Math.round((parse(b) - parse(a)) / 864e5);
 const diasHasta = s => diasEntre(hoy(), s);
 const mesesEntre = (a, b) => { const x = parse(a), y = parse(b); return (y.getFullYear() - x.getFullYear()) * 12 + (y.getMonth() - x.getMonth()); };
-const fFecha = (s, opts = { day: 'numeric', month: 'short' }) => s ? parse(s).toLocaleDateString('es-MX', opts).replace('.', '') : '—';
+const fFecha = (s, opts = { day: 'numeric', month: 'short' }) => s ? parse(s).toLocaleDateString('es-CO', opts).replace('.', '') : '—';
 const fFechaLarga = s => { const t = fFecha(s, { weekday: 'long', day: 'numeric', month: 'long' }); return t[0].toUpperCase() + t.slice(1); };
 const fHora = h => { if (!h) return ''; const [H, M] = h.split(':').map(Number); return `${((H + 11) % 12) + 1}:${pad(M)} ${H < 12 ? 'am' : 'pm'}`; };
 const relDias = n => n === 0 ? 'hoy' : n === 1 ? 'mañana' : n === -1 ? 'ayer' : n > 0 ? `en ${n} días` : `hace ${-n} días`;
@@ -167,18 +169,17 @@ function proximoAniversario(inicio) {
 }
 
 /* ---------- Dinero ---------- */
-function aMXN(monto, moneda) {
+/* Todo se suma en pesos colombianos; los dólares se convierten con la tasa de Ajustes */
+function aCOP(monto, moneda) {
   const n = Number(monto) || 0;
-  if (moneda === 'USD') return n * (Number(db.ajustes.usd) || 0);
-  if (moneda === 'UDIs') return n * (Number(db.ajustes.udi) || 0);
-  return n;
+  return moneda === 'USD' ? n * (Number(db.ajustes.usd) || 0) : n;
 }
-function fDinero(monto, moneda = 'MXN', compacto = false) {
-  const n = Number(monto) || 0;
-  if (moneda === 'UDIs') return `${n.toLocaleString('es-MX', { maximumFractionDigits: 0 })} UDIs`;
-  if (compacto && n >= 1e6) return `${moneda === 'USD' ? 'US' : ''}$${(n / 1e6).toLocaleString('es-MX', { maximumFractionDigits: 1 })} M`;
-  if (compacto && n >= 1e4) return `${moneda === 'USD' ? 'US' : ''}$${Math.round(n / 1e3).toLocaleString('es-MX')} mil`;
-  return (moneda === 'USD' ? 'US' : '') + '$' + n.toLocaleString('es-MX', { maximumFractionDigits: 0 });
+function fDinero(monto, moneda = 'COP', compacto = false) {
+  const n = Number(monto) || 0, pre = moneda === 'USD' ? 'US$' : '$';
+  const num = (v, d = 0) => v.toLocaleString('es-CO', { maximumFractionDigits: d });
+  if (compacto && n >= 1e9) return `${pre}${num(n / 1e9, 1)} mil M`;
+  if (compacto && n >= 1e6) return `${pre}${num(n / 1e6, 1)} M`;
+  return pre + num(n, moneda === 'USD' ? 2 : 0);
 }
 const primaRecibo = c => (Number(c.prima) || 0) / (12 / (FORMAS[c.formaPago] || 12));
 
@@ -186,7 +187,7 @@ const primaRecibo = c => (Number(c.prima) || 0) / (12 / (FORMAS[c.formaPago] || 
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
 const iniciales = n => (n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase();
-const ahoraTexto = () => new Date().toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+const ahoraTexto = () => new Date().toLocaleString('es-CO', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 const soloDigitos = s => String(s || '').replace(/\D/g, '');
 const icon = (name, cls = '') => `<i data-lucide="${name}" class="${cls}" aria-hidden="true"></i>`;
 
@@ -237,7 +238,7 @@ function semilla() {
   const T = hoy();
   const c = (o) => ({ id: uid(), telefono: '', whatsapp: '', email: '', ocupacion: '', edad: '36-45', civil: 'Casado(a)', hijos: 0,
     prioridad: 'Media', ramo: 'Vida', aseguradora: '', poliza: '', formaPago: 'Anual', inicioVigencia: '', proxVencimiento: '',
-    prima: 0, moneda: 'MXN', etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0,
+    prima: 0, moneda: 'COP', etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0,
     fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: addDays(T, -40), demo: true, ...o });
   const nota = (dias, texto) => ({ id: uid(), fecha: addDays(T, dias), hora: '10:30', texto });
   const cita = (o) => ({ id: uid(), hora: '10:00', modalidad: 'Virtual', link: '', objetivo: '', status: 'programada', reagendas: 0, bitacora: [], ...o });
@@ -249,50 +250,50 @@ function semilla() {
   const inicioSofia = addDays(T, -12);
 
   return [
-    c({ nombre: 'Mariana Robles Treviño', telefono: '55 3412 8890', whatsapp: '5534128890', email: 'mariana.robles@correo.mx', ocupacion: 'Arquitecta independiente',
-      edad: '26-35', civil: 'Casado(a)', hijos: 1, prioridad: 'Alta', ramo: 'Vida', prima: 24000, moneda: 'MXN', etapa: 'cita1', estado: 'Cita 1 Agendada',
+    c({ nombre: 'Mariana Robles Treviño', telefono: '300 341 2889', whatsapp: '3003412889', email: 'mariana.robles@correo.mx', ocupacion: 'Arquitecta independiente',
+      edad: '26-35', civil: 'Casado(a)', hijos: 1, prioridad: 'Alta', ramo: 'Vida', prima: 2400000, moneda: 'COP', etapa: 'cita1', estado: 'Cita 1 Agendada',
       notas: [nota(-3, 'Referida por Sofía Castañeda. Le preocupa proteger a su hija si a ella le pasa algo; su esposo no tiene seguro.')],
       citas: [cita({ tipo: 'cita1', fecha: T, hora: '17:00', modalidad: 'Virtual', link: 'https://meet.google.com/', objetivo: 'Diagnóstico de protección familiar' })] }),
-    c({ nombre: 'Jorge Alberto Méndez', telefono: '33 1876 4402', whatsapp: '3318764402', email: 'jorge.mendez@empresa.com', ocupacion: 'Director comercial',
-      edad: '46-55', civil: 'Casado(a)', hijos: 2, prioridad: 'Alta', ramo: 'Retiro', prima: 60000, moneda: 'MXN', etapa: 'cita2', estado: 'Cita 2 Agendada', hitos: { cita1: addDays(T, -10) },
-      notas: [nota(-10, 'Quiere retirarse a los 60 con $45k mensuales. Tiene Afore pero no sabe cuánto lleva.'), nota(-4, 'Propuesta lista: plan de retiro 15 años, deducible art. 151.')],
+    c({ nombre: 'Jorge Alberto Méndez', telefono: '315 187 6440', whatsapp: '3151876440', email: 'jorge.mendez@empresa.com', ocupacion: 'Director comercial',
+      edad: '46-55', civil: 'Casado(a)', hijos: 2, prioridad: 'Alta', ramo: 'Retiro', prima: 12000000, moneda: 'COP', etapa: 'cita2', estado: 'Cita 2 Agendada', hitos: { cita1: addDays(T, -10) },
+      notas: [nota(-10, 'Quiere retirarse a los 60 con $8 millones mensuales. Cotiza en Porvenir pero no sabe cuánto lleva.'), nota(-4, 'Propuesta lista: plan de retiro a 15 años con beneficio tributario por aportes voluntarios.')],
       citas: [cita({ tipo: 'cita1', fecha: addDays(T, -10), hora: '09:00', modalidad: 'Presencial', status: 'asistio', objetivo: 'Descubrimiento de metas de retiro' }),
               cita({ tipo: 'cita2', fecha: addDays(T, 2), hora: '13:30', modalidad: 'Presencial', objetivo: 'Presentar plan de retiro y cerrar', reagendas: 1,
-                bitacora: [{ fecha: addDays(T, -2), de: addDays(T, -1), a: addDays(T, 2), motivo: 'Viaje de trabajo a Monterrey' }] })] }),
-    c({ nombre: 'Alejandra Vega Ruiz', telefono: '81 2290 1174', whatsapp: '8122901174', ocupacion: 'Médica pediatra', edad: '36-45', civil: 'Soltero(a)', hijos: 0,
-      prioridad: 'Media', ramo: 'Gastos Médicos', prima: 32000, moneda: 'MXN', etapa: 'prospecto', estado: 'Contactado',
+                bitacora: [{ fecha: addDays(T, -2), de: addDays(T, -1), a: addDays(T, 2), motivo: 'Viaje de trabajo a Medellín' }] })] }),
+    c({ nombre: 'Alejandra Vega Ruiz', telefono: '311 229 0117', whatsapp: '3112290117', ocupacion: 'Médica pediatra', edad: '36-45', civil: 'Soltero(a)', hijos: 0,
+      prioridad: 'Media', ramo: 'Gastos Médicos', prima: 6000000, moneda: 'COP', etapa: 'prospecto', estado: 'Contactado',
       notas: [nota(-1, 'Contestó el WhatsApp. Pidió que le llame el lunes después de consulta.')] }),
-    c({ nombre: 'Sofía Castañeda Lozano', telefono: '55 9087 3321', whatsapp: '5590873321', email: 'sofia.cl@correo.mx', ocupacion: 'Contadora', edad: '36-45', hijos: 2,
+    c({ nombre: 'Sofía Castañeda Lozano', telefono: '320 908 7332', whatsapp: '3209087332', email: 'sofia.cl@correo.mx', ocupacion: 'Contadora', edad: '36-45', hijos: 2,
       prioridad: 'Media', ramo: 'Gastos Médicos', aseguradora: 'Allianz', poliza: 'GMM-0048213', formaPago: 'Mensual', inicioVigencia: inicioSofia,
-      proxVencimiento: addMonths(inicioSofia, 1), prima: 38400, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
+      proxVencimiento: addMonths(inicioSofia, 1), prima: 7200000, moneda: 'COP', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       hitos: { cita1: addDays(T, -35), cita2: addDays(T, -22), cierre: addDays(T, -12) },
-      notas: [nota(-12, 'Póliza emitida. Plan familiar, deducible 25k. Le enviaré la tarjeta digital.')], pagos: [{ id: uid(), fecha: addDays(T, -12), monto: 3200, moneda: 'MXN', recibo: inicioSofia }] }),
-    c({ nombre: 'Ricardo Ibarra Solís', telefono: '55 4410 7782', whatsapp: '5544107782', email: 'ribarra@correo.mx', ocupacion: 'Empresario restaurantero', edad: '46-55', hijos: 3,
+      notas: [nota(-12, 'Póliza emitida. Plan familiar, deducible de $2 millones. Le enviaré la tarjeta digital.')], pagos: [{ id: uid(), fecha: addDays(T, -12), monto: 600000, moneda: 'COP', recibo: inicioSofia }] }),
+    c({ nombre: 'Ricardo Ibarra Solís', telefono: '301 441 0778', whatsapp: '3014410778', email: 'ribarra@correo.mx', ocupacion: 'Empresario restaurantero', edad: '46-55', hijos: 3,
       prioridad: 'Alta', ramo: 'Vida', aseguradora: 'MetLife', poliza: 'VID-77120934', formaPago: 'Trimestral', inicioVigencia: inicioRicardo,
       proxVencimiento: addDays(T, 6), prima: 3200, moneda: 'USD', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       hitos: { cita1: addMonths(T, -17), cita2: addMonths(T, -16), cierre: inicioRicardo },
       notas: [nota(-2, 'Le recordé por WhatsApp el recibo trimestral; paga por transferencia.')] }),
-    c({ nombre: 'Daniela Fuentes Arriaga', telefono: '22 2318 0456', whatsapp: '2223180456', email: 'dani.fuentes@correo.mx', ocupacion: 'Gerente de RH', edad: '36-45', civil: 'Divorciado(a)', hijos: 1,
+    c({ nombre: 'Daniela Fuentes Arriaga', telefono: '317 231 8045', whatsapp: '3172318045', email: 'dani.fuentes@correo.mx', ocupacion: 'Gerente de RH', edad: '36-45', civil: 'Divorciado(a)', hijos: 1,
       prioridad: 'Alta', ramo: 'Retiro', aseguradora: 'Skandia', poliza: 'RET-3390127', formaPago: 'Semestral', inicioVigencia: inicioDaniela,
-      proxVencimiento: addDays(T, -12), prima: 6500, moneda: 'UDIs', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
+      proxVencimiento: addDays(T, -12), prima: 4800, moneda: 'USD', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       hitos: { cita1: addMonths(T, -20), cita2: addMonths(T, -19), cierre: inicioDaniela },
       notas: [nota(-5, 'No ha pagado el recibo semestral. Dice que cambió de tarjeta. Mandar liga de pago.')] }),
-    c({ nombre: 'Patricia León Garza', telefono: '55 6655 2098', whatsapp: '5566552098', ocupacion: 'Abogada', edad: '56-65', hijos: 2,
+    c({ nombre: 'Patricia León Garza', telefono: '310 665 5209', whatsapp: '3106655209', ocupacion: 'Abogada', edad: '56-65', hijos: 2,
       prioridad: 'Media', ramo: 'Ahorro/Inversión', aseguradora: 'BMI', poliza: 'AHO-1102984', formaPago: 'Anual', inicioVigencia: inicioPatricia,
-      proxVencimiento: addDays(T, 25), prima: 85000, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true, renovaciones: 2,
+      proxVencimiento: addDays(T, 25), prima: 18000000, moneda: 'COP', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true, renovaciones: 2,
       hitos: { cita1: addMonths(T, -38), cita2: addMonths(T, -37), cierre: inicioPatricia } }),
-    c({ nombre: 'Fernando Aguilar Paz', telefono: '44 2187 6650', whatsapp: '4421876650', email: 'fer.aguilar@correo.mx', ocupacion: 'Ingeniero de software', edad: '26-35', civil: 'Unión libre', hijos: 0,
+    c({ nombre: 'Fernando Aguilar Paz', telefono: '304 218 7665', whatsapp: '3042187665', email: 'fer.aguilar@correo.mx', ocupacion: 'Ingeniero de software', edad: '26-35', civil: 'Unión libre', hijos: 0,
       prioridad: 'Baja', ramo: 'Vida', aseguradora: 'Allianz', poliza: 'VID-5520871', formaPago: 'Anual', inicioVigencia: inicioFernando,
-      proxVencimiento: addMonths(inicioFernando, 36), prima: 14500, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
+      proxVencimiento: addMonths(inicioFernando, 36), prima: 1800000, moneda: 'COP', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       renovadoEn: addDays(T, -20), renovaciones: 1, hitos: { cita1: addMonths(T, -26), cita2: addMonths(T, -25), cierre: inicioFernando },
-      pagos: [{ id: uid(), fecha: addDays(T, -21), monto: 14500, moneda: 'MXN', recibo: addDays(T, -20) }],
+      pagos: [{ id: uid(), fecha: addDays(T, -21), monto: 1800000, moneda: 'COP', recibo: addDays(T, -20) }],
       citas: [cita({ tipo: 'anual', fecha: addDays(T, 5), hora: '18:00', modalidad: 'Virtual', link: 'https://zoom.us/', objetivo: 'Revisar beneficiarios: se va a casar' })] }),
-    c({ nombre: 'Héctor Salinas Ochoa', telefono: '55 7720 1189', whatsapp: '5577201189', ocupacion: 'Comerciante', edad: '36-45', hijos: 2,
-      prioridad: 'Baja', ramo: 'Gastos Médicos', prima: 28000, moneda: 'MXN', etapa: 'standby', estado: 'Standby',
+    c({ nombre: 'Héctor Salinas Ochoa', telefono: '312 772 0118', whatsapp: '3127720118', ocupacion: 'Comerciante', edad: '36-45', hijos: 2,
+      prioridad: 'Baja', ramo: 'Gastos Médicos', prima: 5000000, moneda: 'COP', etapa: 'standby', estado: 'Standby',
       notas: [nota(-3, 'No se conectó a la llamada. Retomar en enero, después de aguinaldos.')],
       citas: [cita({ tipo: 'cita1', fecha: addDays(T, -3), hora: '12:00', modalidad: 'Virtual', status: 'noasistio', objetivo: 'Cotizar GMM familiar' })] }),
-    c({ nombre: 'Luis Ortega Valdés', telefono: '55 1209 4433', ocupacion: 'Consultor', edad: '46-55', prioridad: 'Baja', ramo: 'Vida', aseguradora: 'MetLife', poliza: 'VID-1180023',
-      formaPago: 'Anual', inicioVigencia: addMonths(T, -14), prima: 12000, moneda: 'MXN', etapa: 'cancelada', estado: 'Cancelada', fueCliente: true,
+    c({ nombre: 'Luis Ortega Valdés', telefono: '316 120 9443', ocupacion: 'Consultor', edad: '46-55', prioridad: 'Baja', ramo: 'Vida', aseguradora: 'MetLife', poliza: 'VID-1180023',
+      formaPago: 'Anual', inicioVigencia: addMonths(T, -14), prima: 1500000, moneda: 'COP', etapa: 'cancelada', estado: 'Cancelada', fueCliente: true,
       hitos: { cita1: addMonths(T, -16), cita2: addMonths(T, -15), cierre: addMonths(T, -14) },
       notas: [nota(-50, 'Canceló al aniversario: se quedó sin trabajo. Volver a contactar en 6 meses.')] }),
   ];
@@ -314,12 +315,22 @@ function guardar() {
 }
 function estadoGuardado(ok) {
   document.querySelectorAll('[data-saved]').forEach(el => {
-    el.innerHTML = ok ? `${icon('cloud-check', 'w-3.5 h-3.5')} Guardado ${new Date().toLocaleTimeString('es-MX', { hour: 'numeric', minute: '2-digit' })}` : `${icon('cloud-off', 'w-3.5 h-3.5')} Sin guardar`;
+    el.innerHTML = ok ? `${icon('cloud-check', 'w-3.5 h-3.5')} Guardado ${new Date().toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })}` : `${icon('cloud-off', 'w-3.5 h-3.5')} Sin guardar`;
   });
   pintarIconos();
 }
-db = cargar() || { version: 1, ajustes: { usd: 18.5, udi: 8.45, nombre: 'Lirios Agencia de Vida' }, contactos: semilla(), esDemo: true };
+db = cargar() || { version: 2, ajustes: { usd: TASA_USD_INICIAL, nombre: 'Lirios Agencia de Vida' }, contactos: semilla(), esDemo: true };
 if (!cargar()) guardar();
+/* Versión 2: el CRM pasa a pesos colombianos + dólares (antes MXN/USD/UDIs) */
+if ((db.version || 1) < 2) {
+  if (db.esDemo) {
+    const nombres = new Set(semilla().map(c => c.nombre));
+    db.contactos = [...semilla(), ...db.contactos.filter(c => !c.demo && !nombres.has(c.nombre))];
+  }
+  db.contactos.forEach(c => { if (!CODIGOS_MONEDA.includes(c.moneda)) c.moneda = 'COP'; (c.pagos || []).forEach(p => { if (!CODIGOS_MONEDA.includes(p.moneda)) p.moneda = c.moneda; }); });
+  db.ajustes = { ...db.ajustes, usd: TASA_USD_INICIAL }; delete db.ajustes.udi;
+  db.version = 2; guardar();
+}
 /* Guardados anteriores no marcaban los ejemplos: se reconocen por nombre para no borrar contactos reales */
 if (db.esDemo && !db.contactos.some(c => c.demo)) {
   const nombres = new Set(semilla().map(c => c.nombre));
@@ -478,12 +489,12 @@ function vistaHoy() {
     <section class="card p-5 lg:col-span-3" aria-labelledby="h-kpi">
       <h2 id="h-kpi" class="sr-only">Métricas clave</h2>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:divide-x divide-line">
-        ${kpiBloque('Prima en ventas', fDinero(k.pipeline, 'MXN', true), `${k.nPipeline} oportunidades abiertas`, 'trending-up', 'text-brand')}
-        ${kpiBloque('Prima conservada', fDinero(k.conservada, 'MXN', true), `${clientes.length} pólizas en cartera`, 'shield-check', 'text-ok')}
-        ${kpiBloque('En riesgo', fDinero(k.riesgo, 'MXN', true), `${sem.bad} ${sem.bad === 1 ? 'recibo vencido' : 'recibos vencidos'}`, 'alert-triangle', 'text-bad')}
+        ${kpiBloque('Prima en ventas', fDinero(k.pipeline, 'COP', true), `${k.nPipeline} oportunidades abiertas`, 'trending-up', 'text-brand')}
+        ${kpiBloque('Prima conservada', fDinero(k.conservada, 'COP', true), `${clientes.length} pólizas en cartera`, 'shield-check', 'text-ok')}
+        ${kpiBloque('En riesgo', fDinero(k.riesgo, 'COP', true), `${sem.bad} ${sem.bad === 1 ? 'recibo vencido' : 'recibos vencidos'}`, 'alert-triangle', 'text-bad')}
         ${kpiBloque('Persistencia', k.persistencia === null ? '—' : `${k.persistencia}%`, `${k.renovadas} renovadas · ${k.canceladas} canceladas`, 'repeat', 'text-ink')}
       </div>
-      <p class="text-[11.5px] text-ink3 mt-4">Montos anuales convertidos a pesos (USD ${db.ajustes.usd} · UDI ${db.ajustes.udi}). Cámbialo en Ajustes.</p>
+      <p class="text-[11.5px] text-ink3 mt-4">Montos anuales en pesos colombianos; los dólares se convierten a $${Number(db.ajustes.usd).toLocaleString('es-CO')} por US$1. Cámbialo en Ajustes.</p>
     </section>
 
     <section class="card p-5" aria-labelledby="h-conv">
@@ -519,9 +530,9 @@ function kpis() {
   const renovadas = cs.reduce((s, c) => s + (Number(c.renovaciones) || 0), 0);
   const canceladas = cs.filter(c => c.etapa === 'cancelada' && c.fueCliente).length;
   return {
-    pipeline: pipeline.reduce((s, c) => s + aMXN(c.prima, c.moneda), 0), nPipeline: pipeline.length,
-    conservada: clientes.reduce((s, c) => s + aMXN(c.prima, c.moneda), 0),
-    riesgo: clientes.filter(c => cubeta(c) === 'gracia').reduce((s, c) => s + aMXN(primaRecibo(c), c.moneda), 0),
+    pipeline: pipeline.reduce((s, c) => s + aCOP(c.prima, c.moneda), 0), nPipeline: pipeline.length,
+    conservada: clientes.reduce((s, c) => s + aCOP(c.prima, c.moneda), 0),
+    riesgo: clientes.filter(c => cubeta(c) === 'gracia').reduce((s, c) => s + aCOP(primaRecibo(c), c.moneda), 0),
     renovadas, canceladas, persistencia: renovadas + canceladas ? Math.round(renovadas / (renovadas + canceladas) * 100) : null,
     n1: cs.filter(c => c.hitos?.cita1).length, n2: cs.filter(c => c.hitos?.cita2).length, n3: cs.filter(c => c.hitos?.cierre).length,
   };
@@ -552,9 +563,9 @@ function vacioMini(ic, t, s) {
 function vistaVentas() {
   const lista = db.contactos.filter(c => c.etapa !== 'cancelada');
   const porEtapa = id => lista.filter(c => c.etapa === id && (id !== 'emitida' || (c.hitos?.cierre && diasEntre(c.hitos.cierre, hoy()) <= 30)));
-  const total = lista.filter(c => enVentas(c) && c.etapa !== 'standby').reduce((s, c) => s + aMXN(c.prima, c.moneda), 0);
+  const total = lista.filter(c => enVentas(c) && c.etapa !== 'standby').reduce((s, c) => s + aCOP(c.prima, c.moneda), 0);
   return `
-  ${encabezado('Pipeline de ventas', `${fDinero(total, 'MXN', true)} en prima anual por cerrar · arrastra las tarjetas para moverlas`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('plus', 'w-4 h-4')} Prospecto</button>`)}
+  ${encabezado('Pipeline de ventas', `${fDinero(total, 'COP', true)} en prima anual por cerrar · arrastra las tarjetas para moverlas`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('plus', 'w-4 h-4')} Prospecto</button>`)}
   <div class="md:hidden scroll-x -mx-4 px-4 flex gap-2 pb-3 mb-1">
     ${VENTAS.map(e => `<button class="chip" data-act="etapa-movil" data-etapa="${e.id}" aria-pressed="${ui.etapaMovil === e.id}">${e.nombre} <span class="opacity-70">${porEtapa(e.id).length}</span></button>`).join('')}
   </div>
@@ -562,11 +573,11 @@ function vistaVentas() {
     <div class="md:grid md:grid-flow-col md:auto-cols-[268px] gap-3 stagger">
       ${VENTAS.map(e => {
         const items = porEtapa(e.id);
-        const suma = items.reduce((s, c) => s + aMXN(c.prima, c.moneda), 0);
+        const suma = items.reduce((s, c) => s + aCOP(c.prima, c.moneda), 0);
         return `<section class="kcol ${ui.etapaMovil === e.id ? '' : 'hidden md:flex'}" data-drop="${e.id}" aria-label="${e.nombre}">
           <header class="px-1.5 pt-1 pb-1.5">
             <div class="flex items-center justify-between gap-2"><h2 class="font-sans! text-[14px] font-semibold">${e.nombre}</h2><span class="tag bg-surface text-ink2">${items.length}</span></div>
-            <p class="text-[12px] text-ink3">${e.sub}${suma ? ` · ${fDinero(suma, 'MXN', true)}` : ''}</p>
+            <p class="text-[12px] text-ink3">${e.sub}${suma ? ` · ${fDinero(suma, 'COP', true)}` : ''}</p>
           </header>
           ${items.length ? items.map(tarjetaVenta).join('') : `<p class="text-[12.5px] text-ink3 text-center py-6 px-3 border border-dashed border-line rounded-xl">${e.id === 'prospecto' ? 'Agrega a tu próximo prospecto con el botón +' : 'Suelta aquí una tarjeta'}</p>`}
         </section>`;
@@ -639,7 +650,7 @@ function waLink(c, b) {
   let msg = `Hola ${nombre}, ¿cómo estás?`;
   if (b === 'pago' || b === 'gracia') msg = `Hola ${nombre}, te escribo para recordarte el recibo de tu póliza ${c.poliza} por ${fDinero(primaRecibo(c), c.moneda)} con fecha ${fFecha(c.proxVencimiento, { day: 'numeric', month: 'long' })}. ¿Te comparto la liga de pago?`;
   if (b === 'renovacion') msg = `Hola ${nombre}, se acerca el aniversario de tu póliza ${c.poliza}. Me gustaría agendar 20 minutos para revisar tu suma asegurada y beneficiarios. ¿Qué día te acomoda?`;
-  return `https://wa.me/52${soloDigitos(c.whatsapp).slice(-10)}?text=${encodeURIComponent(msg)}`;
+  return `https://wa.me/57${soloDigitos(c.whatsapp).slice(-10)}?text=${encodeURIComponent(msg)}`;
 }
 
 /* ---------- CITAS ---------- */
@@ -858,7 +869,7 @@ function abrirDetalle(id, refrescar = false) {
 
 /* ---------- Nuevo / editar contacto ---------- */
 function abrirFormContacto(id, aviso = '') {
-  const c = id ? getC(id) : { prioridad: 'Media', ramo: 'Vida', formaPago: 'Anual', moneda: 'MXN', edad: '36-45', civil: 'Casado(a)', hijos: 0, etapa: 'prospecto' };
+  const c = id ? getC(id) : { prioridad: 'Media', ramo: 'Vida', formaPago: 'Anual', moneda: 'COP', edad: '36-45', civil: 'Casado(a)', hijos: 0, etapa: 'prospecto' };
   const sel = (name, arr, val) => `<select class="input" name="${name}">${opciones(arr, val)}</select>`;
   const asegSel = !c.aseguradora ? '' : ALIADAS.includes(c.aseguradora) ? c.aseguradora : 'Otra';
   const polizaAbierta = !!aviso || ['tramite', 'emitida'].includes(c.etapa) || !!c.poliza;
@@ -887,7 +898,7 @@ function abrirFormContacto(id, aviso = '') {
         <label class="field"><span>Ramo</span>${sel('ramo', RAMOS, c.ramo)}</label>
       </div>
       ${!id ? `<label class="field"><span>Etapa</span><select class="input" name="etapa" data-change="etapa-form">${opciones(VENTAS.map(e => [e.id, e.nombre]), c.etapa)}</select></label>` : ''}
-      <div class="grid grid-cols-[1fr_110px] gap-3">
+      <div class="grid grid-cols-[1fr_150px] gap-3">
         <label class="field"><span>Prima anual ${c.etapa === 'emitida' ? '' : '(estimada)'}</span>${inp('prima', c.prima || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
         <label class="field"><span>Moneda</span>${sel('moneda', MONEDAS, c.moneda)}</label>
       </div>
@@ -995,7 +1006,7 @@ function abrirNota(cid) {
 
 /* ---------- Ajustes y respaldo ---------- */
 function abrirAjustes() {
-  const fecha = db.guardadoEn ? new Date(db.guardadoEn).toLocaleString('es-MX', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+  const fecha = db.guardadoEn ? new Date(db.guardadoEn).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
   abrirModal(`
   ${cabeceraModal('Ajustes y respaldo', `Último guardado: ${fecha}`)}
   <div class="px-5 py-4 flex flex-col gap-4">
@@ -1016,11 +1027,9 @@ function abrirAjustes() {
       </div>
     </section>
     <form data-form="ajustes" class="card p-4 flex flex-col gap-3">
-      <p class="font-medium text-[14.5px]">Conversión a pesos para tus métricas</p>
-      <div class="grid grid-cols-2 gap-3">
-        <label class="field"><span>1 USD =</span><input class="input" type="number" step="0.01" min="0" name="usd" value="${db.ajustes.usd}" inputmode="decimal"></label>
-        <label class="field"><span>1 UDI =</span><input class="input" type="number" step="0.0001" min="0" name="udi" value="${db.ajustes.udi}" inputmode="decimal"></label>
-      </div>
+      <p class="font-medium text-[14.5px]">Dólar para tus métricas</p>
+      <p class="text-[13px] text-ink2 -mt-2">Las pólizas en dólares se suman a tus totales en pesos con este valor. Actualízalo cuando quieras.</p>
+      <label class="field"><span>US$1 = (pesos colombianos)</span><input class="input" type="number" step="1" min="0" name="usd" value="${db.ajustes.usd}" inputmode="decimal"></label>
       <button class="btn-soft">${icon('check', 'w-4 h-4')} Guardar valores</button>
     </form>
     <section class="flex flex-col gap-2">
@@ -1084,7 +1093,7 @@ function importarCartera(texto) {
     const c = { id: uid(), nombre: val(f, 'nombre'), telefono: val(f, 'telefono'), whatsapp: val(f, 'whatsapp') || val(f, 'telefono'), email: val(f, 'email'),
       ocupacion: '', edad: '36-45', civil: 'Casado(a)', hijos: 0, prioridad: elegir(val(f, 'prioridad'), PRIORIDADES, 'Media'),
       ramo: elegir(val(f, 'ramo'), RAMOS, 'Vida'), aseguradora: elegir(aseg, ALIADAS, aseg), poliza: val(f, 'poliza'), formaPago, inicioVigencia,
-      proxVencimiento: leerFecha(val(f, 'proxVencimiento')), prima: leerMonto(val(f, 'prima')), moneda: elegir(val(f, 'moneda'), MONEDAS, 'MXN'),
+      proxVencimiento: leerFecha(val(f, 'proxVencimiento')), prima: leerMonto(val(f, 'prima')), moneda: /us|dol/i.test(val(f, 'moneda')) ? 'USD' : 'COP',
       etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0, fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: hoy() };
     if (c.poliza && c.inicioVigencia) {
       c.etapa = 'emitida'; c.estado = 'Cliente Activo'; c.fueCliente = true;
@@ -1177,8 +1186,8 @@ const acciones = {
   },
   plantilla: () => {
     const filas = [COLUMNAS_CARTERA.map(c => c[1]),
-      ['Ana María Gómez', '5512345678', '5512345678', 'ana@correo.com', 'Vida', 'MetLife', 'VID-12345', 'Anual', '15/03/2024', '', '24000', 'MXN', 'Media'],
-      ['Carlos Pérez', '5598765432', '5598765432', '', 'Retiro', 'Skandia', 'RET-778', 'Mensual', '01/08/2025', '01/11/2026', '1800', 'USD', 'Alta']];
+      ['Ana María Gómez', '3001234567', '3001234567', 'ana@correo.com', 'Vida', 'MetLife', 'VID-12345', 'Anual', '15/03/2024', '', '2400000', 'COP', 'Media'],
+      ['Carlos Pérez', '3109876543', '3109876543', '', 'Retiro', 'Skandia', 'RET-778', 'Mensual', '01/08/2025', '01/11/2026', '1800', 'USD', 'Alta']];
     const csv = '\ufeff' + filas.map(f => f.map(v => /[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v).join(';')).join('\r\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'plantilla-cartera-lirios.csv'; a.click();
@@ -1269,7 +1278,6 @@ const formularios = {
   },
   ajustes: (f, fd) => {
     db.ajustes.usd = Number(fd.get('usd')) || db.ajustes.usd;
-    db.ajustes.udi = Number(fd.get('udi')) || db.ajustes.udi;
     guardar(); render(); cerrarModal(); toast('Valores actualizados');
   },
 };
@@ -1322,7 +1330,7 @@ document.addEventListener('change', e => {
       const d = JSON.parse(t);
       if (!d || !Array.isArray(d.contactos)) throw new Error('formato');
       if (!confirm(`Este respaldo tiene ${d.contactos.length} contactos y reemplazará lo que ves ahora. ¿Continuar?`)) return;
-      foto(); db = d; db.ajustes = db.ajustes || { usd: 18.5, udi: 8.45 }; guardar(); cerrarModal(); render(); toast('Respaldo cargado', { deshacer: true });
+      foto(); db = d; db.ajustes = db.ajustes || { usd: TASA_USD_INICIAL }; guardar(); cerrarModal(); render(); toast('Respaldo cargado', { deshacer: true });
     }).catch(() => toast('Ese archivo no es un respaldo de Lirios CRM.', { tono: 'bad' }));
   }
 });
