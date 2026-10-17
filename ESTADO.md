@@ -416,9 +416,17 @@ aviso a `lina.rios@ikigaihumano.com` — no se ha verificado todavía con un eve
    `notaCobro`, opcional, agregado al tipo `PlanOferta` en `components/landing/Oferta.tsx`).
 `docs/copy/landing.md` actualizado para reflejar los 3 cambios. Verificado: tsc ✓ build ✓. NO se
 pudo probar en vivo en este sandbox (sin navegador real) — pendiente que la usuaria revise la
-landing publicada. La usuaria mencionó que, al aprobar esto y hacer la compra de prueba completa,
-quiere que arme el calendario de contenido de los primeros 30 días — queda anotado como siguiente
-paso, pendiente de su aprobación visual.
+landing publicada. **La usuaria revisó y aprobó los 3 cambios** ("Ya la revise esta ok") y
+confirmó que las 2 compras de prueba reales de hoy cuentan como la prueba completa pedida.
+
+⏸️ CHECKPOINT (2026-10-17, noche) — calendario de contenido de los primeros 30 días (pedido por
+la usuaria tras aprobar la landing). `docs/copy/calendario-contenido-30-dias.md` (NUEVO): 30 días
+organizados en 4 semanas, ~3-4 piezas/semana (mezcla Reels/TikTok + carruseles, no contenido
+diario para no quemarla), usando los mismos 5 ángulos ya definidos en `kit-afiliados.md` para que
+el contenido propio y el de afiliados hablen igual. Pensado para su canal propio "Miren"
+(Instagram/TikTok, de FICHA-AVATAR.md §Cierre). Incluye ideas de reserva y una nota de cómo medir
+qué piezas funcionan para repetir el ángulo ganador. Siguiente paso: la usuaria revisa el
+calendario y empieza a publicar — no requiere más trabajo de código.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
