@@ -108,7 +108,7 @@ const VENTAS = [
   { id: 'cita2', nombre: 'Cita 2ª', sub: 'Presentación y cierre' },
   { id: 'tramite', nombre: 'Radicada', sub: 'En estudio de la aseguradora' },
   { id: 'emitida', nombre: 'Póliza emitida', sub: 'Pasa a posventa' },
-  { id: 'standby', nombre: 'Standby', sub: 'Reagendar a futuro' },
+  { id: 'standby', nombre: 'En pausa', sub: 'Retomar más adelante' },
 ];
 const POSVENTA = [
   { id: 'activa', nombre: 'Pólizas activas', sub: 'Vigentes y al día', tono: 'ok' },
@@ -117,7 +117,7 @@ const POSVENTA = [
   { id: 'gracia', nombre: 'Periodo de gracia', sub: 'Recibo vencido', tono: 'bad' },
   { id: 'conservada', nombre: 'Conservada / renovada', sub: 'Ciclo completado', tono: 'ok' },
 ];
-const ESTADOS = ['Prospecto Frío','Contactado','Cita 1 Agendada','Cita 1 Realizada','Cita 2 Agendada','Cita 2 Realizada','Radicada (en estudio)','Cliente Activo','En Renovación','Cancelada','Standby'];
+const ESTADOS = ['Prospecto Frío','Contactado','Cita 1 Agendada','Cita 1 Realizada','Cita 2 Agendada','Cita 2 Realizada','Radicada (en estudio)','Cliente Activo','En Renovación','Cancelada','En pausa'];
 const RAMOS = ['Vida','Retiro','Gastos Médicos','Ahorro/Inversión','Hogar'];
 const CAPAS = ['Protección','Patrimonio','Liquidez','Retiro','Salud'];
 const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
@@ -231,7 +231,7 @@ function semaforoContacto(c) {
 }
 function estadoDe(c) {
   if (c.etapa === 'cancelada') return 'Cancelada';
-  if (c.etapa === 'standby') return 'Standby';
+  if (c.etapa === 'standby') return 'En pausa';
   if (esCliente(c)) return vigentes(c).some(p => cubeta(p) === 'renovacion') ? 'En Renovación' : 'Cliente Activo';
   return c.estado || 'Prospecto Frío';
 }
@@ -336,7 +336,7 @@ function semilla() {
       pagos: [{ id: uid(), fecha: addDays(T, -21), monto: 1800000, moneda: 'COP', recibo: addDays(T, -20) }],
       citas: [cita({ tipo: 'anual', fecha: addDays(T, 5), hora: '18:00', modalidad: 'Virtual', link: 'https://zoom.us/', objetivo: 'Revisar beneficiarios: se va a casar' })] }),
     c({ nombre: 'Héctor Salinas Ochoa', telefono: '312 772 0118', whatsapp: '3127720118', ocupacion: 'Comerciante', edad: '36-45', hijos: 2,
-      prioridad: 'Baja', ramo: 'Gastos Médicos', prima: 5000000, moneda: 'COP', etapa: 'standby', estado: 'Standby',
+      prioridad: 'Baja', ramo: 'Gastos Médicos', prima: 5000000, moneda: 'COP', etapa: 'standby', estado: 'En pausa',
       notas: [nota(-3, 'No se conectó a la llamada. Retomar en enero, después de aguinaldos.')],
       citas: [cita({ tipo: 'cita1', fecha: addDays(T, -3), hora: '12:00', modalidad: 'Virtual', status: 'noasistio', objetivo: 'Cotizar GMM familiar' })] }),
     c({ nombre: 'Luis Ortega Valdés', telefono: '316 120 9443', ocupacion: 'Consultor', edad: '46-55', prioridad: 'Baja', ramo: 'Vida', aseguradora: 'MetLife', poliza: 'VID-1180023',
@@ -909,7 +909,7 @@ function botonesAsistencia(cid, xid, sobreMarca = false) {
 /* ---------- CONTACTOS ---------- */
 const FILTROS = [
   ['todos', 'Todos'], ['prospectos', 'Prospectos'], ['clientes', 'Clientes'], ['alta', 'Prioridad alta'],
-  ['vencidas', 'Prima vencida este mes'], ['renov30', 'Renovaciones 30 días'], ['citaspos', 'Citas posventa'], ['inactivos', 'Standby / canceladas'],
+  ['vencidas', 'Prima vencida este mes'], ['renov30', 'Renovaciones 30 días'], ['citaspos', 'Citas posventa'], ['inactivos', 'En pausa / canceladas'],
 ];
 function aplicaFiltro(c, f) {
   switch (f) {
@@ -1478,7 +1478,7 @@ function moverEtapa(c, etapa) {
     c.hitos = { ...c.hitos, cierre: c.hitos?.cierre || hoy() };
     c.fueCliente = true;
     c.estado = 'Cliente Activo';
-  } else if (etapa === 'standby') c.estado = 'Standby';
+  } else if (etapa === 'standby') c.estado = 'En pausa';
   else if (etapa === 'cancelada') { c.estado = 'Cancelada'; vigentes(c).forEach(p => (p.estado = 'cancelada')); }
   else {
     const mapa = { prospecto: c.estado === 'Contactado' ? 'Contactado' : 'Prospecto Frío', cita1: 'Cita 1 Agendada', propuesta: 'Cita 1 Realizada', cita2: 'Cita 2 Agendada', tramite: 'Radicada (en estudio)' };
