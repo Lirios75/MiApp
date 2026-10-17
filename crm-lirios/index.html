@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Lirios CRM</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
 <meta name="theme-color" content="#3A6478" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -74,7 +75,10 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
   .sheet { animation: sheetIn .26s cubic-bezier(.2,.8,.2,1) both; }
   @keyframes sheetIn { from { opacity: 0; transform: translateY(18px) } to { opacity: 1; transform: none } }
-  .bg-depth { background: radial-gradient(1200px 500px at 85% -10%, #E9EEEA 0%, transparent 60%), radial-gradient(900px 400px at -10% 110%, #EFE6D3 0%, transparent 60%), var(--color-bg); }
+  .gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  @media (max-width: 767px) { body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--color-brand); } }
+  @media (min-width: 768px) { .gutter { padding-left: max(32px, env(safe-area-inset-left, 0px)); padding-right: max(32px, env(safe-area-inset-right, 0px)); } }
+  body { background: radial-gradient(1200px 500px at 85% -10%, #E9EEEA 0%, transparent 60%), radial-gradient(900px 400px at -10% 110%, #EFE6D3 0%, transparent 60%), var(--color-bg); }
   .scroll-x { overflow-x: auto; scrollbar-width: none; } .scroll-x::-webkit-scrollbar { display: none; }
   .bar { transform-origin: left; animation: grow .7s cubic-bezier(.2,.7,.2,1) both; }
   @keyframes grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
@@ -84,9 +88,10 @@
   svg.lucide { stroke-width: 1.8; }
 </style>
 </head>
-<body class="bg-depth">
+<body>
 <div id="app" class="min-h-dvh"></div>
 <div id="modal-root"></div>
+<div id="confirm-root"></div>
 <div id="toast-root" class="fixed z-50 left-1/2 -translate-x-1/2 bottom-24 md:bottom-6 w-[min(92vw,420px)]"></div>
 
 <script>
@@ -347,18 +352,125 @@ function cargar() {
   } catch (e) { console.warn('No se pudo leer el guardado', e); }
   return null;
 }
+function guardarLocal() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); return true; } catch (e) { return false; }
+}
 function guardar() {
   db.guardadoEn = new Date().toISOString();
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(db)); estadoGuardado(true); }
-  catch (e) { estadoGuardado(false); toast('No se pudo guardar en este navegador. Descarga un respaldo desde Ajustes.', { tono: 'bad' }); }
+  const ok = guardarLocal();
+  if (nube.db) { subirCambios(); return; }
+  estadoGuardado(ok);
+  if (!ok) toast('No se pudo guardar en este navegador. Descarga un respaldo desde Ajustes.', { tono: 'bad' });
 }
 function estadoGuardado(ok) {
+  const hora = new Date().toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' });
   document.querySelectorAll('[data-saved]').forEach(el => {
-    el.innerHTML = ok ? `${icon('cloud-check', 'w-3.5 h-3.5')} Guardado ${new Date().toLocaleTimeString('es-CO', { hour: 'numeric', minute: '2-digit' })}` : `${icon('cloud-off', 'w-3.5 h-3.5')} Sin guardar`;
+    el.innerHTML = !ok ? `${icon('cloud-off', 'w-3.5 h-3.5')} Sin guardar` : nube.db ? `${icon('cloud-check', 'w-3.5 h-3.5')} Guardado en tu cuenta ${hora}` : `${icon('hard-drive', 'w-3.5 h-3.5')} Guardado en este navegador ${hora}`;
   });
   pintarIconos();
 }
-db = cargar() || { version: 3, ajustes: { usd: TASA_USD_INICIAL, nombre: 'Lirios Agencia de Vida' }, contactos: semilla(), esDemo: true };
+
+/* ---------- Guardado en tu cuenta (cuando el CRM se abre como página publicada en Claude) ----------
+   Cada contacto es un documento en crm/lirios/contactos/<id>; los ajustes viven en crm/lirios.
+   Solo se suben los contactos que cambiaron, uno a la vez. */
+const RUTA_NUBE = 'crm/lirios';
+const nube = { db: null, listo: false, sincronizado: new Map(), ajustes: '', remotos: null, meta: undefined, cola: Promise.resolve() };
+const ajustesNube = () => JSON.stringify({ usd: Number(db.ajustes.usd) || TASA_USD_INICIAL, esDemo: !!db.esDemo, version: db.version || 3 });
+async function conectarNube() {
+  if (!window.claude || typeof window.claude.use !== 'function') return;
+  let store = null;
+  try { store = await window.claude.use('db'); } catch (e) { store = null; }
+  if (!store) { sinNube(); return; }
+  nube.db = store;
+  const fallo = () => { nube.db = null; sinNube(); toast('No pude conectar con tu cuenta. Por ahora se guarda en este navegador.', { tono: 'bad' }); };
+  store.doc(RUTA_NUBE).onSnapshot(s => { nube.meta = s.exists ? s.data() : null; aplicarNube(); }, fallo);
+  store.collection(RUTA_NUBE + '/contactos').onSnapshot(s => { nube.remotos = s.docs.map(d => JSON.parse(JSON.stringify(d.data()))); aplicarNube(); }, fallo);
+}
+function sinNube() {
+  if (!ui.cargando) return;
+  ui.cargando = false;
+  if (!db.contactos.length && !cargar()?.contactos?.length) { db.contactos = semilla(); db.esDemo = true; guardarLocal(); }
+  render();
+}
+function aplicarNube() {
+  if (nube.meta === undefined || nube.remotos === null) return;
+  if (!nube.listo) {
+    nube.listo = true;
+    ui.cargando = false;
+    if (!nube.meta && !nube.remotos.length) { subirCambios(); render(); return; }
+  }
+  const remotos = new Map(nube.remotos.map(c => [c.id, JSON.stringify(c)]));
+  if (nube.meta) {
+    nube.ajustes = JSON.stringify({ usd: Number(nube.meta.usd) || TASA_USD_INICIAL, esDemo: !!nube.meta.esDemo, version: nube.meta.version || 3 });
+    db.ajustes.usd = Number(nube.meta.usd) || db.ajustes.usd;
+    db.esDemo = !!nube.meta.esDemo;
+  }
+  const locales = new Map(db.contactos.map(c => [c.id, JSON.stringify(c)]));
+  const igual = remotos.size === locales.size && [...remotos].every(([id, js]) => locales.get(id) === js);
+  nube.sincronizado = remotos;
+  if (igual) { estadoGuardado(true); return; }
+  db.contactos = nube.remotos.map(c => aFormatoPolizas(JSON.parse(JSON.stringify(c))));
+  guardarLocal();
+  render();
+  const formulario = document.querySelector('#modal-root form');
+  if (ui.detalle && !formulario) { if (getC(ui.detalle)) abrirDetalle(ui.detalle, true); else cerrarModal(); }
+}
+function subirCambios() {
+  if (!nube.db || !nube.listo) return;
+  nube.cola = nube.cola.then(async () => {
+    const actuales = new Map(db.contactos.map(c => [c.id, JSON.stringify(c)]));
+    for (const [id, js] of actuales) {
+      if (nube.sincronizado.get(id) === js) continue;
+      await nube.db.doc(`${RUTA_NUBE}/contactos/${id}`).set(JSON.parse(js));
+      nube.sincronizado.set(id, js);
+    }
+    for (const id of [...nube.sincronizado.keys()]) {
+      if (actuales.has(id)) continue;
+      await nube.db.doc(`${RUTA_NUBE}/contactos/${id}`).delete();
+      nube.sincronizado.delete(id);
+    }
+    const a = ajustesNube();
+    if (a !== nube.ajustes) { await nube.db.doc(RUTA_NUBE).set(JSON.parse(a)); nube.ajustes = a; }
+    estadoGuardado(true);
+  }).catch(e => {
+    estadoGuardado(false);
+    toast(e && e.code === 'quota_exceeded' ? 'Se llenó el espacio de tu CRM en la cuenta. Descarga un respaldo y borra contactos que ya no uses.'
+      : 'No pude guardar en tu cuenta. El cambio quedó en este navegador y lo vuelvo a intentar con tu próximo cambio.', { tono: 'bad' });
+  });
+}
+
+/* ---------- Confirmaciones dentro de la página ---------- */
+function confirmar(texto, { si = 'Sí, continuar', peligro = false } = {}) {
+  return new Promise(resolver => {
+    const root = document.getElementById('confirm-root');
+    root.innerHTML = `<div class="fixed inset-0 z-[60] grid place-items-center p-4" role="alertdialog" aria-modal="true" aria-label="Confirmar">
+      <div class="absolute inset-0 bg-ink/50 fade-in" data-r="0"></div>
+      <div class="sheet relative w-full max-w-sm bg-bg rounded-3xl p-5 shadow-2xl">
+        <p class="text-[15px] whitespace-pre-line">${esc(texto)}</p>
+        <div class="flex gap-2 mt-5"><button class="btn-ghost flex-1" data-r="0">Cancelar</button><button class="${peligro ? 'btn bg-bad text-white hover:opacity-90' : 'btn-primary'} flex-1" data-r="1">${esc(si)}</button></div>
+      </div></div>`;
+    const cerrar = v => { root.innerHTML = ''; resolver(v); };
+    root.querySelectorAll('[data-r]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); cerrar(b.dataset.r === '1'); }));
+    root.querySelector('button[data-r="1"]').focus();
+    root.cancelar = () => cerrar(false);
+  });
+}
+
+/* ---------- Descargas: en la página publicada pasan por la confirmación de Claude ---------- */
+async function descargar(nombre, contenido, tipo) {
+  const servicio = window.claude && typeof window.claude.use === 'function' ? await window.claude.use('downloads').catch(() => null) : null;
+  if (servicio) {
+    try { await servicio.save({ filename: nombre, data: contenido }); return true; }
+    catch (e) { if (e && e.code !== 'unavailable') return false; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([contenido], { type: tipo })); a.download = nombre; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  return true;
+}
+/* Abierto dentro de Claude, la cartera llega de tu cuenta: no se muestran ejemplos mientras carga */
+const enClaude = !!(window.claude && typeof window.claude.use === 'function');
+db = cargar() || { version: 3, ajustes: { usd: TASA_USD_INICIAL, nombre: 'Lirios Agencia de Vida' }, contactos: enClaude ? [] : semilla(), esDemo: !enClaude };
 if (!cargar()) guardar();
 /* Versión 2: el CRM pasa a pesos colombianos + dólares (antes MXN/USD/UDIs) */
 if ((db.version || 1) < 2) {
@@ -392,6 +504,7 @@ const ui = {
   etapaMovil: 'prospecto', cubetaMovil: 'gracia',
   semana: lunesDe(hoy()), filtroCitas: 'todas',
   detalle: null,
+  cargando: enClaude,
 };
 const getC = id => db.contactos.find(c => c.id === id);
 const getP = d => getC(d.id).polizas.find(p => p.id === d.pol);
@@ -440,15 +553,15 @@ function render() {
     </div>
   </aside>
 
-  <header class="md:hidden sticky top-0 z-20 bg-brand text-on-brand px-4 pt-[max(12px,env(safe-area-inset-top))] pb-3 flex items-center gap-3">
+  <header class="md:hidden sticky top-[env(safe-area-inset-top,0px)] z-20 bg-brand text-on-brand gutter py-3 flex items-center gap-3">
     <div class="grid place-items-center w-9 h-9 rounded-xl bg-on-brand text-brand">${icon('flower-2', 'w-[18px] h-[18px]')}</div>
     <div class="flex-1 min-w-0"><p class="font-display text-[18px] leading-tight">Lirios CRM</p><p class="text-[11.5px] text-on-brand2 flex items-center gap-1" data-saved></p></div>
     <button class="grid place-items-center w-11 h-11 rounded-xl hover:bg-white/10" data-act="ajustes" aria-label="Ajustes y respaldo">${icon('settings-2', 'w-5 h-5')}</button>
     <button class="grid place-items-center w-11 h-11 rounded-xl bg-on-brand text-brand" data-act="nuevo" aria-label="Nuevo contacto">${icon('user-plus', 'w-5 h-5')}</button>
   </header>
 
-  <main class="md:ml-64 min-w-0 px-4 md:px-8 pt-5 md:pt-8 pb-28 md:pb-12 max-w-[1400px]">
-    ${({ hoy: vistaHoy, ventas: vistaVentas, posventa: vistaPosventa, citas: vistaCitas, contactos: vistaContactos }[ui.vista] || vistaHoy)()}
+  <main class="md:ml-64 min-w-0 gutter pt-5 md:pt-8 pb-28 md:pb-12 max-w-[1400px]">
+    ${ui.cargando ? vistaCargando() : ({ hoy: vistaHoy, ventas: vistaVentas, posventa: vistaPosventa, citas: vistaCitas, contactos: vistaContactos }[ui.vista] || vistaHoy)()}
   </main>
 
   <nav class="md:hidden fixed bottom-0 inset-x-0 z-20 bg-surface/95 backdrop-blur border-t border-line flex px-1 pb-[env(safe-area-inset-bottom)]" aria-label="Secciones">
@@ -458,6 +571,14 @@ function render() {
   pintarIconos();
 }
 
+function vistaCargando() {
+  return `<div class="flex flex-col gap-4" aria-busy="true">
+    <div class="h-9 w-40 rounded-xl bg-sunken animate-pulse"></div>
+    <div class="h-4 w-64 max-w-full rounded bg-sunken animate-pulse"></div>
+    <div class="grid gap-4 lg:grid-cols-3"><div class="h-48 rounded-2xl bg-sunken animate-pulse lg:col-span-2"></div><div class="h-48 rounded-2xl bg-sunken animate-pulse"></div></div>
+    <p class="text-[13.5px] text-ink2 flex items-center gap-2">${icon('cloud-download', 'w-4 h-4 text-brand')} Trayendo tu cartera desde tu cuenta…</p>
+  </div>`;
+}
 function encabezado(titulo, sub, acciones = '') {
   return `<div class="flex items-end justify-between gap-4 mb-5 fade-in">
     <div class="min-w-0"><h1 class="text-[28px] md:text-[34px] leading-[1.1]">${titulo}</h1>${sub ? `<p class="text-ink2 text-[14px] mt-1">${sub}</p>` : ''}</div>
@@ -1120,7 +1241,8 @@ function abrirAjustes() {
   <div class="px-5 py-4 flex flex-col gap-4">
     <section class="card p-4 flex gap-3"><div class="icon-chip bg-brand-soft text-brand">${icon('hard-drive', 'w-5 h-5')}</div>
       <div class="min-w-0 text-[13.5px] text-ink2"><p class="font-medium text-ink text-[14.5px] mb-1">Dónde vive tu información</p>
-      Todo se guarda solo, al instante, en <strong class="font-semibold">este navegador de este equipo</strong>. Si borras el historial del navegador o abres el CRM en otro celular, no verás tus datos. Por eso: <strong class="font-semibold">descarga un respaldo cada viernes</strong>.</div></section>
+      ${nube.db ? `Todo se guarda solo, al instante, en <strong class="font-semibold">tu cuenta de Claude</strong>: lo ves igual en tu celular y en tu computadora con este mismo enlace. Solo tú puedes ver tu cartera. Igual, <strong class="font-semibold">descarga un respaldo cada mes</strong>.`
+      : `Todo se guarda solo, al instante, en <strong class="font-semibold">este navegador de este equipo</strong>. Si borras el historial del navegador o abres el CRM en otro celular, no verás tus datos. Por eso: <strong class="font-semibold">descarga un respaldo cada viernes</strong>.`}</div></section>
     <div class="grid grid-cols-2 gap-2">
       <button class="btn-primary" data-act="exportar">${icon('download', 'w-4 h-4')} Bajar respaldo</button>
       <label class="btn-soft">${icon('upload', 'w-4 h-4')} Subir respaldo<input type="file" accept="application/json,.json" class="sr-only" data-change="importar"></label>
@@ -1309,7 +1431,7 @@ function contactosDesdeFilas(filas) {
   return { lista };
 }
 
-function importarCartera(filas) {
+async function importarCartera(filas) {
   const { lista, error } = contactosDesdeFilas(filas);
   if (error) { toast(error, { tono: 'bad' }); return; }
   if (!lista.length) { toast('No encontré clientes con nombre en el archivo.', { tono: 'bad' }); return; }
@@ -1321,7 +1443,7 @@ function importarCartera(filas) {
   const msg = `Encontré ${lista.length} clientes con ${nPol} pólizas (${nVig} vigentes${nPol - nVig ? `, ${nPol - nVig} canceladas` : ''}).`
     + (nAct ? `\n${lista.length - nAct} son nuevos y ${nAct} ya estaban: a esos les actualizo los datos sin borrar lo que ya registraste.` : '')
     + (db.esDemo ? '\n\nTambién quitaré los contactos de ejemplo.' : '') + '\n\n¿Continuar?';
-  if (!confirm(msg)) return;
+  if (!(await confirmar(msg, { si: 'Cargar cartera' }))) return;
   foto();
   if (db.esDemo) { db.contactos = db.contactos.filter(c => !c.demo); db.esDemo = false; }
   lista.forEach(n => {
@@ -1407,17 +1529,17 @@ const acciones = {
   },
   gracia: d => { foto(); getP(d).gracia = true; guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true); toast('Póliza marcada en periodo de gracia', { deshacer: true }); },
   'quitar-gracia': d => { foto(); getP(d).gracia = false; guardar(); render(); abrirDetalle(d.id, true); toast('Marca de gracia retirada', { deshacer: true }); },
-  'borrar-poliza': d => {
-    if (!confirm('¿Borrar esta póliza y su historial de pagos? Si solo se canceló, mejor cambia su estado a "Cancelada" para que cuente en tu persistencia.')) return;
+  'borrar-poliza': async d => {
+    if (!(await confirmar('¿Borrar esta póliza y su historial de pagos? Si solo se canceló, mejor cambia su estado a "Cancelada" para que cuente en tu persistencia.', { si: 'Borrar póliza', peligro: true }))) return;
     foto();
     const c = getC(d.id);
     c.polizas = c.polizas.filter(p => p.id !== d.pol);
     if (esCliente(c) && !vigentes(c).length) { c.etapa = 'tramite'; c.estado = 'En Trámite'; }
     guardar(); render(); abrirDetalle(c.id); toast('Póliza borrada', { deshacer: true });
   },
-  eliminar: d => {
+  eliminar: async d => {
     const c = getC(d.id);
-    if (!confirm(`¿Eliminar a ${c.nombre}? Se borran también sus citas, notas y pagos.`)) return;
+    if (!(await confirmar(`¿Eliminar a ${c.nombre}? Se borran también sus pólizas, citas, notas y pagos.`, { si: 'Eliminar', peligro: true }))) return;
     foto(); db.contactos = db.contactos.filter(x => x.id !== d.id); guardar(); cerrarModal(); render();
     toast('Contacto eliminado', { deshacer: true });
   },
@@ -1426,24 +1548,18 @@ const acciones = {
       ['1020304050', 'Ana María Gómez', '3001234567', 'ana@correo.com', 'Bogotá', '15/03/1985', 'VID-12345', 'MetLife', 'Vida temporal', 'Vida', 'Vigente', 'COP', '200000000', '2400000', 'Anual', '15/03/2024', 'Referida por Carlos'],
       ['1020304050', 'Ana María Gómez', '3001234567', 'ana@correo.com', 'Bogotá', '15/03/1985', 'RET-778', 'Skandia', 'Crea Patrimonio', 'Retiro', 'Vigente', 'USD', '50000', '1800', 'Mensual', '01/08/2025', 'Segunda póliza de Ana']];
     const csv = '\ufeff' + filas.map(f => f.map(v => /[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v).join(';')).join('\r\n');
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'plantilla-cartera-lirios.csv'; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    toast('Plantilla descargada. Ábrela con Excel.');
+    descargar('plantilla-cartera-lirios.csv', csv, 'text/csv;charset=utf-8').then(ok => ok && toast('Plantilla lista. Ábrela con Excel.'));
   },
   exportar: () => {
-    const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = `lirios-crm-respaldo-${hoy()}.json`; a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    toast('Respaldo descargado. Guárdalo en tu Drive o correo.');
+    descargar(`lirios-crm-respaldo-${hoy()}.json`, JSON.stringify(db, null, 2), 'application/json')
+      .then(ok => ok && toast('Respaldo descargado. Guárdalo en tu Drive o correo.'));
   },
-  vaciar: () => {
-    if (!confirm('¿Borrar los contactos de ejemplo? Los que tú agregaste se quedan.')) return;
+  vaciar: async () => {
+    if (!(await confirmar('¿Borrar los contactos de ejemplo? Los que tú agregaste se quedan.', { si: 'Borrar ejemplos' }))) return;
     foto(); db.contactos = db.contactos.filter(c => !c.demo); db.esDemo = false; guardar(); cerrarModal(); render(); toast('Ejemplos borrados. Tus contactos siguen aquí', { deshacer: true });
   },
-  demo: () => {
-    if (db.contactos.length && !db.esDemo && !confirm('Esto reemplaza tus contactos por los ejemplos. ¿Descargaste tu respaldo?')) return;
+  demo: async () => {
+    if (db.contactos.length && !db.esDemo && !(await confirmar('Esto reemplaza tus contactos por los ejemplos. ¿Descargaste tu respaldo?', { si: 'Reemplazar', peligro: true }))) return;
     foto(); db.contactos = semilla(); db.esDemo = true; guardar(); cerrarModal(); render(); toast('Ejemplos cargados', { deshacer: true });
   },
 };
@@ -1553,6 +1669,8 @@ document.addEventListener('click', e => {
   fn(el.dataset, el);
 });
 document.addEventListener('keydown', e => {
+  const conf = document.getElementById('confirm-root');
+  if (e.key === 'Escape' && conf.cancelar && conf.firstChild) { conf.cancelar(); return; }
   if (e.key === 'Escape' && document.querySelector('#modal-root [role=dialog]')) acciones.cerrar();
   if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('article[data-act]')) { e.preventDefault(); e.target.click(); }
 });
@@ -1583,10 +1701,10 @@ document.addEventListener('change', e => {
   }
   if (el.dataset.change === 'importar') {
     const file = el.files[0]; if (!file) return;
-    file.text().then(t => {
+    file.text().then(async t => {
       const d = JSON.parse(t);
       if (!d || !Array.isArray(d.contactos)) throw new Error('formato');
-      if (!confirm(`Este respaldo tiene ${d.contactos.length} contactos y reemplazará lo que ves ahora. ¿Continuar?`)) return;
+      if (!(await confirmar(`Este respaldo tiene ${d.contactos.length} contactos y reemplazará lo que ves ahora. ¿Continuar?`, { si: 'Cargar respaldo' }))) return;
       foto(); db = d; db.ajustes = db.ajustes || { usd: TASA_USD_INICIAL }; db.contactos.forEach(aFormatoPolizas); db.version = 3; guardar(); cerrarModal(); render(); toast('Respaldo cargado', { deshacer: true });
     }).catch(() => toast('Ese archivo no es un respaldo de Lirios CRM.', { tono: 'bad' }));
   }
@@ -1622,6 +1740,7 @@ window.addEventListener('hashchange', () => { ui.vista = location.hash.slice(1) 
 window.addEventListener('storage', e => { if (e.key === STORAGE_KEY && e.newValue) { db = JSON.parse(e.newValue); render(); } });
 
 render();
+conectarNube();
 </script>
 </body>
 </html>
