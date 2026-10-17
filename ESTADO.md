@@ -384,6 +384,23 @@ persona con el enlace, lector") y agregó ese link en Hotmart → Programa de Af
 Configuraciones → Materiales para Afiliados. Programa de Afiliados queda 100% operativo:
 activado, comisión 35% recurrente, correo de contacto correcto, descripción y material subidos.
 
+⏸️ CHECKPOINT (2026-10-17, noche) — aviso por correo a la DUEÑA en cada venta real (pedido por
+la usuaria): cuando el webhook aplica un cobro real (estado `active`, NO el inicio de la prueba
+gratis), le llega un correo a `lina.rios@ikigaihumano.com` con el plan, el monto y quién compró.
+- `npm install resend` (nuevo paquete).
+- `lib/email.ts` (NUEVO): cliente de Resend por API directa (separado del SMTP que usa Supabase
+  Auth para los enlaces mágicos — ese SMTP solo manda emails de autenticación, no sirve para
+  avisos a medida) + `avisarVentaRealADuena`.
+- `app/api/webhooks/hotmart/route.ts`: dispara el aviso solo cuando `resultado === 'applied'` y
+  `nuevoEstado === 'active'` — nunca en `trialing` (inicio de prueba gratis) ni en duplicados.
+**Falta agregar la variable de entorno `RESEND_API_KEY` en Vercel** (la misma clave API que ya
+existe en la cuenta de Resend — Settings → API Keys en resend.com, la que se usó para configurar
+el SMTP de Supabase) para que este aviso funcione — sin ella, el webhook sigue dando acceso bien,
+solo que no manda el correo de aviso (falla en silencio, no rompe nada). Verificado: tsc ✓
+build ✓. NO probado en vivo todavía (requiere una venta real o repetir la prueba de compra).
+Siguiente paso exacto: agregar `RESEND_API_KEY` en Vercel y, en la próxima venta de prueba,
+confirmar que el correo de aviso le llega a la usuaria.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→

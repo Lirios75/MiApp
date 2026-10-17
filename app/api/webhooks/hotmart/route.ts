@@ -8,6 +8,7 @@ import crypto from 'node:crypto';
 import { verifyHotmart, esReciente } from '@/lib/hotmart-verify';
 import { estadoParaEvento, type EstadoMembresia } from '@/lib/membership-fsm';
 import { supabaseAdmin, crearOEncontrarUsuarioAuth, supabaseAnonServidor } from '@/lib/supabase/admin';
+import { avisarVentaRealADuena } from '@/lib/email';
 import { TRIAL_DIAS } from '@/lib/pricing';
 import { HOTMART_PRODUCT_ID } from '@/lib/hotmart';
 
@@ -214,6 +215,22 @@ export async function POST(req: NextRequest) {
       console.error('webhook hotmart: no se pudo enviar el enlace de acceso', error);
       // No fallamos la respuesta por esto — la cuenta y el acceso YA quedaron correctos; la
       // usuaria siempre puede pedir otro enlace desde /entrar con el mismo correo.
+    }
+  }
+
+  // 10. Aviso a la dueña — SOLO en un cobro real (no en el inicio de la prueba gratis).
+  if (resultado === 'applied' && nuevoEstado === 'active') {
+    try {
+      await avisarVentaRealADuena({
+        email: datos.email,
+        nombre: datos.nombre,
+        plan: datos.planName,
+        valor: datos.valor,
+        moneda: datos.moneda,
+      });
+    } catch (error) {
+      console.error('webhook hotmart: no se pudo avisar la venta a la dueña', error);
+      // No fallamos la respuesta por esto — el cobro y el acceso ya quedaron correctos.
     }
   }
 
