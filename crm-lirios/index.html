@@ -1266,7 +1266,7 @@ function abrirAjustes() {
     </section>
     <section class="flex flex-col gap-2">
       ${db.esDemo ? `<button class="btn-soft" data-act="vaciar">${icon('eraser', 'w-4 h-4')} Borrar los ejemplos y empezar con mis clientes</button>` : ''}
-      <button class="btn-ghost" data-act="demo">${icon('rotate-ccw', 'w-4 h-4')} Volver a cargar los ejemplos</button>
+      ${!db.contactos.length ? `<button class="btn-ghost" data-act="demo">${icon('rotate-ccw', 'w-4 h-4')} Cargar contactos de ejemplo</button>` : ''}
     </section>
   </div>`);
 }
@@ -1560,8 +1560,9 @@ const acciones = {
     if (!(await confirmar('¿Borrar los contactos de ejemplo? Los que tú agregaste se quedan.', { si: 'Borrar ejemplos' }))) return;
     foto(); db.contactos = db.contactos.filter(c => !c.demo); db.esDemo = false; guardar(); cerrarModal(); render(); toast('Ejemplos borrados. Tus contactos siguen aquí', { deshacer: true });
   },
-  demo: async () => {
-    if (db.contactos.length && !db.esDemo && !(await confirmar('Esto reemplaza tus contactos por los ejemplos. ¿Descargaste tu respaldo?', { si: 'Reemplazar', peligro: true }))) return;
+  demo: () => {
+    /* Los ejemplos solo se cargan en un CRM vacío: nunca reemplazan una cartera real */
+    if (db.contactos.length) return;
     foto(); db.contactos = semilla(); db.esDemo = true; guardar(); cerrarModal(); render(); toast('Ejemplos cargados', { deshacer: true });
   },
 };
