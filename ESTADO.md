@@ -398,8 +398,10 @@ existe en la cuenta de Resend — Settings → API Keys en resend.com, la que se
 el SMTP de Supabase) para que este aviso funcione — sin ella, el webhook sigue dando acceso bien,
 solo que no manda el correo de aviso (falla en silencio, no rompe nada). Verificado: tsc ✓
 build ✓. NO probado en vivo todavía (requiere una venta real o repetir la prueba de compra).
-Siguiente paso exacto: agregar `RESEND_API_KEY` en Vercel y, en la próxima venta de prueba,
-confirmar que el correo de aviso le llega a la usuaria.
+`RESEND_API_KEY` ya agregada en Vercel (clave nueva "Respira App" creada en Resend, con permiso
+mínimo de "Enviando acceso", no la de acceso completo que usa Supabase) + redeploy hecho y
+"Listo". **Falta confirmar en vivo**: la próxima venta/prueba de compra debe traer el correo de
+aviso a `lina.rios@ikigaihumano.com` — no se ha verificado todavía con un evento real.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
