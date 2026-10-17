@@ -124,7 +124,7 @@ const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
 const MONEDAS = [['COP', 'Pesos (COP)'], ['USD', 'Dólares (USD)']];
 const CODIGOS_MONEDA = MONEDAS.map(m => m[0]);
 const TASA_USD_INICIAL = 4000;
-const ALIADAS = ['MetLife', 'Allianz', 'BMI', 'Skandia'];
+const ALIADAS = ['MetLife', 'Allianz', 'BMI', 'Skandia', 'SURA'];
 const PRIORIDADES = ['Alta','Media','Baja'];
 const EDADES = ['18-25','26-35','36-45','46-55','56-65','65+'];
 const CIVILES = ['Soltero(a)','Casado(a)','Unión libre','Divorciado(a)','Viudo(a)'];
@@ -1142,7 +1142,7 @@ function abrirFormPoliza(cid, pid, aviso = '') {
   <form data-form="poliza" data-id="${cid}" data-pol="${pid || ''}" class="px-5 py-4 flex flex-col gap-3" novalidate>
     ${aviso ? `<p class="text-[13px] bg-warn-soft text-warn rounded-xl px-3 py-2">${aviso}</p>` : ''}
     <div class="grid grid-cols-2 gap-3">
-      <label class="field"><span>Aseguradora</span><select class="input" name="aseguradoraSel" data-change="aseg">${opciones([['', 'Elige…'], ...ALIADAS, ['Otra', 'Otra…']], asegSel)}</select></label>
+      <label class="field"><span>Aliado (aseguradora)</span><select class="input" name="aseguradoraSel" data-change="aseg">${opciones([['', 'Elige…'], ...ALIADAS, ['Otra', 'Otra…']], asegSel)}</select></label>
       <label class="field"><span>Núm. de póliza</span>${inp('numero', p.numero)}</label>
       <label class="field col-span-2 ${asegSel === 'Otra' ? '' : 'hidden'}" data-otra><span>¿Cuál aseguradora?</span>${inp('aseguradoraOtra', asegSel === 'Otra' ? p.aseguradora : '', 'text', 'placeholder="Ej. SURA"')}</label>
       <label class="field col-span-2"><span>Tipo de plan</span>${inp('plan', p.plan, 'text', 'placeholder="Ej. Vida Entera Indexada, TEM 100, NOVA"')}</label>
