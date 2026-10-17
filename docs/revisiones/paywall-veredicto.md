@@ -284,3 +284,13 @@ ese archivo es la pantalla "Tu meta" (app interna) — no tiene relación con el
 importa ni es importado por `app/paywall/page.tsx` ni por `components/funnel/*`. El cambio
 (fecha límite opcional al crear/editar una meta) es ajeno por completo a esta pantalla. Cero
 impacto en el paywall; la certificación LISTA sigue vigente.
+
+## Vigesimosexta re-verificación (2026-10-17, noche — 3 ajustes de copy en la landing)
+
+El hook marcó `app/page.tsx` y `components/landing/Oferta.tsx` como más nuevos que este
+veredicto. Verificado por grep: `app/paywall/page.tsx` NO importa `components/landing/Oferta`
+ni `app/page.tsx` — solo usa `components/landing/ui` (un archivo distinto, no tocado) para
+`CheckCustom`/`Hairline`. Los 3 cambios de esta sesión (PS corregido a "15 Días", "Check-in
+diario" → "Registro diario" en las tarjetas de la landing, y la aclaración del cobro del día 8)
+viven exclusivamente en la pantalla de ventas (sección 6/9), no en el paywall. Cero impacto;
+la certificación LISTA sigue vigente.
