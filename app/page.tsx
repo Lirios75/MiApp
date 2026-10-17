@@ -123,13 +123,13 @@ export default function LandingRespira() {
           nombre: "Anual",
           badge: "5 MESES GRATIS",
           precioMes: "$4.16",
-          totalAnual: "Se cobra $49.99/año",
+          totalAnual: "7 días gratis — el cobro se activa el día 8: luego $4.16/mes (se cobra $49.99/año)",
           ahorro: "Ahorras ~40% vs. mensual",
           descomposicionDia: "menos de $0.14 al día",
           ctaLabel: CTA_LABEL,
           ctaHref: CTA_HREF,
           features: [
-            "Check-in diario sin conectar tu banco",
+            "Registro diario sin conectar tu banco",
             "Metas de ahorro y deuda ilimitadas",
             "Tu racha y tu progreso siempre visibles",
             "Un tip corto cada día, sin sermones",
@@ -138,10 +138,11 @@ export default function LandingRespira() {
         mensual={{
           nombre: "Mensual",
           precioMes: "$6.99",
+          notaCobro: "7 días gratis — el cobro se activa el día 8: luego $6.99/mes",
           ctaLabel: CTA_LABEL,
           ctaHref: CTA_HREF,
           features: [
-            "Check-in diario sin conectar tu banco",
+            "Registro diario sin conectar tu banco",
             "Metas de ahorro y deuda ilimitadas",
             "Tu racha y tu progreso siempre visibles",
             "Cancelas cuando quieras",
@@ -199,7 +200,7 @@ export default function LandingRespira() {
         ctaLabel={CTA_LABEL}
         ctaHref={CTA_HREF}
         recap="7 días gratis · cancela cuando quieras"
-        psMarked="PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 14 Días Sin Culpa."
+        psMarked="PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 15 Días Sin Culpa."
       />
 
       {/* 10. FOOTER LEGAL */}

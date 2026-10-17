@@ -403,6 +403,23 @@ mínimo de "Enviando acceso", no la de acceso completo que usa Supabase) + redep
 "Listo". **Falta confirmar en vivo**: la próxima venta/prueba de compra debe traer el correo de
 aviso a `lina.rios@ikigaihumano.com` — no se ha verificado todavía con un evento real.
 
+⏸️ CHECKPOINT (2026-10-17, noche) — 3 ajustes de copy en la landing, pedidos por la usuaria:
+1. El PS final (sección 9) seguía diciendo "14 Días Sin Culpa" — quedó desactualizado en la
+   corrección 14→15 de antes (se corrigió todo menos esa línea). Corregido a "15 Días Sin Culpa".
+2. "Check-in diario" → "Registro diario" en las features de ambas tarjetas de plan (Oferta,
+   sección 6) — revierte la excepción documentada de la Sesión 1 (el usuario la pidió de vuelta
+   al estándar "registro" de toda la página).
+3. Nueva aclaración bajo el precio de cada tarjeta sobre cuándo se activa el primer cobro:
+   Anual → "7 días gratis — el cobro se activa el día 8: luego $4.16/mes (se cobra $49.99/año)"
+   (repurpos el campo `totalAnual` ya existente, que antes solo decía "Se cobra $49.99/año").
+   Mensual → "7 días gratis — el cobro se activa el día 8: luego $6.99/mes" (campo nuevo
+   `notaCobro`, opcional, agregado al tipo `PlanOferta` en `components/landing/Oferta.tsx`).
+`docs/copy/landing.md` actualizado para reflejar los 3 cambios. Verificado: tsc ✓ build ✓. NO se
+pudo probar en vivo en este sandbox (sin navegador real) — pendiente que la usuaria revise la
+landing publicada. La usuaria mencionó que, al aprobar esto y hacer la compra de prueba completa,
+quiere que arme el calendario de contenido de los primeros 30 días — queda anotado como siguiente
+paso, pendiente de su aprobación visual.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→

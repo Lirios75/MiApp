@@ -42,10 +42,13 @@
 - Anual: $4.16/mes (se cobra $49.99/año) · 5 meses gratis (~40% de ahorro vs. mensual)
 - Mensual: $6.99/mes
 - Stack: Respira Pro 12 meses ($84) + Guía "Primeros 7 días sin culpa" ($19, mata la objeción "ya probé todo y lo abandono") + Plantilla "Mi primera meta de ahorro" ($15, mata la objeción "no sé por dónde empezar") = $118 tachado → hoy $4.16/mes
-- Features de ambos planes (anual y mensual): `Check-in diario sin conectar tu banco` · `Metas de ahorro y deuda ilimitadas` · `Tu racha y tu progreso siempre visibles` · último ítem distinto por plan. ⚠️ EXCEPCIÓN DOCUMENTADA: el resto de la página usa "registro" (no "check-in") — este ítem se deja igual a propósito porque el usuario pidió expresamente NO tocarlo aquí, "si mantiene el mismo sentido" (2026-09-17).
+- Features de ambos planes (anual y mensual): `Registro diario sin conectar tu banco` · `Metas de ahorro y deuda ilimitadas` · `Tu racha y tu progreso siempre visibles` · último ítem distinto por plan. (2026-10-17: la usuaria pidió revertir la excepción anterior — ya no dice "Check-in diario", ahora usa "Registro diario" como el resto de la página.)
+- Bajo el precio de cada tarjeta, aclaración de cuándo se activa el primer cobro (2026-10-17):
+  Anual → `7 días gratis — el cobro se activa el día 8: luego $4.16/mes (se cobra $49.99/año)`
+  Mensual → `7 días gratis — el cobro se activa el día 8: luego $6.99/mes`
 
 ## 7. GARANTÍA
-- nombre: `la Garantía de los Primeros 14 Días Sin Culpa` — 14 > 7 (prueba), cumple la regla dura de 18/FICHA-MERCADO §4. (El usuario probó bajarla a 7 el 2026-09-17 y luego decidió mantenerla en 14 para conservar el extra de confianza real después del cobro.)
+- nombre: `la Garantía de los Primeros 15 Días Sin Culpa` — 15 > 7 (prueba), cumple la regla dura de 18/FICHA-MERCADO §4. (El usuario probó bajarla a 7 el 2026-09-17 y luego decidió mantenerla en 14; al configurar Hotmart en Sesión 6 se subió a 15 porque el panel no ofrece 14 — ver FICHA-MERCADO §4.)
 - condición: `Si en tus primeros 15 días pagados el [b]Semáforo del Gasto[/b] no te ayuda a notar un patrón real, escribes un correo y te devolvemos todo. Sin preguntas.`
 - piso legal: `7 días de prueba gratis + 15 días de garantía pagada` — confirmado en Hotmart (Sesión 6): el panel solo ofrece 7/15/21/30 días, no 14 exactos; se eligió 15 (la opción más cercana que sigue cumpliendo garantía > prueba).
 
@@ -61,7 +64,7 @@
 - H2: `Empieza a [acento]respirar[/acento] con tu plata`
 - future pacing: `Imagina revisar tu cuenta sin que se te acelere el pecho, ya sabiendo tu patrón.`
 - recap: `7 días gratis · cancela cuando quieras`
-- PS: `PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 14 Días Sin Culpa.`
+- PS: `PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 15 Días Sin Culpa.` (2026-10-17: corregido — se había quedado en 14 cuando el resto de la página ya decía 15.)
 
 ## 10. FOOTER LEGAL
 - Enlaces: Privacidad (`/privacidad`) · Términos y Condiciones (`/terminos`) · Reembolsos (`/reembolsos`)

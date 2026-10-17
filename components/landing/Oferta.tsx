@@ -50,6 +50,9 @@ export interface PlanOferta {
   ctaHref: string;
   /** 4-6 features en lenguaje de RESULTADO, máx 12 palabras c/u. */
   features: string[];
+  /** Aclaración bajo el precio de cuándo se activa el primer cobro (ej. "7 días
+   * gratis — el cobro se activa el día 8: luego $6.99/mes"). */
+  notaCobro?: string;
 }
 
 export interface OfertaProps {
@@ -224,6 +227,9 @@ export function Oferta({
             </div>
             <div className="mt-4">
               <Precio plan={mensual} />
+              {mensual.notaCobro && (
+                <p className="mt-1 text-[12px] text-[var(--text-secondary)]">{mensual.notaCobro}</p>
+              )}
             </div>
             <Features items={mensual.features} origen="Oferta → mensual" />
             <div className="mt-6">
