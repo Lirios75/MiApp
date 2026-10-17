@@ -116,6 +116,7 @@ const ESTADOS = ['Prospecto Frío','Contactado','Cita 1 Agendada','Cita 1 Realiz
 const RAMOS = ['Vida','Retiro','Gastos Médicos','Ahorro/Inversión'];
 const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
 const MONEDAS = ['MXN','USD','UDIs'];
+const ALIADAS = ['MetLife', 'Allianz', 'BMI', 'Skandia'];
 const PRIORIDADES = ['Alta','Media','Baja'];
 const EDADES = ['18-25','26-35','36-45','46-55','56-65','65+'];
 const CIVILES = ['Soltero(a)','Casado(a)','Unión libre','Divorciado(a)','Viudo(a)'];
@@ -237,7 +238,7 @@ function semilla() {
   const c = (o) => ({ id: uid(), telefono: '', whatsapp: '', email: '', ocupacion: '', edad: '36-45', civil: 'Casado(a)', hijos: 0,
     prioridad: 'Media', ramo: 'Vida', aseguradora: '', poliza: '', formaPago: 'Anual', inicioVigencia: '', proxVencimiento: '',
     prima: 0, moneda: 'MXN', etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0,
-    fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: addDays(T, -40), ...o });
+    fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: addDays(T, -40), demo: true, ...o });
   const nota = (dias, texto) => ({ id: uid(), fecha: addDays(T, dias), hora: '10:30', texto });
   const cita = (o) => ({ id: uid(), hora: '10:00', modalidad: 'Virtual', link: '', objetivo: '', status: 'programada', reagendas: 0, bitacora: [], ...o });
 
@@ -262,7 +263,7 @@ function semilla() {
       prioridad: 'Media', ramo: 'Gastos Médicos', prima: 32000, moneda: 'MXN', etapa: 'prospecto', estado: 'Contactado',
       notas: [nota(-1, 'Contestó el WhatsApp. Pidió que le llame el lunes después de consulta.')] }),
     c({ nombre: 'Sofía Castañeda Lozano', telefono: '55 9087 3321', whatsapp: '5590873321', email: 'sofia.cl@correo.mx', ocupacion: 'Contadora', edad: '36-45', hijos: 2,
-      prioridad: 'Media', ramo: 'Gastos Médicos', aseguradora: 'GNP', poliza: 'GMM-0048213', formaPago: 'Mensual', inicioVigencia: inicioSofia,
+      prioridad: 'Media', ramo: 'Gastos Médicos', aseguradora: 'Allianz', poliza: 'GMM-0048213', formaPago: 'Mensual', inicioVigencia: inicioSofia,
       proxVencimiento: addMonths(inicioSofia, 1), prima: 38400, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       hitos: { cita1: addDays(T, -35), cita2: addDays(T, -22), cierre: addDays(T, -12) },
       notas: [nota(-12, 'Póliza emitida. Plan familiar, deducible 25k. Le enviaré la tarjeta digital.')], pagos: [{ id: uid(), fecha: addDays(T, -12), monto: 3200, moneda: 'MXN', recibo: inicioSofia }] }),
@@ -272,16 +273,16 @@ function semilla() {
       hitos: { cita1: addMonths(T, -17), cita2: addMonths(T, -16), cierre: inicioRicardo },
       notas: [nota(-2, 'Le recordé por WhatsApp el recibo trimestral; paga por transferencia.')] }),
     c({ nombre: 'Daniela Fuentes Arriaga', telefono: '22 2318 0456', whatsapp: '2223180456', email: 'dani.fuentes@correo.mx', ocupacion: 'Gerente de RH', edad: '36-45', civil: 'Divorciado(a)', hijos: 1,
-      prioridad: 'Alta', ramo: 'Retiro', aseguradora: 'Seguros Monterrey NY Life', poliza: 'RET-3390127', formaPago: 'Semestral', inicioVigencia: inicioDaniela,
+      prioridad: 'Alta', ramo: 'Retiro', aseguradora: 'Skandia', poliza: 'RET-3390127', formaPago: 'Semestral', inicioVigencia: inicioDaniela,
       proxVencimiento: addDays(T, -12), prima: 6500, moneda: 'UDIs', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       hitos: { cita1: addMonths(T, -20), cita2: addMonths(T, -19), cierre: inicioDaniela },
       notas: [nota(-5, 'No ha pagado el recibo semestral. Dice que cambió de tarjeta. Mandar liga de pago.')] }),
     c({ nombre: 'Patricia León Garza', telefono: '55 6655 2098', whatsapp: '5566552098', ocupacion: 'Abogada', edad: '56-65', hijos: 2,
-      prioridad: 'Media', ramo: 'Ahorro/Inversión', aseguradora: 'AXA', poliza: 'AHO-1102984', formaPago: 'Anual', inicioVigencia: inicioPatricia,
+      prioridad: 'Media', ramo: 'Ahorro/Inversión', aseguradora: 'BMI', poliza: 'AHO-1102984', formaPago: 'Anual', inicioVigencia: inicioPatricia,
       proxVencimiento: addDays(T, 25), prima: 85000, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true, renovaciones: 2,
       hitos: { cita1: addMonths(T, -38), cita2: addMonths(T, -37), cierre: inicioPatricia } }),
     c({ nombre: 'Fernando Aguilar Paz', telefono: '44 2187 6650', whatsapp: '4421876650', email: 'fer.aguilar@correo.mx', ocupacion: 'Ingeniero de software', edad: '26-35', civil: 'Unión libre', hijos: 0,
-      prioridad: 'Baja', ramo: 'Vida', aseguradora: 'GNP', poliza: 'VID-5520871', formaPago: 'Anual', inicioVigencia: inicioFernando,
+      prioridad: 'Baja', ramo: 'Vida', aseguradora: 'Allianz', poliza: 'VID-5520871', formaPago: 'Anual', inicioVigencia: inicioFernando,
       proxVencimiento: addMonths(inicioFernando, 36), prima: 14500, moneda: 'MXN', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       renovadoEn: addDays(T, -20), renovaciones: 1, hitos: { cita1: addMonths(T, -26), cita2: addMonths(T, -25), cierre: inicioFernando },
       pagos: [{ id: uid(), fecha: addDays(T, -21), monto: 14500, moneda: 'MXN', recibo: addDays(T, -20) }],
@@ -319,6 +320,12 @@ function estadoGuardado(ok) {
 }
 db = cargar() || { version: 1, ajustes: { usd: 18.5, udi: 8.45, nombre: 'Lirios Agencia de Vida' }, contactos: semilla(), esDemo: true };
 if (!cargar()) guardar();
+/* Guardados anteriores no marcaban los ejemplos: se reconocen por nombre para no borrar contactos reales */
+if (db.esDemo && !db.contactos.some(c => c.demo)) {
+  const nombres = new Set(semilla().map(c => c.nombre));
+  db.contactos.forEach(c => { if (nombres.has(c.nombre)) c.demo = true; });
+  guardar();
+}
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 
 /* Deshacer: foto del estado antes de cada acción reversible */
@@ -853,6 +860,8 @@ function abrirDetalle(id, refrescar = false) {
 function abrirFormContacto(id, aviso = '') {
   const c = id ? getC(id) : { prioridad: 'Media', ramo: 'Vida', formaPago: 'Anual', moneda: 'MXN', edad: '36-45', civil: 'Casado(a)', hijos: 0, etapa: 'prospecto' };
   const sel = (name, arr, val) => `<select class="input" name="${name}">${opciones(arr, val)}</select>`;
+  const asegSel = !c.aseguradora ? '' : ALIADAS.includes(c.aseguradora) ? c.aseguradora : 'Otra';
+  const polizaAbierta = !!aviso || ['tramite', 'emitida'].includes(c.etapa) || !!c.poliza;
   const inp = (name, val, type = 'text', extra = '') => `<input class="input" name="${name}" type="${type}" value="${esc(val ?? '')}" ${extra} />`;
   abrirModal(`
   ${cabeceraModal(id ? 'Editar contacto' : 'Nuevo contacto', id ? esc(c.nombre) : 'Solo el nombre es obligatorio; lo demás lo completas cuando lo sepas')}
@@ -877,16 +886,23 @@ function abrirFormContacto(id, aviso = '') {
         <label class="field"><span>Prioridad</span>${sel('prioridad', PRIORIDADES, c.prioridad)}</label>
         <label class="field"><span>Ramo</span>${sel('ramo', RAMOS, c.ramo)}</label>
       </div>
-      ${!id ? `<label class="field"><span>Etapa</span>${sel('etapa', VENTAS.map(e => [e.id, e.nombre]), c.etapa)}</label>` : ''}
+      ${!id ? `<label class="field"><span>Etapa</span><select class="input" name="etapa" data-change="etapa-form">${opciones(VENTAS.map(e => [e.id, e.nombre]), c.etapa)}</select></label>` : ''}
       <div class="grid grid-cols-[1fr_110px] gap-3">
         <label class="field"><span>Prima anual ${c.etapa === 'emitida' ? '' : '(estimada)'}</span>${inp('prima', c.prima || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
         <label class="field"><span>Moneda</span>${sel('moneda', MONEDAS, c.moneda)}</label>
       </div>
     </fieldset>
-    <fieldset class="flex flex-col gap-3"><legend class="label mb-2">Póliza y pagos <span class="normal-case tracking-normal font-normal">(cuando se emita)</span></legend>
+    <details class="group rounded-2xl border border-line bg-surface" data-poliza ${polizaAbierta ? 'open' : ''}>
+      <summary class="list-none cursor-pointer flex items-center gap-3 p-4 min-h-11">
+        <span class="icon-chip bg-brand-soft text-brand w-9! h-9!">${icon('file-badge', 'w-[18px] h-[18px]')}</span>
+        <span class="flex-1 min-w-0"><span class="block font-medium text-[14.5px]">Póliza y pagos</span><span class="block text-[12.5px] text-ink3">${polizaAbierta ? 'Datos de la póliza emitida' : 'Llénalo cuando se emita la póliza · por ahora puedes dejarlo vacío'}</span></span>
+        ${icon('chevron-down', 'w-4 h-4 text-ink3 transition group-open:rotate-180')}
+      </summary>
+    <fieldset class="flex flex-col gap-3 px-4 pb-4">
       <div class="grid grid-cols-2 gap-3">
-        <label class="field"><span>Aseguradora</span>${inp('aseguradora', c.aseguradora, 'text', 'list="aseguradoras"')}</label>
+        <label class="field"><span>Aseguradora</span><select class="input" name="aseguradoraSel" data-change="aseg">${opciones([['', 'Elige…'], ...ALIADAS, ['Otra', 'Otra…']], asegSel)}</select></label>
         <label class="field"><span>Núm. de póliza</span>${inp('poliza', c.poliza)}</label>
+        <label class="field col-span-2 ${asegSel === 'Otra' ? '' : 'hidden'}" data-otra><span>¿Cuál aseguradora?</span>${inp('aseguradoraOtra', asegSel === 'Otra' ? c.aseguradora : '', 'text', 'placeholder="Escribe el nombre"')}</label>
         <label class="field"><span>Forma de pago</span>${sel('formaPago', Object.keys(FORMAS), c.formaPago)}</label>
         <label class="field"><span>Inicio de vigencia</span>${inp('inicioVigencia', c.inicioVigencia, 'date')}</label>
       </div>
@@ -894,7 +910,7 @@ function abrirFormContacto(id, aviso = '') {
         <div class="flex gap-2">${inp('proxVencimiento', c.proxVencimiento, 'date')}<button type="button" class="btn-soft shrink-0" data-act="calcular">${icon('calculator', 'w-4 h-4')} Calcular</button></div>
         <small class="text-[12px] text-ink3">Si lo dejas vacío, lo calculo con el inicio de vigencia y la forma de pago.</small></label>
     </fieldset>
-    <datalist id="aseguradoras">${['GNP', 'AXA', 'MetLife', 'Seguros Monterrey NY Life', 'Allianz', 'Mapfre', 'Banorte', 'Zurich', 'SMNYL', 'Plan Seguro'].map(a => `<option value="${a}">`).join('')}</datalist>
+    </details>
     <div class="sticky bottom-0 -mx-5 px-5 py-3 bg-bg/95 backdrop-blur border-t border-line flex gap-2">
       <button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button>
       <button type="submit" class="btn-primary flex-1">${icon('check', 'w-4 h-4')} ${id ? 'Guardar cambios' : 'Agregar contacto'}</button>
@@ -987,9 +1003,18 @@ function abrirAjustes() {
       <div class="min-w-0 text-[13.5px] text-ink2"><p class="font-medium text-ink text-[14.5px] mb-1">Dónde vive tu información</p>
       Todo se guarda solo, al instante, en <strong class="font-semibold">este navegador de este equipo</strong>. Si borras el historial del navegador o abres el CRM en otro celular, no verás tus datos. Por eso: <strong class="font-semibold">descarga un respaldo cada viernes</strong>.</div></section>
     <div class="grid grid-cols-2 gap-2">
-      <button class="btn-primary" data-act="exportar">${icon('download', 'w-4 h-4')} Descargar respaldo</button>
-      <label class="btn-soft">${icon('upload', 'w-4 h-4')} Cargar respaldo<input type="file" accept="application/json,.json" class="sr-only" data-change="importar"></label>
+      <button class="btn-primary" data-act="exportar">${icon('download', 'w-4 h-4')} Bajar respaldo</button>
+      <label class="btn-soft">${icon('upload', 'w-4 h-4')} Subir respaldo<input type="file" accept="application/json,.json" class="sr-only" data-change="importar"></label>
     </div>
+    <section class="card p-4 flex flex-col gap-3">
+      <div class="flex gap-3"><div class="icon-chip bg-ok-soft text-ok">${icon('sheet', 'w-5 h-5')}</div>
+        <div class="min-w-0"><p class="font-medium text-[14.5px]">Cargar tu cartera desde Excel</p>
+        <p class="text-[13px] text-ink2">Descarga la plantilla, pega tus clientes (una fila por póliza), guárdala como CSV y súbela aquí. Así no los digitas uno por uno.</p></div></div>
+      <div class="grid grid-cols-2 gap-2">
+        <button class="btn-soft" data-act="plantilla">${icon('file-down', 'w-4 h-4')} Plantilla</button>
+        <label class="btn-primary">${icon('file-up', 'w-4 h-4')} Subir cartera<input type="file" accept=".csv,text/csv" class="sr-only" data-change="cartera"></label>
+      </div>
+    </section>
     <form data-form="ajustes" class="card p-4 flex flex-col gap-3">
       <p class="font-medium text-[14.5px]">Conversión a pesos para tus métricas</p>
       <div class="grid grid-cols-2 gap-3">
@@ -1003,6 +1028,78 @@ function abrirAjustes() {
       <button class="btn-ghost" data-act="demo">${icon('rotate-ccw', 'w-4 h-4')} Volver a cargar los ejemplos</button>
     </section>
   </div>`);
+}
+
+/* ---------- Importar cartera desde Excel (CSV) ---------- */
+const COLUMNAS_CARTERA = [
+  ['nombre', 'Nombre completo'], ['telefono', 'Teléfono'], ['whatsapp', 'WhatsApp'], ['email', 'Email'], ['ramo', 'Ramo'],
+  ['aseguradora', 'Aseguradora'], ['poliza', 'Número de póliza'], ['formaPago', 'Forma de pago'], ['inicioVigencia', 'Inicio de vigencia'],
+  ['proxVencimiento', 'Próximo vencimiento'], ['prima', 'Prima anual'], ['moneda', 'Moneda'], ['prioridad', 'Prioridad'],
+];
+const normal = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+function leerCSV(texto) {
+  texto = texto.replace(/^\ufeff/, '');
+  const primera = texto.split(/\r?\n/)[0];
+  const sep = (primera.match(/;/g) || []).length >= (primera.match(/,/g) || []).length ? ';' : ',';
+  const filas = []; let fila = [], celda = '', comillas = false;
+  for (let i = 0; i < texto.length; i++) {
+    const ch = texto[i];
+    if (comillas) { if (ch === '"') { if (texto[i + 1] === '"') { celda += '"'; i++; } else comillas = false; } else celda += ch; }
+    else if (ch === '"') comillas = true;
+    else if (ch === sep) { fila.push(celda); celda = ''; }
+    else if (ch === '\n') { fila.push(celda); filas.push(fila); fila = []; celda = ''; }
+    else if (ch !== '\r') celda += ch;
+  }
+  if (celda || fila.length) { fila.push(celda); filas.push(fila); }
+  return filas.filter(f => f.some(c => c.trim()));
+}
+function leerFecha(v) {
+  v = String(v || '').trim(); if (!v) return '';
+  let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  if (m) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
+  m = v.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
+  if (m) { const y = m[3].length === 2 ? '20' + m[3] : m[3]; return `${y}-${pad(m[2])}-${pad(m[1])}`; }
+  return '';
+}
+function leerMonto(v) {
+  let t = String(v || '').replace(/[^\d.,-]/g, ''); if (!t) return 0;
+  const p = t.lastIndexOf('.'), c = t.lastIndexOf(',');
+  if (p > -1 && c > -1) t = p > c ? t.replace(/,/g, '') : t.replace(/\./g, '').replace(',', '.');
+  else { const s = p > -1 ? '.' : c > -1 ? ',' : null;
+    if (s) { const partes = t.split(s); t = partes.length > 2 || partes[partes.length - 1].length === 3 ? partes.join('') : partes.join('.'); } }
+  return Number(t) || 0;
+}
+const elegir = (v, lista, defecto) => { const n = normal(v); return lista.find(x => normal(x) === n) || lista.find(x => n && normal(x).startsWith(n.slice(0, 4))) || defecto; };
+function importarCartera(texto) {
+  const filas = leerCSV(texto);
+  if (filas.length < 2) { toast('El archivo no tiene filas de clientes.', { tono: 'bad' }); return; }
+  const cab = filas[0].map(normal);
+  const idx = Object.fromEntries(COLUMNAS_CARTERA.map(([k, t]) => [k, cab.findIndex(h => h === normal(t) || h === normal(k) || (k === 'poliza' && h.includes('poliza')) || (k === 'prima' && h.startsWith('prima')))]));
+  if (idx.nombre < 0) { toast('No encontré la columna "Nombre completo". Usa la plantilla.', { tono: 'bad' }); return; }
+  const val = (f, k) => idx[k] >= 0 ? String(f[idx[k]] || '').trim() : '';
+  const nuevos = filas.slice(1).filter(f => val(f, 'nombre')).map(f => {
+    const formaPago = elegir(val(f, 'formaPago'), Object.keys(FORMAS), 'Anual');
+    const inicioVigencia = leerFecha(val(f, 'inicioVigencia'));
+    const aseg = val(f, 'aseguradora');
+    const c = { id: uid(), nombre: val(f, 'nombre'), telefono: val(f, 'telefono'), whatsapp: val(f, 'whatsapp') || val(f, 'telefono'), email: val(f, 'email'),
+      ocupacion: '', edad: '36-45', civil: 'Casado(a)', hijos: 0, prioridad: elegir(val(f, 'prioridad'), PRIORIDADES, 'Media'),
+      ramo: elegir(val(f, 'ramo'), RAMOS, 'Vida'), aseguradora: elegir(aseg, ALIADAS, aseg), poliza: val(f, 'poliza'), formaPago, inicioVigencia,
+      proxVencimiento: leerFecha(val(f, 'proxVencimiento')), prima: leerMonto(val(f, 'prima')), moneda: elegir(val(f, 'moneda'), MONEDAS, 'MXN'),
+      etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0, fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: hoy() };
+    if (c.poliza && c.inicioVigencia) {
+      c.etapa = 'emitida'; c.estado = 'Cliente Activo'; c.fueCliente = true;
+      if (!c.proxVencimiento) c.proxVencimiento = reciboVigente(c.inicioVigencia, c.formaPago);
+    }
+    return c;
+  });
+  if (!nuevos.length) { toast('No encontré clientes con nombre en el archivo.', { tono: 'bad' }); return; }
+  const nClientes = nuevos.filter(esCliente).length;
+  if (!confirm(`Voy a agregar ${nuevos.length} contactos: ${nClientes} con póliza (van a Posventa) y ${nuevos.length - nClientes} sin póliza (van a Ventas).${db.esDemo ? '\n\nTambién quitaré los contactos de ejemplo (los que tú agregaste se quedan).' : ''}\n\n¿Continuar?`)) return;
+  foto();
+  if (db.esDemo) { db.contactos = db.contactos.filter(c => !c.demo); db.esDemo = false; }
+  db.contactos.push(...nuevos);
+  guardar(); cerrarModal(); location.hash = nClientes ? 'posventa' : 'ventas'; render();
+  toast(`${nuevos.length} contactos cargados`, { deshacer: true });
 }
 
 /* =========================================================
@@ -1078,6 +1175,16 @@ const acciones = {
     foto(); db.contactos = db.contactos.filter(x => x.id !== d.id); guardar(); cerrarModal(); render();
     toast('Contacto eliminado', { deshacer: true });
   },
+  plantilla: () => {
+    const filas = [COLUMNAS_CARTERA.map(c => c[1]),
+      ['Ana María Gómez', '5512345678', '5512345678', 'ana@correo.com', 'Vida', 'MetLife', 'VID-12345', 'Anual', '15/03/2024', '', '24000', 'MXN', 'Media'],
+      ['Carlos Pérez', '5598765432', '5598765432', '', 'Retiro', 'Skandia', 'RET-778', 'Mensual', '01/08/2025', '01/11/2026', '1800', 'USD', 'Alta']];
+    const csv = '\ufeff' + filas.map(f => f.map(v => /[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v).join(';')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'plantilla-cartera-lirios.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    toast('Plantilla descargada. Ábrela con Excel.');
+  },
   exportar: () => {
     const blob = new Blob([JSON.stringify(db, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
@@ -1086,8 +1193,8 @@ const acciones = {
     toast('Respaldo descargado. Guárdalo en tu Drive o correo.');
   },
   vaciar: () => {
-    if (!confirm('¿Borrar los 10 contactos de ejemplo? Podrás recuperarlos desde Ajustes.')) return;
-    foto(); db.contactos = []; db.esDemo = false; guardar(); cerrarModal(); render(); toast('Listo, empieza a agregar tus contactos', { deshacer: true });
+    if (!confirm('¿Borrar los contactos de ejemplo? Los que tú agregaste se quedan.')) return;
+    foto(); db.contactos = db.contactos.filter(c => !c.demo); db.esDemo = false; guardar(); cerrarModal(); render(); toast('Ejemplos borrados. Tus contactos siguen aquí', { deshacer: true });
   },
   demo: () => {
     if (db.contactos.length && !db.esDemo && !confirm('Esto reemplaza tus contactos por los ejemplos. ¿Descargaste tu respaldo?')) return;
@@ -1103,7 +1210,7 @@ const formularios = {
     const datos = {
       nombre, telefono: fd.get('telefono').trim(), whatsapp: fd.get('whatsapp').trim(), email: fd.get('email').trim(), ocupacion: fd.get('ocupacion').trim(),
       edad: fd.get('edad'), civil: fd.get('civil'), hijos: Number(fd.get('hijos')) || 0, prioridad: fd.get('prioridad'), ramo: fd.get('ramo'),
-      prima: Number(fd.get('prima')) || 0, moneda: fd.get('moneda'), aseguradora: fd.get('aseguradora').trim(), poliza: fd.get('poliza').trim(),
+      prima: Number(fd.get('prima')) || 0, moneda: fd.get('moneda'), aseguradora: fd.get('aseguradoraSel') === 'Otra' ? fd.get('aseguradoraOtra').trim() : fd.get('aseguradoraSel'), poliza: fd.get('poliza').trim(),
       formaPago: fd.get('formaPago'), inicioVigencia: fd.get('inicioVigencia'), proxVencimiento: fd.get('proxVencimiento'),
     };
     if (!datos.proxVencimiento && datos.inicioVigencia) datos.proxVencimiento = reciboVigente(datos.inicioVigencia, datos.formaPago);
@@ -1118,7 +1225,7 @@ const formularios = {
       if (moverEtapa(c, fd.get('etapa') || 'prospecto') === 'pendiente') { render(); return; }
     }
     guardar(); render(); abrirDetalle(c.id);
-    toast(f.dataset.id ? 'Cambios guardados' : `${c.nombre.split(' ')[0]} agregado`, { deshacer: true });
+    toast(f.dataset.id ? 'Cambios guardados' : `${c.nombre.split(' ')[0]} ya está en tu CRM`, { deshacer: true });
   },
   cita: (f, fd) => {
     const c = getC(fd.get('cid')); if (!c) return;
@@ -1202,6 +1309,13 @@ document.addEventListener('change', e => {
     guardar(); render(); abrirDetalle(c.id, true); toast(`Movido a ${el.selectedOptions[0].text}`, { deshacer: true });
   }
   if (el.dataset.change === 'estado') { foto(); const c = getC(el.dataset.id); c.estado = el.value; guardar(); render(); abrirDetalle(c.id, true); toast('Estado actualizado', { deshacer: true }); }
+  if (el.dataset.change === 'aseg') { const f = el.closest('form'); const otra = f.querySelector('[data-otra]'); otra.classList.toggle('hidden', el.value !== 'Otra'); if (el.value === 'Otra') f.aseguradoraOtra.focus(); }
+  if (el.dataset.change === 'etapa-form' && ['tramite', 'emitida'].includes(el.value)) el.closest('form').querySelector('[data-poliza]').open = true;
+  if (el.dataset.change === 'cartera') {
+    const file = el.files[0]; if (!file) return;
+    file.text().then(t => importarCartera(t)).catch(() => toast('No pude leer ese archivo. Guárdalo desde Excel como "CSV".', { tono: 'bad' }));
+    el.value = '';
+  }
   if (el.dataset.change === 'importar') {
     const file = el.files[0]; if (!file) return;
     file.text().then(t => {
