@@ -276,3 +276,11 @@ estructural. Pendiente de verdad: una prueba manual del flujo completo (tocar el
 al checkout real de Hotmart con el plan correcto preseleccionado → comprar de prueba → volver a
 la app con acceso) — esa es la Prueba E2E del Paso F de `18-VENTA-HOTMART.md`, no una revisión
 visual.
+
+## Vigesimoquinta re-verificación (2026-10-17 — fecha límite opcional en Tu meta)
+
+El hook marcó `app/app/meta/page.tsx` como más nuevo que este veredicto. Verificado por grep:
+ese archivo es la pantalla "Tu meta" (app interna) — no tiene relación con el paywall, no lo
+importa ni es importado por `app/paywall/page.tsx` ni por `components/funnel/*`. El cambio
+(fecha límite opcional al crear/editar una meta) es ajeno por completo a esta pantalla. Cero
+impacto en el paywall; la certificación LISTA sigue vigente.
