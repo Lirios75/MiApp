@@ -104,9 +104,9 @@ const STORAGE_KEY = 'lirios-crm-v1';
 const VENTAS = [
   { id: 'prospecto', nombre: 'Por llamar', sub: 'Prospectos' },
   { id: 'cita1', nombre: 'Cita 1ª', sub: 'Descubrimiento' },
-  { id: 'propuesta', nombre: 'Propuesta', sub: 'Elaboración / estudio' },
+  { id: 'propuesta', nombre: 'Propuesta', sub: 'Elaboración de la propuesta' },
   { id: 'cita2', nombre: 'Cita 2ª', sub: 'Presentación y cierre' },
-  { id: 'tramite', nombre: 'En trámite', sub: 'Emisión' },
+  { id: 'tramite', nombre: 'Radicada', sub: 'En estudio de la aseguradora' },
   { id: 'emitida', nombre: 'Póliza emitida', sub: 'Pasa a posventa' },
   { id: 'standby', nombre: 'Standby', sub: 'Reagendar a futuro' },
 ];
@@ -117,7 +117,7 @@ const POSVENTA = [
   { id: 'gracia', nombre: 'Periodo de gracia', sub: 'Recibo vencido', tono: 'bad' },
   { id: 'conservada', nombre: 'Conservada / renovada', sub: 'Ciclo completado', tono: 'ok' },
 ];
-const ESTADOS = ['Prospecto Frío','Contactado','Cita 1 Agendada','Cita 1 Realizada','Cita 2 Agendada','Cita 2 Realizada','En Trámite','Cliente Activo','En Renovación','Cancelada','Standby'];
+const ESTADOS = ['Prospecto Frío','Contactado','Cita 1 Agendada','Cita 1 Realizada','Cita 2 Agendada','Cita 2 Realizada','Radicada (en estudio)','Cliente Activo','En Renovación','Cancelada','Standby'];
 const RAMOS = ['Vida','Retiro','Gastos Médicos','Ahorro/Inversión','Hogar'];
 const CAPAS = ['Protección','Patrimonio','Liquidez','Retiro','Salud'];
 const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
@@ -175,11 +175,14 @@ function proximoAniversario(inicio) {
 }
 
 /* ---------- Dinero ---------- */
-/* Todo se suma en pesos colombianos; los dólares se convierten con la tasa de Ajustes */
-function aCOP(monto, moneda) {
-  const n = Number(monto) || 0;
-  return moneda === 'USD' ? n * (Number(db.ajustes.usd) || 0) : n;
+/* Pesos y dólares nunca se mezclan: cada total se lleva por moneda */
+function sumarPorMoneda(items, monto, moneda) {
+  const t = { USD: 0, COP: 0 };
+  items.forEach(x => { t[moneda(x) === 'USD' ? 'USD' : 'COP'] += Number(monto(x)) || 0; });
+  return t;
 }
+const textosMoneda = t => [t.USD && fDinero(Math.round(t.USD), 'USD', true), t.COP && fDinero(t.COP, 'COP', true)].filter(Boolean);
+const fSumaMonedas = t => textosMoneda(t).join(' · ') || '$0';
 function fDinero(monto, moneda = 'COP', compacto = false) {
   const n = Number(monto) || 0, pre = moneda === 'USD' ? 'US$' : '$';
   const num = (v, d = 0) => v.toLocaleString('es-CO', { maximumFractionDigits: d });
@@ -659,12 +662,12 @@ function vistaHoy() {
     <section class="card p-5 lg:col-span-3" aria-labelledby="h-kpi">
       <h2 id="h-kpi" class="sr-only">Métricas clave</h2>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:divide-x divide-line">
-        ${kpiBloque('Prima en ventas', fDinero(k.pipeline, 'COP', true), `${k.nPipeline} oportunidades abiertas`, 'trending-up', 'text-brand')}
-        ${kpiBloque('Prima conservada', fDinero(k.conservada, 'COP', true), `${cartera.length} pólizas en cartera`, 'shield-check', 'text-ok')}
-        ${kpiBloque('En riesgo', fDinero(k.riesgo, 'COP', true), `${sem.bad} ${sem.bad === 1 ? 'recibo vencido' : 'recibos vencidos'}`, 'alert-triangle', 'text-bad')}
+        ${kpiBloque('Prima en ventas', valorMonedas(k.pipeline), `${k.nPipeline} oportunidades abiertas`, 'trending-up', 'text-brand')}
+        ${kpiBloque('Prima conservada', valorMonedas(k.conservada), `${cartera.length} pólizas vigentes al año`, 'shield-check', 'text-ok')}
+        ${kpiBloque('En riesgo', valorMonedas(k.riesgo), `${sem.bad} ${sem.bad === 1 ? 'recibo vencido' : 'recibos vencidos'}`, 'alert-triangle', 'text-bad')}
         ${kpiBloque('Persistencia', k.persistencia === null ? '—' : `${k.persistencia}%`, `${k.renovadas} renovadas · ${k.canceladas} canceladas`, 'repeat', 'text-ink')}
       </div>
-      <p class="text-[11.5px] text-ink3 mt-4">Montos anuales en pesos colombianos; los dólares se convierten a $${Number(db.ajustes.usd).toLocaleString('es-CO')} por US$1. Cámbialo en Ajustes.</p>
+      <p class="text-[11.5px] text-ink3 mt-4">Primas anuales. Dólares y pesos se suman por separado, sin convertir.</p>
     </section>
 
     <section class="card p-5" aria-labelledby="h-conv">
@@ -702,8 +705,9 @@ function vistaHoy() {
 }
 function kpiBloque(label, valor, sub, ic, color) {
   return `<div class="lg:px-5 first:lg:pl-0 min-w-0"><p class="label flex items-center gap-1.5">${icon(ic, `w-3.5 h-3.5 ${color}`)} ${label}</p>
-    <p class="font-display text-[26px] md:text-[30px] leading-tight mt-1 ${color} truncate" data-count>${valor}</p><p class="text-[12.5px] text-ink3 truncate">${sub}</p></div>`;
+    <p class="font-display text-[24px] md:text-[28px] leading-tight mt-1 ${color} tabular-nums">${valor}</p><p class="text-[12.5px] text-ink3 truncate">${sub}</p></div>`;
 }
+const valorMonedas = t => (textosMoneda(t).length ? textosMoneda(t) : ['$0']).map(v => `<span class="block whitespace-nowrap">${v}</span>`).join('');
 function kpis() {
   const cs = db.contactos;
   const pipeline = cs.filter(c => enVentas(c) && c.etapa !== 'standby');
@@ -712,9 +716,9 @@ function kpis() {
   const renovadas = todas.reduce((s, p) => s + (Number(p.renovaciones) || 0), 0);
   const canceladas = todas.filter(p => p.estado === 'cancelada').length;
   return {
-    pipeline: pipeline.reduce((s, c) => s + aCOP(c.prima, c.moneda), 0), nPipeline: pipeline.length,
-    conservada: cartera.reduce((s, { p }) => s + aCOP(p.prima, p.moneda), 0),
-    riesgo: cartera.filter(({ p }) => cubeta(p) === 'gracia').reduce((s, { p }) => s + aCOP(primaRecibo(p), p.moneda), 0),
+    pipeline: sumarPorMoneda(pipeline, c => c.prima, c => c.moneda), nPipeline: pipeline.length,
+    conservada: sumarPorMoneda(cartera, x => x.p.prima, x => x.p.moneda),
+    riesgo: sumarPorMoneda(cartera.filter(({ p }) => cubeta(p) === 'gracia'), x => primaRecibo(x.p), x => x.p.moneda),
     renovadas, canceladas, persistencia: renovadas + canceladas ? Math.round(renovadas / (renovadas + canceladas) * 100) : null,
     n1: cs.filter(c => c.hitos?.cita1).length, n2: cs.filter(c => c.hitos?.cita2).length, n3: cs.filter(c => c.hitos?.cierre).length,
   };
@@ -745,9 +749,9 @@ function vacioMini(ic, t, s) {
 function vistaVentas() {
   const lista = db.contactos.filter(c => c.etapa !== 'cancelada');
   const porEtapa = id => lista.filter(c => c.etapa === id && (id !== 'emitida' || (c.hitos?.cierre && diasEntre(c.hitos.cierre, hoy()) <= 30)));
-  const total = lista.filter(c => enVentas(c) && c.etapa !== 'standby').reduce((s, c) => s + aCOP(c.prima, c.moneda), 0);
+  const total = sumarPorMoneda(lista.filter(c => enVentas(c) && c.etapa !== 'standby'), c => c.prima, c => c.moneda);
   return `
-  ${encabezado('Pipeline de ventas', `${fDinero(total, 'COP', true)} en prima anual por cerrar · arrastra las tarjetas para moverlas`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('plus', 'w-4 h-4')} Prospecto</button>`)}
+  ${encabezado('Pipeline de ventas', `${fSumaMonedas(total)} en prima anual por cerrar · arrastra las tarjetas para moverlas`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('plus', 'w-4 h-4')} Prospecto</button>`)}
   <div class="md:hidden scroll-x -mx-4 px-4 flex gap-2 pb-3 mb-1">
     ${VENTAS.map(e => `<button class="chip" data-act="etapa-movil" data-etapa="${e.id}" aria-pressed="${ui.etapaMovil === e.id}">${e.nombre} <span class="opacity-70">${porEtapa(e.id).length}</span></button>`).join('')}
   </div>
@@ -755,11 +759,11 @@ function vistaVentas() {
     <div class="md:grid md:grid-flow-col md:auto-cols-[268px] gap-3 stagger">
       ${VENTAS.map(e => {
         const items = porEtapa(e.id);
-        const suma = items.reduce((s, c) => s + aCOP(c.prima, c.moneda), 0);
+        const suma = textosMoneda(sumarPorMoneda(e.id === 'emitida' ? [] : items, c => c.prima, c => c.moneda)).join(' · ');
         return `<section class="kcol ${ui.etapaMovil === e.id ? '' : 'hidden md:flex'}" data-drop="${e.id}" aria-label="${e.nombre}">
           <header class="px-1.5 pt-1 pb-1.5">
             <div class="flex items-center justify-between gap-2"><h2 class="font-sans! text-[14px] font-semibold">${e.nombre}</h2><span class="tag bg-surface text-ink2">${items.length}</span></div>
-            <p class="text-[12px] text-ink3">${e.sub}${suma ? ` · ${fDinero(suma, 'COP', true)}` : ''}</p>
+            <p class="text-[12px] text-ink3">${e.sub}${suma ? ` · ${suma}` : ''}</p>
           </header>
           ${items.length ? items.map(tarjetaVenta).join('') : `<p class="text-[12.5px] text-ink3 text-center py-6 px-3 border border-dashed border-line rounded-xl">${e.id === 'prospecto' ? 'Agrega a tu próximo prospecto con el botón +' : 'Suelta aquí una tarjeta'}</p>`}
         </section>`;
@@ -1260,12 +1264,6 @@ function abrirAjustes() {
         <label class="btn-primary">${icon('file-up', 'w-4 h-4')} Subir Excel<input type="file" accept=".xlsx,.xls,.csv" class="sr-only" data-change="cartera"></label>
       </div>
     </section>
-    <form data-form="ajustes" class="card p-4 flex flex-col gap-3">
-      <p class="font-medium text-[14.5px]">Dólar para tus métricas</p>
-      <p class="text-[13px] text-ink2 -mt-2">Las pólizas en dólares se suman a tus totales en pesos con este valor. Actualízalo cuando quieras.</p>
-      <label class="field"><span>US$1 = (pesos colombianos)</span><input class="input" type="number" step="1" min="0" name="usd" value="${db.ajustes.usd}" inputmode="decimal"></label>
-      <button class="btn-soft">${icon('check', 'w-4 h-4')} Guardar valores</button>
-    </form>
     <section class="flex flex-col gap-2">
       ${db.esDemo ? `<button class="btn-soft" data-act="vaciar">${icon('eraser', 'w-4 h-4')} Borrar los ejemplos y empezar con mis clientes</button>` : ''}
       <button class="btn-ghost" data-act="demo">${icon('rotate-ccw', 'w-4 h-4')} Volver a cargar los ejemplos</button>
@@ -1483,7 +1481,7 @@ function moverEtapa(c, etapa) {
   } else if (etapa === 'standby') c.estado = 'Standby';
   else if (etapa === 'cancelada') { c.estado = 'Cancelada'; vigentes(c).forEach(p => (p.estado = 'cancelada')); }
   else {
-    const mapa = { prospecto: c.estado === 'Contactado' ? 'Contactado' : 'Prospecto Frío', cita1: 'Cita 1 Agendada', propuesta: 'Cita 1 Realizada', cita2: 'Cita 2 Agendada', tramite: 'En Trámite' };
+    const mapa = { prospecto: c.estado === 'Contactado' ? 'Contactado' : 'Prospecto Frío', cita1: 'Cita 1 Agendada', propuesta: 'Cita 1 Realizada', cita2: 'Cita 2 Agendada', tramite: 'Radicada (en estudio)' };
     c.estado = mapa[etapa];
   }
   c.etapa = etapa;
@@ -1519,7 +1517,7 @@ const acciones = {
     x.status = 'asistio';
     let msg = 'Asistencia registrada';
     if (x.tipo === 'cita1') { c.hitos = { ...c.hitos, cita1: x.fecha }; if (enVentas(c)) { moverEtapa(c, 'propuesta'); msg = `${c.nombre.split(' ')[0]} pasó a Propuesta`; } }
-    if (x.tipo === 'cita2') { c.hitos = { ...c.hitos, cita2: x.fecha }; if (enVentas(c)) { moverEtapa(c, 'tramite'); c.estado = 'En Trámite'; msg = `${c.nombre.split(' ')[0]} pasó a En trámite`; } }
+    if (x.tipo === 'cita2') { c.hitos = { ...c.hitos, cita2: x.fecha }; if (enVentas(c)) { moverEtapa(c, 'tramite'); c.estado = 'Radicada (en estudio)'; msg = `${c.nombre.split(' ')[0]} pasó a Radicada`; } }
     guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true);
     toast(msg, { deshacer: true });
   },
@@ -1538,7 +1536,7 @@ const acciones = {
     foto();
     const c = getC(d.id);
     c.polizas = c.polizas.filter(p => p.id !== d.pol);
-    if (esCliente(c) && !vigentes(c).length) { c.etapa = 'tramite'; c.estado = 'En Trámite'; }
+    if (esCliente(c) && !vigentes(c).length) { c.etapa = 'tramite'; c.estado = 'Radicada (en estudio)'; }
     guardar(); render(); abrirDetalle(c.id); toast('Póliza borrada', { deshacer: true });
   },
   eliminar: async d => {
@@ -1651,10 +1649,6 @@ const formularios = {
     c.notas.push({ id: uid(), fecha: fd.get('fecha') || hoy(), hora: fd.get('hora'), texto });
     guardar(); render(); abrirDetalle(c.id);
     toast('Nota guardada', { deshacer: true });
-  },
-  ajustes: (f, fd) => {
-    db.ajustes.usd = Number(fd.get('usd')) || db.ajustes.usd;
-    guardar(); render(); cerrarModal(); toast('Valores actualizados');
   },
 };
 
