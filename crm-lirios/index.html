@@ -583,7 +583,7 @@ function vistaCargando() {
   return `<div class="flex flex-col gap-4" aria-busy="true">
     <div class="h-9 w-40 rounded-xl bg-sunken animate-pulse"></div>
     <div class="h-4 w-64 max-w-full rounded bg-sunken animate-pulse"></div>
-    <div class="grid gap-4 lg:grid-cols-3"><div class="h-48 rounded-2xl bg-sunken animate-pulse lg:col-span-2"></div><div class="h-48 rounded-2xl bg-sunken animate-pulse"></div></div>
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3"><div class="h-48 rounded-2xl bg-sunken animate-pulse lg:col-span-2"></div><div class="h-48 rounded-2xl bg-sunken animate-pulse"></div></div>
     <p class="text-[13.5px] text-ink2 flex items-center gap-2">${icon('cloud-download', 'w-4 h-4 text-brand')} Trayendo tu cartera desde tu cuenta…</p>
   </div>`;
 }
@@ -623,8 +623,8 @@ function vistaHoy() {
   return `
   ${encabezado('Tu día', `${fFechaLarga(T)} · ${deHoy.length ? `${deHoy.length} ${deHoy.length === 1 ? 'cita' : 'citas'} hoy` : 'sin citas hoy'}${sem.bad ? ` · <span class="text-bad font-medium">${sem.bad} en periodo de gracia</span>` : ''}`)}
 
-  <div class="grid gap-4 lg:grid-cols-3 stagger">
-    <section class="card p-5 lg:col-span-2 bg-brand! text-on-brand border-brand!" aria-labelledby="h-citashoy">
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-3 stagger">
+    <section class="card p-5 lg:col-span-2 min-w-0 bg-brand! text-on-brand border-brand!" aria-labelledby="h-citashoy">
       <div class="flex items-center justify-between gap-3 mb-4">
         <h2 id="h-citashoy" class="text-[20px]">Citas de hoy</h2>
         <a href="#citas" class="text-[13px] text-on-brand2 hover:text-on-brand flex items-center gap-1">Agenda ${icon('arrow-right', 'w-3.5 h-3.5')}</a>
@@ -645,6 +645,7 @@ function vistaHoy() {
           <span class="min-w-0 flex-1"><span class="block text-[14px] truncate">${esc(x.contacto.nombre)}</span><span class="block text-[12px] text-on-brand2 truncate">${TIPOS_CITA[x.tipo]} · ${fHora(x.hora)}</span></span>
           ${icon(x.modalidad === 'Virtual' ? 'video' : 'map-pin', 'w-4 h-4 text-on-brand2 shrink-0')}
         </button></li>`).join('')}</ul>` : ''}
+      ${resumenSemana()}
     </section>
 
     <section class="card p-5" aria-labelledby="h-sem">
@@ -702,6 +703,22 @@ function vistaHoy() {
           ${c.whatsapp || c.telefono ? `<a class="btn-soft btn-sm" href="${waCumple(c)}" target="_blank" rel="noopener" aria-label="Felicitar por WhatsApp">${icon('message-circle', 'w-4 h-4')}</a>` : ''}
         </li>`).join('')}</ul>
     </section>` : ''}
+  </div>`;
+}
+/* Resumen de la semana en curso dentro de la tarjeta de citas */
+function resumenSemana() {
+  const [ini, fin] = rangoPeriodo('semana', hoy());
+  const s = statsCitas(ini, fin);
+  const datos = [['Agendadas', s.total], ['Efectivas', s.ef], ['Pendientes', s.pen], ['Reagendadas', s.reag], ['Plantón o cancelada', s.no + s.can]];
+  return `<div class="mt-5 pt-4 border-t border-white/15">
+    <div class="flex items-center justify-between gap-3 mb-3">
+      <h3 class="font-sans! text-[12px] font-medium uppercase tracking-[0.06em] text-on-brand2 min-w-0 truncate">Esta semana <span class="normal-case tracking-normal">(${fFecha(ini)} – ${fFecha(fin)})</span></h3>
+      <button class="text-[13px] text-on-brand2 hover:text-on-brand flex items-center gap-1 shrink-0" data-act="ver-stats" aria-label="Ver estadísticas de citas">Ver más ${icon('arrow-right', 'w-3.5 h-3.5')}</button>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
+      ${datos.map(([n, v]) => `<div class="min-w-0"><p class="font-display text-[24px] leading-none tabular-nums">${v}</p><p class="text-[11.5px] text-on-brand2 mt-1 leading-tight">${n}</p></div>`).join('')}
+    </div>
+    <p class="text-[12.5px] text-on-brand2 mt-3">${s.efectividad === null ? 'Registra el resultado de tus citas para ver tu efectividad.' : `Efectividad de la semana: <strong class="font-semibold text-on-brand">${s.efectividad}%</strong>`}</p>
   </div>`;
 }
 function kpiBloque(label, valor, sub, ic, color) {
@@ -916,7 +933,7 @@ function vistaEstadisticas() {
     <p class="text-[13.5px] text-ink2 mt-5 pt-4 border-t border-line">${insight}</p>
   </section>
 
-  <div class="grid gap-4 lg:grid-cols-3">
+  <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
     <section class="card p-5 lg:col-span-2 min-w-0" aria-labelledby="h-graf">
       ${tipo === 'dia' ? `<h2 id="h-graf" class="text-[20px] mb-2">Citas del día</h2>
         ${s.en.length ? `<ul class="divide-y divide-line">${s.en.sort((a, b) => a.hora.localeCompare(b.hora)).map(x => filaCita(x)).join('')}</ul>` : vacioMini('calendar', 'Sin citas este día', 'Usa las flechas para ver otros días.')}`
@@ -1624,6 +1641,7 @@ const acciones = {
   'stats-tipo': d => { ui.statsTipo = d.t; render(); },
   'stats-mover': d => { ui.statsRef = moverPeriodo(ui.statsTipo, ui.statsRef, Number(d.delta)); render(); },
   'stats-hoy': () => { ui.statsRef = hoy(); render(); },
+  'ver-stats': () => { ui.citasModo = 'stats'; ui.statsTipo = 'semana'; ui.statsRef = hoy(); if (location.hash === '#citas') render(); else location.hash = 'citas'; },
   'stats-dia': d => { ui.statsTipo = 'dia'; ui.statsRef = d.d; render(); },
   'cancelar-cita': async d => {
     if (!(await confirmar('¿Cancelar esta cita? Quedará como cancelada en tus estadísticas.', { si: 'Sí, cancelar la cita', no: 'Volver', peligro: true }))) return;
