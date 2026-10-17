@@ -378,6 +378,11 @@ Paid ads explícitamente NO se activa todavía (sin CAC/LTV reales, per regla de
 Siguiente paso sugerido: reclutar 3-10 primeros afiliados del nicho a mano (no esperar a que
 lleguen solos del marketplace) — ver PASO 4 de `34-ADQUISICION-Y-TRAFICO.md` cuando ella quiera
 retomar este frente.
+**Material de divulgación SUBIDO**: la usuaria guardó el contenido de `kit-afiliados.md` en un
+Documento de Google (carpeta "Material Afiliados Respira" en su Drive, compartido como "cualquier
+persona con el enlace, lector") y agregó ese link en Hotmart → Programa de Afiliados →
+Configuraciones → Materiales para Afiliados. Programa de Afiliados queda 100% operativo:
+activado, comisión 35% recurrente, correo de contacto correcto, descripción y material subidos.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
