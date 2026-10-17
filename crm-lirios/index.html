@@ -113,7 +113,8 @@ const POSVENTA = [
   { id: 'conservada', nombre: 'Conservada / renovada', sub: 'Ciclo completado', tono: 'ok' },
 ];
 const ESTADOS = ['Prospecto Frío','Contactado','Cita 1 Agendada','Cita 1 Realizada','Cita 2 Agendada','Cita 2 Realizada','En Trámite','Cliente Activo','En Renovación','Cancelada','Standby'];
-const RAMOS = ['Vida','Retiro','Gastos Médicos','Ahorro/Inversión'];
+const RAMOS = ['Vida','Retiro','Gastos Médicos','Ahorro/Inversión','Hogar'];
+const CAPAS = ['Protección','Patrimonio','Liquidez','Retiro','Salud'];
 const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
 const MONEDAS = [['COP', 'Pesos (COP)'], ['USD', 'Dólares (USD)']];
 const CODIGOS_MONEDA = MONEDAS.map(m => m[0]);
@@ -128,7 +129,7 @@ const TIPOS_CITA = {
   anual: 'Revisión anual',
   posventa: 'Seguimiento posventa',
 };
-const RAMO_ICON = { 'Vida': 'heart-handshake', 'Retiro': 'sunset', 'Gastos Médicos': 'stethoscope', 'Ahorro/Inversión': 'piggy-bank' };
+const RAMO_ICON = { 'Vida': 'heart-handshake', 'Retiro': 'sunset', 'Gastos Médicos': 'stethoscope', 'Ahorro/Inversión': 'piggy-bank', 'Hogar': 'home' };
 
 /* ---------- Fechas (siempre YYYY-MM-DD en hora local) ---------- */
 const pad = n => String(n).padStart(2, '0');
@@ -181,7 +182,6 @@ function fDinero(monto, moneda = 'COP', compacto = false) {
   if (compacto && n >= 1e6) return `${pre}${num(n / 1e6, 1)} M`;
   return pre + num(n, moneda === 'USD' ? 2 : 0);
 }
-const primaRecibo = c => (Number(c.prima) || 0) / (12 / (FORMAS[c.formaPago] || 12));
 
 /* ---------- Utilidades ---------- */
 const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
@@ -192,32 +192,39 @@ const soloDigitos = s => String(s || '').replace(/\D/g, '');
 const icon = (name, cls = '') => `<i data-lucide="${name}" class="${cls}" aria-hidden="true"></i>`;
 
 /* ---------- Reglas de negocio ---------- */
+/* Un contacto puede tener varias pólizas; cobranza, renovación y semáforo se miden por póliza */
 const esCliente = c => c.etapa === 'emitida';
 const enVentas = c => !esCliente(c) && c.etapa !== 'cancelada';
+const vigentes = c => (c.polizas || []).filter(p => p.estado !== 'cancelada');
+const polizasCartera = () => db.contactos.filter(esCliente).flatMap(c => vigentes(c).map(p => ({ c, p })));
+const primaRecibo = p => (Number(p.prima) || 0) / (12 / (FORMAS[p.formaPago] || 12));
 
-function cubeta(c) {
-  if (!esCliente(c) || !c.proxVencimiento) return 'activa';
-  const dv = diasHasta(c.proxVencimiento);
-  if (c.gracia || dv < 0) return 'gracia';
+function cubeta(p) {
+  if (!p.proxVencimiento) return 'activa';
+  const dv = diasHasta(p.proxVencimiento);
+  if (p.gracia || dv < 0) return 'gracia';
   if (dv <= 15) return 'pago';
-  const ani = c.inicioVigencia ? proximoAniversario(c.inicioVigencia) : null;
+  const ani = p.inicioVigencia ? proximoAniversario(p.inicioVigencia) : null;
   if (ani && diasHasta(ani) <= 60) return 'renovacion';
-  if (c.renovadoEn && diasEntre(c.renovadoEn, hoy()) <= 90) return 'conservada';
+  if (p.renovadoEn && diasEntre(p.renovadoEn, hoy()) <= 90) return 'conservada';
   return 'activa';
 }
-function semaforo(c) {
-  if (!esCliente(c)) return null;
-  const b = cubeta(c);
-  if (b === 'gracia') return 'bad';
-  const dv = c.proxVencimiento ? diasHasta(c.proxVencimiento) : 999;
-  const ani = c.inicioVigencia ? proximoAniversario(c.inicioVigencia) : null;
+function semaforo(p) {
+  if (cubeta(p) === 'gracia') return 'bad';
+  const dv = p.proxVencimiento ? diasHasta(p.proxVencimiento) : 999;
+  const ani = p.inicioVigencia ? proximoAniversario(p.inicioVigencia) : null;
   if (dv <= 15 || (ani && diasHasta(ani) < 30)) return 'warn';
   return 'ok';
+}
+const PESO_TONO = { bad: 3, warn: 2, ok: 1 };
+function semaforoContacto(c) {
+  if (!esCliente(c)) return null;
+  return vigentes(c).map(semaforo).sort((a, b) => PESO_TONO[b] - PESO_TONO[a])[0] || null;
 }
 function estadoDe(c) {
   if (c.etapa === 'cancelada') return 'Cancelada';
   if (c.etapa === 'standby') return 'Standby';
-  if (esCliente(c)) return cubeta(c) === 'renovacion' ? 'En Renovación' : 'Cliente Activo';
+  if (esCliente(c)) return vigentes(c).some(p => cubeta(p) === 'renovacion') ? 'En Renovación' : 'Cliente Activo';
   return c.estado || 'Prospecto Frío';
 }
 function proximaCita(c) {
@@ -226,11 +233,43 @@ function proximaCita(c) {
 function todasCitas() {
   return db.contactos.flatMap(c => (c.citas || []).map(ci => ({ ...ci, contacto: c })));
 }
-function lineaGracia(c) {
-  const dv = diasHasta(c.proxVencimiento);
+function lineaGracia(p) {
+  const dv = diasHasta(p.proxVencimiento);
   if (dv < -30) return `Vencido hace ${-dv} días · fuera de tolerancia`;
   if (dv < 0) return `Vencido hace ${-dv} días · quedan ${30 + dv} de gracia`;
   return 'Marcado en periodo de gracia';
+}
+function edadDe(nac) {
+  if (!nac) return null;
+  const n = parse(nac), t = new Date();
+  let e = t.getFullYear() - n.getFullYear();
+  if (t.getMonth() < n.getMonth() || (t.getMonth() === n.getMonth() && t.getDate() < n.getDate())) e--;
+  return e;
+}
+const rangoEdad = e => e == null ? '36-45' : e <= 25 ? '18-25' : e <= 35 ? '26-35' : e <= 45 ? '36-45' : e <= 55 ? '46-55' : e <= 65 ? '56-65' : '65+';
+function proximoCumple(nac) {
+  if (!nac) return null;
+  const n = parse(nac), y = new Date().getFullYear();
+  const f = iso(new Date(y, n.getMonth(), n.getDate()));
+  return f >= hoy() ? f : iso(new Date(y + 1, n.getMonth(), n.getDate()));
+}
+function textoBusqueda(c) {
+  return [c.nombre, c.cedula, c.prioridad, c.telefono, c.email, c.ramo, c.ciudad, ...(c.polizas || []).flatMap(p => [p.numero, p.aseguradora, p.plan])].join(' ').toLowerCase();
+}
+function nuevaPoliza(o = {}) {
+  return { id: uid(), numero: '', aseguradora: '', plan: '', capa: '', ramo: 'Vida', formaPago: 'Anual', inicioVigencia: '', proxVencimiento: '',
+    prima: 0, moneda: 'COP', sumaAsegurada: 0, estado: 'vigente', gracia: false, renovadoEn: null, renovaciones: 0, pagos: [], ...o };
+}
+/* Formato anterior: una sola póliza guardada dentro del contacto. Se pasa a la lista de pólizas */
+function aFormatoPolizas(c) {
+  if (Array.isArray(c.polizas)) return c;
+  const tiene = !!(c.poliza || c.inicioVigencia);
+  c.polizas = tiene ? [nuevaPoliza({ numero: c.poliza || '', aseguradora: c.aseguradora || '', ramo: c.ramo || 'Vida', formaPago: c.formaPago || 'Anual',
+    inicioVigencia: c.inicioVigencia || '', proxVencimiento: c.proxVencimiento || '', prima: c.prima || 0, moneda: c.moneda || 'COP',
+    estado: c.etapa === 'cancelada' ? 'cancelada' : 'vigente', gracia: !!c.gracia, renovadoEn: c.renovadoEn || null, renovaciones: c.renovaciones || 0, pagos: c.pagos || [] })] : [];
+  ['poliza', 'aseguradora', 'formaPago', 'inicioVigencia', 'proxVencimiento', 'gracia', 'renovadoEn', 'renovaciones', 'pagos', '_pendienteEmitir'].forEach(k => delete c[k]);
+  if (tiene) c.prima = 0;
+  return c;
 }
 
 /* ---------- Datos de ejemplo (fechas relativas al día en que se crean) ---------- */
@@ -263,12 +302,12 @@ function semilla() {
     c({ nombre: 'Alejandra Vega Ruiz', telefono: '311 229 0117', whatsapp: '3112290117', ocupacion: 'Médica pediatra', edad: '36-45', civil: 'Soltero(a)', hijos: 0,
       prioridad: 'Media', ramo: 'Gastos Médicos', prima: 6000000, moneda: 'COP', etapa: 'prospecto', estado: 'Contactado',
       notas: [nota(-1, 'Contestó el WhatsApp. Pidió que le llame el lunes después de consulta.')] }),
-    c({ nombre: 'Sofía Castañeda Lozano', telefono: '320 908 7332', whatsapp: '3209087332', email: 'sofia.cl@correo.mx', ocupacion: 'Contadora', edad: '36-45', hijos: 2,
+    c({ nombre: 'Sofía Castañeda Lozano', telefono: '320 908 7332', whatsapp: '3209087332', email: 'sofia.cl@correo.co', ocupacion: 'Contadora', cedula: '52114877', ciudad: 'Bogotá', nacimiento: addMonths(addDays(T, 9), -12 * 38), edad: '36-45', hijos: 2,
       prioridad: 'Media', ramo: 'Gastos Médicos', aseguradora: 'Allianz', poliza: 'GMM-0048213', formaPago: 'Mensual', inicioVigencia: inicioSofia,
       proxVencimiento: addMonths(inicioSofia, 1), prima: 7200000, moneda: 'COP', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       hitos: { cita1: addDays(T, -35), cita2: addDays(T, -22), cierre: addDays(T, -12) },
       notas: [nota(-12, 'Póliza emitida. Plan familiar, deducible de $2 millones. Le enviaré la tarjeta digital.')], pagos: [{ id: uid(), fecha: addDays(T, -12), monto: 600000, moneda: 'COP', recibo: inicioSofia }] }),
-    c({ nombre: 'Ricardo Ibarra Solís', telefono: '301 441 0778', whatsapp: '3014410778', email: 'ribarra@correo.mx', ocupacion: 'Empresario restaurantero', edad: '46-55', hijos: 3,
+    c({ nombre: 'Ricardo Ibarra Solís', telefono: '301 441 0778', whatsapp: '3014410778', email: 'ribarra@correo.co', ocupacion: 'Empresario restaurantero', cedula: '79554120', ciudad: 'Medellín', nacimiento: addMonths(addDays(T, 21), -12 * 51), edad: '46-55', hijos: 3,
       prioridad: 'Alta', ramo: 'Vida', aseguradora: 'MetLife', poliza: 'VID-77120934', formaPago: 'Trimestral', inicioVigencia: inicioRicardo,
       proxVencimiento: addDays(T, 6), prima: 3200, moneda: 'USD', etapa: 'emitida', estado: 'Cliente Activo', fueCliente: true,
       hitos: { cita1: addMonths(T, -17), cita2: addMonths(T, -16), cierre: inicioRicardo },
@@ -296,7 +335,7 @@ function semilla() {
       formaPago: 'Anual', inicioVigencia: addMonths(T, -14), prima: 1500000, moneda: 'COP', etapa: 'cancelada', estado: 'Cancelada', fueCliente: true,
       hitos: { cita1: addMonths(T, -16), cita2: addMonths(T, -15), cierre: addMonths(T, -14) },
       notas: [nota(-50, 'Canceló al aniversario: se quedó sin trabajo. Volver a contactar en 6 meses.')] }),
-  ];
+  ].map(aFormatoPolizas);
 }
 
 /* ---------- Guardado ---------- */
@@ -319,7 +358,7 @@ function estadoGuardado(ok) {
   });
   pintarIconos();
 }
-db = cargar() || { version: 2, ajustes: { usd: TASA_USD_INICIAL, nombre: 'Lirios Agencia de Vida' }, contactos: semilla(), esDemo: true };
+db = cargar() || { version: 3, ajustes: { usd: TASA_USD_INICIAL, nombre: 'Lirios Agencia de Vida' }, contactos: semilla(), esDemo: true };
 if (!cargar()) guardar();
 /* Versión 2: el CRM pasa a pesos colombianos + dólares (antes MXN/USD/UDIs) */
 if ((db.version || 1) < 2) {
@@ -331,6 +370,8 @@ if ((db.version || 1) < 2) {
   db.ajustes = { ...db.ajustes, usd: TASA_USD_INICIAL }; delete db.ajustes.udi;
   db.version = 2; guardar();
 }
+/* Versión 3: cada contacto guarda una lista de pólizas (antes, una sola dentro del contacto) */
+if (db.version < 3) { db.contactos.forEach(aFormatoPolizas); db.version = 3; guardar(); }
 /* Guardados anteriores no marcaban los ejemplos: se reconocen por nombre para no borrar contactos reales */
 if (db.esDemo && !db.contactos.some(c => c.demo)) {
   const nombres = new Set(semilla().map(c => c.nombre));
@@ -353,6 +394,7 @@ const ui = {
   detalle: null,
 };
 const getC = id => db.contactos.find(c => c.id === id);
+const getP = d => getC(d.id).polizas.find(p => p.id === d.pol);
 
 /* ---------- Toast ---------- */
 let toastTimer;
@@ -383,7 +425,7 @@ const NAV = [
 
 function render() {
   const app = document.getElementById('app');
-  const alertas = db.contactos.filter(c => esCliente(c) && cubeta(c) === 'gracia').length;
+  const alertas = polizasCartera().filter(x => cubeta(x.p) === 'gracia').length;
   app.innerHTML = `
   <aside class="hidden md:flex fixed inset-y-0 left-0 w-64 bg-brand text-on-brand flex-col p-4 gap-1 z-20">
     <div class="flex items-center gap-3 px-2 pt-2 pb-6">
@@ -440,11 +482,14 @@ function vistaHoy() {
   const semanaFin = addDays(T, 7);
   const deSemana = citas.filter(x => x.status === 'programada' && x.fecha > T && x.fecha <= semanaFin);
   const porReagendar = citas.filter(x => x.status === 'noasistio' || (x.status === 'programada' && x.fecha < T));
-  const clientes = db.contactos.filter(esCliente);
+  const cartera = polizasCartera();
+  const nClientes = new Set(cartera.map(x => x.c.id)).size;
   const sem = { bad: 0, warn: 0, ok: 0 };
-  clientes.forEach(c => sem[semaforo(c)]++);
+  cartera.forEach(x => sem[semaforo(x.p)]++);
   const k = kpis();
-  const cobranza = clientes.filter(c => ['pago', 'gracia'].includes(cubeta(c))).sort((a, b) => a.proxVencimiento.localeCompare(b.proxVencimiento));
+  const cobranza = cartera.filter(x => ['pago', 'gracia'].includes(cubeta(x.p))).sort((a, b) => a.p.proxVencimiento.localeCompare(b.p.proxVencimiento));
+  const cumples = db.contactos.filter(c => c.nacimiento && c.etapa !== 'cancelada').map(c => ({ c, f: proximoCumple(c.nacimiento) }))
+    .filter(x => diasHasta(x.f) <= 30).sort((a, b) => a.f.localeCompare(b.f));
 
   return `
   ${encabezado('Tu día', `${fFechaLarga(T)} · ${deHoy.length ? `${deHoy.length} ${deHoy.length === 1 ? 'cita' : 'citas'} hoy` : 'sin citas hoy'}${sem.bad ? ` · <span class="text-bad font-medium">${sem.bad} en periodo de gracia</span>` : ''}`)}
@@ -475,7 +520,7 @@ function vistaHoy() {
 
     <section class="card p-5" aria-labelledby="h-sem">
       <h2 id="h-sem" class="text-[20px] mb-1">Semáforo de cartera</h2>
-      <p class="text-[13px] text-ink2 mb-4">${clientes.length} pólizas vigentes</p>
+      <p class="text-[13px] text-ink2 mb-4">${cartera.length} pólizas vigentes · ${nClientes} clientes</p>
       <div class="flex flex-col gap-2">
         ${[['bad', 'Periodo de gracia', 'Riesgo de cancelación', 'gracia'], ['warn', 'Por vencer', 'Recibo ≤15 días o renovación ≤30', 'pago'], ['ok', 'Al día', 'Sin pendientes', 'activa']].map(([t, n, s, cub]) => `
           <a href="#posventa" data-cubeta="${cub}" class="flex items-center gap-3 rounded-xl p-2.5 hover:bg-sunken transition">
@@ -490,7 +535,7 @@ function vistaHoy() {
       <h2 id="h-kpi" class="sr-only">Métricas clave</h2>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:divide-x divide-line">
         ${kpiBloque('Prima en ventas', fDinero(k.pipeline, 'COP', true), `${k.nPipeline} oportunidades abiertas`, 'trending-up', 'text-brand')}
-        ${kpiBloque('Prima conservada', fDinero(k.conservada, 'COP', true), `${clientes.length} pólizas en cartera`, 'shield-check', 'text-ok')}
+        ${kpiBloque('Prima conservada', fDinero(k.conservada, 'COP', true), `${cartera.length} pólizas en cartera`, 'shield-check', 'text-ok')}
         ${kpiBloque('En riesgo', fDinero(k.riesgo, 'COP', true), `${sem.bad} ${sem.bad === 1 ? 'recibo vencido' : 'recibos vencidos'}`, 'alert-triangle', 'text-bad')}
         ${kpiBloque('Persistencia', k.persistencia === null ? '—' : `${k.persistencia}%`, `${k.renovadas} renovadas · ${k.canceladas} canceladas`, 'repeat', 'text-ink')}
       </div>
@@ -505,7 +550,7 @@ function vistaHoy() {
 
     <section class="card p-5" aria-labelledby="h-cobr">
       <div class="flex items-center justify-between mb-3"><h2 id="h-cobr" class="text-[20px]">Cobranza</h2><a href="#posventa" class="text-[13px] text-brand font-medium">Ver todo</a></div>
-      ${cobranza.length ? `<ul class="flex flex-col divide-y divide-line">${cobranza.slice(0, 5).map(c => filaCobranza(c)).join('')}</ul>` : vacioMini('wallet', 'Nadie te debe un recibo', 'Los recibos por vencer en 15 días aparecerán aquí.')}
+      ${cobranza.length ? `<ul class="flex flex-col divide-y divide-line">${cobranza.slice(0, 5).map(filaCobranza).join('')}</ul>` : vacioMini('wallet', 'Nadie te debe un recibo', 'Los recibos por vencer en 15 días aparecerán aquí.')}
     </section>
 
     <section class="card p-5" aria-labelledby="h-reag">
@@ -517,6 +562,17 @@ function vistaHoy() {
           <button class="btn-soft btn-sm" data-act="reagendar" data-id="${x.contacto.id}" data-cita="${x.id}">${icon('calendar-clock', 'w-4 h-4')} Reagendar</button>
         </li>`).join('')}</ul>` : vacioMini('calendar-check', 'Todo en orden', 'Ninguna cita pendiente de reagendar.')}
     </section>
+
+    ${cumples.length ? `<section class="card p-5 lg:col-span-3" aria-labelledby="h-cumple">
+      <div class="flex items-center justify-between mb-3"><h2 id="h-cumple" class="text-[20px]">Cumpleaños próximos</h2><span class="text-[13px] text-ink3">Próximos 30 días</span></div>
+      <ul class="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 divide-y divide-line sm:divide-y-0">${cumples.slice(0, 6).map(({ c, f }) => `
+        <li class="py-2.5 flex items-center gap-3">
+          <button class="flex items-center gap-3 flex-1 min-w-0 text-left" data-act="detalle" data-id="${c.id}">
+            <span class="icon-chip bg-warn-soft text-warn w-9! h-9!">${icon('cake', 'w-4 h-4')}</span>
+            <span class="min-w-0"><span class="block font-medium text-[14px] truncate">${esc(c.nombre)}</span><span class="block text-[12.5px] text-ink3 truncate">${fFecha(f)} · cumple ${edadDe(c.nacimiento) + (f === hoy() ? 0 : 1)} · ${relDias(diasHasta(f))}</span></span></button>
+          ${c.whatsapp || c.telefono ? `<a class="btn-soft btn-sm" href="${waCumple(c)}" target="_blank" rel="noopener" aria-label="Felicitar por WhatsApp">${icon('message-circle', 'w-4 h-4')}</a>` : ''}
+        </li>`).join('')}</ul>
+    </section>` : ''}
   </div>`;
 }
 function kpiBloque(label, valor, sub, ic, color) {
@@ -526,13 +582,14 @@ function kpiBloque(label, valor, sub, ic, color) {
 function kpis() {
   const cs = db.contactos;
   const pipeline = cs.filter(c => enVentas(c) && c.etapa !== 'standby');
-  const clientes = cs.filter(esCliente);
-  const renovadas = cs.reduce((s, c) => s + (Number(c.renovaciones) || 0), 0);
-  const canceladas = cs.filter(c => c.etapa === 'cancelada' && c.fueCliente).length;
+  const cartera = polizasCartera();
+  const todas = cs.flatMap(c => c.polizas || []);
+  const renovadas = todas.reduce((s, p) => s + (Number(p.renovaciones) || 0), 0);
+  const canceladas = todas.filter(p => p.estado === 'cancelada').length;
   return {
     pipeline: pipeline.reduce((s, c) => s + aCOP(c.prima, c.moneda), 0), nPipeline: pipeline.length,
-    conservada: clientes.reduce((s, c) => s + aCOP(c.prima, c.moneda), 0),
-    riesgo: clientes.filter(c => cubeta(c) === 'gracia').reduce((s, c) => s + aCOP(primaRecibo(c), c.moneda), 0),
+    conservada: cartera.reduce((s, { p }) => s + aCOP(p.prima, p.moneda), 0),
+    riesgo: cartera.filter(({ p }) => cubeta(p) === 'gracia').reduce((s, { p }) => s + aCOP(primaRecibo(p), p.moneda), 0),
     renovadas, canceladas, persistencia: renovadas + canceladas ? Math.round(renovadas / (renovadas + canceladas) * 100) : null,
     n1: cs.filter(c => c.hitos?.cita1).length, n2: cs.filter(c => c.hitos?.cita2).length, n3: cs.filter(c => c.hitos?.cierre).length,
   };
@@ -546,13 +603,13 @@ function embudo(k) {
     <div class="h-2.5 rounded-full bg-sunken overflow-hidden"><div class="bar h-full rounded-full ${i === 2 ? 'bg-ok' : 'bg-brand'}" style="width:${Math.max(4, v / max * 100)}%; animation-delay:${i * 90}ms"></div></div></div>`).join('')}
     <p class="text-[12.5px] text-ink2 mt-1">${k.n1 ? `De cada 10 primeras citas, <strong class="font-semibold">${Math.round(k.n3 / k.n1 * 10)}</strong> terminan en póliza.` : 'Registra asistencia a tus citas para ver tu conversión.'}</p></div>`;
 }
-function filaCobranza(c) {
-  const dv = diasHasta(c.proxVencimiento), t = semaforo(c);
+function filaCobranza({ c, p }) {
+  const dv = diasHasta(p.proxVencimiento), t = semaforo(p);
   return `<li class="py-2.5 flex items-center gap-3">
     <button class="flex items-center gap-3 flex-1 min-w-0 text-left" data-act="detalle" data-id="${c.id}">
       <span class="dot ${TONOS[t].dot}"></span>
-      <span class="min-w-0"><span class="block font-medium text-[14px] truncate">${esc(c.nombre)}</span><span class="block text-[12.5px] ${dv < 0 ? 'text-bad' : 'text-ink3'} truncate">${fDinero(primaRecibo(c), c.moneda)} · ${dv < 0 ? `vencido ${relDias(dv)}` : `vence ${relDias(dv)}`}</span></span></button>
-    <button class="btn-soft btn-sm" data-act="pago" data-id="${c.id}">${icon('badge-dollar-sign', 'w-4 h-4')} Pagó</button>
+      <span class="min-w-0"><span class="block font-medium text-[14px] truncate">${esc(c.nombre)}</span><span class="block text-[12.5px] ${dv < 0 ? 'text-bad' : 'text-ink3'} truncate">${fDinero(primaRecibo(p), p.moneda)} · ${esc(p.aseguradora)} · ${dv < 0 ? `vencido ${relDias(dv)}` : `vence ${relDias(dv)}`}</span></span></button>
+    <button class="btn-soft btn-sm" data-act="pago" data-id="${c.id}" data-pol="${p.id}">${icon('badge-dollar-sign', 'w-4 h-4')} Pagó</button>
   </li>`;
 }
 function vacioMini(ic, t, s) {
@@ -602,13 +659,14 @@ function tarjetaVenta(c) {
 
 /* ---------- POSVENTA ---------- */
 function vistaPosventa() {
-  const clientes = db.contactos.filter(esCliente);
+  const cartera = polizasCartera();
   const grupos = Object.fromEntries(POSVENTA.map(p => [p.id, []]));
-  clientes.forEach(c => grupos[cubeta(c)].push(c));
-  Object.values(grupos).forEach(g => g.sort((a, b) => (a.proxVencimiento || '').localeCompare(b.proxVencimiento || '')));
+  cartera.forEach(x => grupos[cubeta(x.p)].push(x));
+  Object.values(grupos).forEach(g => g.sort((a, b) => (a.p.proxVencimiento || '').localeCompare(b.p.proxVencimiento || '')));
   const orden = ['gracia', 'pago', 'renovacion', 'activa', 'conservada'];
+  const nClientes = new Set(cartera.map(x => x.c.id)).size;
   return `
-  ${encabezado('Posventa', `${clientes.length} pólizas · el sistema las mueve solo según sus fechas de pago y aniversario`)}
+  ${encabezado('Posventa', `${cartera.length} pólizas de ${nClientes} clientes · el sistema las mueve solo según sus fechas de pago y aniversario`)}
   <div class="md:hidden scroll-x -mx-4 px-4 flex gap-2 pb-3 mb-1">
     ${orden.map(id => { const p = POSVENTA.find(x => x.id === id); return `<button class="chip" data-act="cubeta-movil" data-cubeta="${id}" aria-pressed="${ui.cubetaMovil === id}"><span class="dot ${TONOS[p.tono].dot}"></span>${p.nombre} <span class="opacity-70">${grupos[id].length}</span></button>`; }).join('')}
   </div>
@@ -623,35 +681,38 @@ function vistaPosventa() {
     }).join('')}
   </div>`;
 }
-function tarjetaPosventa(c) {
-  const b = cubeta(c), t = semaforo(c), dv = diasHasta(c.proxVencimiento);
-  const ani = c.inicioVigencia ? proximoAniversario(c.inicioVigencia) : null;
+function tarjetaPosventa({ c, p }) {
+  const b = cubeta(p), t = semaforo(p), dv = diasHasta(p.proxVencimiento);
+  const ani = p.inicioVigencia ? proximoAniversario(p.inicioVigencia) : null;
   let linea;
-  if (b === 'gracia') linea = `<span class="text-bad font-medium">${lineaGracia(c)}</span>`;
-  else if (b === 'pago') linea = `<span class="text-warn font-medium">Recibo vence ${relDias(dv)} · ${fFecha(c.proxVencimiento)}</span>`;
+  if (b === 'gracia') linea = `<span class="text-bad font-medium">${lineaGracia(p)}</span>`;
+  else if (b === 'pago') linea = `<span class="text-warn font-medium">Recibo vence ${relDias(dv)} · ${fFecha(p.proxVencimiento)}</span>`;
   else if (b === 'renovacion') linea = `<span class="${diasHasta(ani) < 30 ? 'text-warn font-medium' : 'text-ink2'}">Aniversario ${relDias(diasHasta(ani))} · ${fFecha(ani)}</span>`;
-  else if (b === 'conservada') linea = `<span class="text-ok font-medium">Renovada el ${fFecha(c.renovadoEn)}</span>`;
-  else linea = `<span class="text-ink2">Próximo recibo ${fFecha(c.proxVencimiento)}</span>`;
+  else if (b === 'conservada') linea = `<span class="text-ok font-medium">Renovada el ${fFecha(p.renovadoEn)}</span>`;
+  else linea = `<span class="text-ink2">Próximo recibo ${fFecha(p.proxVencimiento)}</span>`;
+  const ids = `data-id="${c.id}" data-pol="${p.id}"`;
   return `<article class="kcard" data-act="detalle" data-id="${c.id}" tabindex="0">
     <div class="flex items-start gap-2"><span class="dot mt-1.5 ${TONOS[t].dot}"></span>
-      <div class="min-w-0 flex-1"><p class="font-medium text-[14px] leading-snug truncate">${esc(c.nombre)}</p><p class="text-[12px] text-ink3 truncate">${esc(c.aseguradora)} · ${esc(c.poliza)}</p></div></div>
-    <div class="flex items-center gap-1.5 flex-wrap mt-2">${ramoTag(c.ramo)}<span class="text-[12px] text-ink2">${esc(c.formaPago)} · ${fDinero(primaRecibo(c), c.moneda)}</span></div>
+      <div class="min-w-0 flex-1"><p class="font-medium text-[14px] leading-snug truncate">${esc(c.nombre)}</p><p class="text-[12px] text-ink3 truncate">${esc([p.aseguradora, p.plan].filter(Boolean).join(' · '))}${p.numero ? ` · ${esc(p.numero)}` : ''}</p></div></div>
+    <div class="flex items-center gap-1.5 flex-wrap mt-2">${ramoTag(p.ramo)}<span class="text-[12px] text-ink2">${esc(p.formaPago)} · ${fDinero(primaRecibo(p), p.moneda)}</span></div>
     <p class="text-[12px] mt-2">${linea}</p>
-    <div class="flex gap-1.5 mt-2.5" data-stop>
-      ${['pago', 'gracia'].includes(b) ? `<button class="btn-primary btn-sm flex-1" data-act="pago" data-id="${c.id}">${icon('badge-dollar-sign', 'w-4 h-4')} Registrar pago</button>` : ''}
+    <div class="flex gap-1.5 mt-2.5">
+      ${['pago', 'gracia'].includes(b) ? `<button class="btn-primary btn-sm flex-1" data-act="pago" ${ids}>${icon('badge-dollar-sign', 'w-4 h-4')} Registrar pago</button>` : ''}
       ${b === 'renovacion' ? `<button class="btn-primary btn-sm flex-1" data-act="cita" data-id="${c.id}" data-tipo="anual">${icon('calendar-heart', 'w-4 h-4')} Revisión anual</button>` : ''}
-      ${b === 'pago' ? `<button class="btn-soft btn-sm" data-act="gracia" data-id="${c.id}" aria-label="Marcar en periodo de gracia" title="Marcar en periodo de gracia">${icon('hourglass', 'w-4 h-4')}</button>` : ''}
-      ${c.whatsapp ? `<a class="btn-soft btn-sm" href="${waLink(c, b)}" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">${icon('message-circle', 'w-4 h-4')}</a>` : ''}
+      ${b === 'pago' ? `<button class="btn-soft btn-sm" data-act="gracia" ${ids} aria-label="Marcar en periodo de gracia" title="Marcar en periodo de gracia">${icon('hourglass', 'w-4 h-4')}</button>` : ''}
+      ${c.whatsapp ? `<a class="btn-soft btn-sm" href="${waLink(c, p, b)}" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">${icon('message-circle', 'w-4 h-4')}</a>` : ''}
     </div>
   </article>`;
 }
-function waLink(c, b) {
+const waNumero = c => `https://wa.me/57${soloDigitos(c.whatsapp || c.telefono).slice(-10)}`;
+function waLink(c, p, b) {
   const nombre = c.nombre.split(' ')[0];
   let msg = `Hola ${nombre}, ¿cómo estás?`;
-  if (b === 'pago' || b === 'gracia') msg = `Hola ${nombre}, te escribo para recordarte el recibo de tu póliza ${c.poliza} por ${fDinero(primaRecibo(c), c.moneda)} con fecha ${fFecha(c.proxVencimiento, { day: 'numeric', month: 'long' })}. ¿Te comparto la liga de pago?`;
-  if (b === 'renovacion') msg = `Hola ${nombre}, se acerca el aniversario de tu póliza ${c.poliza}. Me gustaría agendar 20 minutos para revisar tu suma asegurada y beneficiarios. ¿Qué día te acomoda?`;
-  return `https://wa.me/57${soloDigitos(c.whatsapp).slice(-10)}?text=${encodeURIComponent(msg)}`;
+  if (p && (b === 'pago' || b === 'gracia')) msg = `Hola ${nombre}, te escribo para recordarte el recibo de tu póliza ${p.numero} por ${fDinero(primaRecibo(p), p.moneda)} con fecha ${fFecha(p.proxVencimiento, { day: 'numeric', month: 'long' })}. ¿Te comparto el enlace de pago?`;
+  if (p && b === 'renovacion') msg = `Hola ${nombre}, se acerca el aniversario de tu póliza ${p.numero}. Me gustaría agendar 20 minutos para revisar tu suma asegurada y beneficiarios. ¿Qué día te queda bien?`;
+  return `${waNumero(c)}?text=${encodeURIComponent(msg)}`;
 }
+const waCumple = c => `${waNumero(c)}?text=${encodeURIComponent(`¡Feliz cumpleaños, ${c.nombre.split(' ')[0]}! 🌸 Te deseo un año lleno de salud y tranquilidad. Un abrazo.`)}`;
 
 /* ---------- CITAS ---------- */
 function vistaCitas() {
@@ -726,8 +787,8 @@ function aplicaFiltro(c, f) {
     case 'prospectos': return enVentas(c) && c.etapa !== 'standby';
     case 'clientes': return esCliente(c);
     case 'alta': return c.prioridad === 'Alta';
-    case 'vencidas': return esCliente(c) && cubeta(c) === 'gracia';
-    case 'renov30': { if (!esCliente(c) || !c.inicioVigencia) return false; const a = proximoAniversario(c.inicioVigencia); return a && diasHasta(a) <= 30; }
+    case 'vencidas': return esCliente(c) && vigentes(c).some(p => cubeta(p) === 'gracia');
+    case 'renov30': return esCliente(c) && vigentes(c).some(p => p.inicioVigencia && diasHasta(proximoAniversario(p.inicioVigencia)) <= 30);
     case 'citaspos': return (c.citas || []).some(x => ['anual', 'posventa'].includes(x.tipo) && x.status === 'programada');
     case 'inactivos': return ['standby', 'cancelada'].includes(c.etapa);
     default: return true;
@@ -735,13 +796,13 @@ function aplicaFiltro(c, f) {
 }
 function vistaContactos() {
   const q = ui.busqueda.trim().toLowerCase();
-  const lista = db.contactos.filter(c => aplicaFiltro(c, ui.filtro)).filter(c => !q || [c.nombre, c.poliza, c.prioridad, c.telefono, c.email, c.aseguradora, c.ramo].join(' ').toLowerCase().includes(q))
+  const lista = db.contactos.filter(c => aplicaFiltro(c, ui.filtro)).filter(c => !q || textoBusqueda(c).includes(q))
     .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
   return `
   ${encabezado('Contactos', `${db.contactos.length} en total`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('user-plus', 'w-4 h-4')} Nuevo contacto</button>`)}
   <div class="relative mb-3">
     ${icon('search', 'w-[18px] h-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 text-ink3')}
-    <input id="buscador" type="search" class="input pl-11! bg-surface!" placeholder="Busca por nombre, póliza o prioridad" value="${esc(ui.busqueda)}" aria-label="Buscar contactos" autocomplete="off" />
+    <input id="buscador" type="search" class="input pl-11! bg-surface!" placeholder="Busca por nombre, cédula, póliza o aseguradora" value="${esc(ui.busqueda)}" aria-label="Buscar contactos" autocomplete="off" />
   </div>
   <div class="scroll-x -mx-4 px-4 md:mx-0 md:px-0 flex md:flex-wrap gap-2 pb-3">
     ${FILTROS.map(([id, n]) => `<button class="chip" data-act="filtro" data-f="${id}" aria-pressed="${ui.filtro === id}">${n} <span class="opacity-70">${db.contactos.filter(c => aplicaFiltro(c, id)).length}</span></button>`).join('')}
@@ -751,9 +812,10 @@ function vistaContactos() {
 function listaContactos(lista) {
   if (!lista.length) return `<div class="card p-8 text-center"><div class="icon-chip bg-brand-soft text-brand mx-auto mb-3">${icon('search-x', 'w-5 h-5')}</div><p class="font-display text-[20px]">Nadie coincide</p><p class="text-[13.5px] text-ink2 mt-1 mb-4">Prueba con otro nombre o quita el filtro.</p><button class="btn-soft" data-act="limpiar">Ver todos</button></div>`;
   return `<ul class="card divide-y divide-line overflow-hidden">${lista.map(c => {
-    const t = semaforo(c);
+    const t = semaforoContacto(c);
     const pc = proximaCita(c);
-    let sub = esCliente(c) ? `${esc(c.aseguradora)} · ${esc(c.poliza)}` : estadoDe(c);
+    const v = vigentes(c);
+    let sub = esCliente(c) ? `${v.length} ${v.length === 1 ? 'póliza' : 'pólizas'} · ${esc([...new Set(v.map(p => p.aseguradora).filter(Boolean))].join(', '))}` : estadoDe(c);
     if (pc) sub += ` · cita ${fFecha(pc.fecha)}`;
     return `<li><button class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sunken/60 transition" data-act="detalle" data-id="${c.id}">
       ${avatar(c)}
@@ -787,20 +849,57 @@ const cabeceraModal = (titulo, sub = '') => `<div class="sticky top-0 z-10 bg-bg
 const opciones = (arr, sel) => arr.map(o => { const [v, t] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(sel) ? 'selected' : ''}>${esc(t)}</option>`; }).join('');
 
 /* ---------- Detalle del contacto ---------- */
+function bloquePoliza(c, p) {
+  const cancelada = p.estado === 'cancelada';
+  const b = cancelada ? null : cubeta(p), t = cancelada ? null : semaforo(p);
+  const ids = `data-id="${c.id}" data-pol="${p.id}"`;
+  const pagos = p.pagos || [];
+  const fLarga = s => fFecha(s, { day: 'numeric', month: 'short', year: 'numeric' });
+  return `<section class="card p-4 ${b === 'gracia' ? 'border-bad/40!' : ''} ${cancelada ? 'opacity-75' : ''}">
+    <div class="flex items-start gap-2 mb-3">
+      <div class="min-w-0 flex-1"><h3 class="text-[17px] leading-snug">${esc(p.plan || p.ramo)}</h3>
+        <p class="text-[12.5px] text-ink3">${esc(p.aseguradora || 'Sin aseguradora')}${p.numero ? ` · ${esc(p.numero)}` : ''}${p.capa ? ` · Capa ${esc(p.capa)}` : ''}</p></div>
+      ${cancelada ? `<span class="tag bg-sunken text-ink3">Cancelada</span>` : `<span class="tag ${TONOS[t].tag}"><span class="dot ${TONOS[t].dot}"></span>${b === 'gracia' ? 'En gracia' : TONOS[t].texto}</span>`}
+      <button class="grid place-items-center w-9 h-9 -mr-1 -mt-1 rounded-lg hover:bg-sunken text-ink3 shrink-0" data-act="poliza" ${ids} aria-label="Editar póliza">${icon('pencil', 'w-4 h-4')}</button>
+    </div>
+    <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-[13.5px]">
+      <div><dt class="label">Prima anual</dt><dd class="font-medium">${fDinero(p.prima, p.moneda)}</dd></div>
+      <div><dt class="label">${esc(p.formaPago)}</dt><dd class="font-medium">${fDinero(primaRecibo(p), p.moneda)}<span class="text-ink3 font-normal"> / recibo</span></dd></div>
+      ${cancelada ? '' : `<div><dt class="label">Próximo recibo</dt><dd class="font-medium ${b === 'gracia' ? 'text-bad' : b === 'pago' ? 'text-warn' : ''}">${fLarga(p.proxVencimiento)}<span class="block text-[12px] font-normal text-ink3">${p.proxVencimiento ? relDias(diasHasta(p.proxVencimiento)) : ''}</span></dd></div>
+      <div><dt class="label">Aniversario</dt><dd class="font-medium">${p.inicioVigencia ? fLarga(proximoAniversario(p.inicioVigencia)) : '—'}<span class="block text-[12px] font-normal text-ink3">Desde ${fFecha(p.inicioVigencia, { month: 'short', year: 'numeric' })}</span></dd></div>`}
+      ${p.sumaAsegurada ? `<div class="col-span-2"><dt class="label">Suma asegurada</dt><dd class="font-medium">${fDinero(p.sumaAsegurada, p.moneda)}</dd></div>` : ''}
+    </dl>
+    ${b === 'gracia' ? `<p class="mt-3 text-[13px] text-bad bg-bad-soft rounded-xl px-3 py-2">${icon('alert-triangle', 'w-4 h-4 inline -mt-0.5')} ${lineaGracia(p)}</p>` : ''}
+    ${cancelada ? '' : `<div class="grid grid-cols-2 gap-2 mt-4">
+      <button class="btn-primary btn-sm" data-act="pago" ${ids}>${icon('badge-dollar-sign', 'w-4 h-4')} Registrar pago</button>
+      <button class="btn-soft btn-sm" data-act="cita" data-id="${c.id}" data-tipo="anual">${icon('calendar-heart', 'w-4 h-4')} Revisión anual</button>
+      ${b !== 'gracia' ? `<button class="btn-ghost btn-sm col-span-2" data-act="gracia" ${ids}>${icon('hourglass', 'w-4 h-4')} Marcar en periodo de gracia</button>` : p.gracia ? `<button class="btn-ghost btn-sm col-span-2" data-act="quitar-gracia" ${ids}>Quitar marca de gracia</button>` : ''}
+    </div>`}
+    ${pagos.length ? `<details class="mt-3"><summary class="text-[13px] text-brand font-medium cursor-pointer py-1">Historial de pagos (${pagos.length})</summary>
+      <ul class="mt-2 divide-y divide-line text-[13px]">${[...pagos].sort((a, b2) => b2.fecha.localeCompare(a.fecha)).map(x => `<li class="py-1.5 flex justify-between gap-2"><span>${fLarga(x.fecha)}<span class="text-ink3"> · recibo ${fFecha(x.recibo)}</span></span><span class="font-medium">${fDinero(x.monto, x.moneda)}</span></li>`).join('')}</ul></details>` : ''}
+  </section>`;
+}
 function abrirDetalle(id, refrescar = false) {
   const c = getC(id); if (!c) return;
   ui.detalle = id;
-  const t = semaforo(c), b = esCliente(c) ? cubeta(c) : null;
+  const t = semaforoContacto(c);
+  const polizas = [...(c.polizas || [])].sort((a, b) => (a.estado === 'cancelada') - (b.estado === 'cancelada'));
   const citas = [...(c.citas || [])].sort((a, b2) => (b2.fecha + b2.hora).localeCompare(a.fecha + a.hora));
   const notas = [...(c.notas || [])].sort((a, b2) => (b2.fecha + (b2.hora || '')).localeCompare(a.fecha + (a.hora || '')));
   const etapas = [...VENTAS.map(e => [e.id, e.id === 'emitida' ? 'Póliza emitida (cliente)' : e.nombre]), ['cancelada', 'Cancelada']];
+  const edad = edadDe(c.nacimiento), cumple = proximoCumple(c.nacimiento);
+  const datos = [['Cédula', c.cedula], ['Teléfono', c.telefono], ['WhatsApp', c.whatsapp], ['Email', c.email], ['Ciudad', c.ciudad],
+    ['Nacimiento', c.nacimiento ? `${fFecha(c.nacimiento, { day: 'numeric', month: 'short', year: 'numeric' })} · ${edad} años` : ''],
+    ['Edad', c.nacimiento ? '' : c.edad], ['Estado civil', c.civil], ['Hijos', c.hijos], ['Objetivo', c.objetivo], ['Cómo llegó', c.comoLlego], ['Referido por', c.referidoPor],
+    ['Prima estimada', !esCliente(c) && c.prima ? fDinero(c.prima, c.moneda) : '']].filter(([k, v]) => !(k === 'Edad' && !v) && !(k === 'Prima estimada' && !v));
   const html = `
   ${cabeceraModal(esc(c.nombre), `${estadoDe(c)}${c.ocupacion ? ` · ${esc(c.ocupacion)}` : ''}`)}
   <div class="px-5 py-4 flex flex-col gap-4">
-    <div class="flex flex-wrap items-center gap-1.5">${prioridadTag(c.prioridad)}${ramoTag(c.ramo)}${t ? `<span class="tag ${TONOS[t].tag}"><span class="dot ${TONOS[t].dot}"></span>${b === 'gracia' ? 'Periodo de gracia' : TONOS[t].texto}</span>` : ''}</div>
+    <div class="flex flex-wrap items-center gap-1.5">${prioridadTag(c.prioridad)}${ramoTag(c.ramo)}${t ? `<span class="tag ${TONOS[t].tag}"><span class="dot ${TONOS[t].dot}"></span>${t === 'bad' ? 'Recibo vencido' : TONOS[t].texto}</span>` : ''}
+      ${cumple && diasHasta(cumple) <= 30 ? `<span class="tag bg-warn-soft text-warn">${icon('cake', 'w-3 h-3')} Cumple ${relDias(diasHasta(cumple))}</span>` : ''}</div>
 
     <div class="grid grid-cols-4 gap-2">
-      ${c.whatsapp ? `<a class="btn-soft flex-col gap-1! py-2 text-[12px]" href="${waLink(c, b)}" target="_blank" rel="noopener">${icon('message-circle', 'w-5 h-5 text-ok')}WhatsApp</a>` : `<span class="btn-soft flex-col gap-1! py-2 text-[12px] opacity-50">${icon('message-circle', 'w-5 h-5')}Sin WhatsApp</span>`}
+      ${c.whatsapp || c.telefono ? `<a class="btn-soft flex-col gap-1! py-2 text-[12px]" href="${waLink(c)}" target="_blank" rel="noopener">${icon('message-circle', 'w-5 h-5 text-ok')}WhatsApp</a>` : `<span class="btn-soft flex-col gap-1! py-2 text-[12px] opacity-50">${icon('message-circle', 'w-5 h-5')}Sin WhatsApp</span>`}
       ${c.telefono ? `<a class="btn-soft flex-col gap-1! py-2 text-[12px]" href="tel:${soloDigitos(c.telefono)}">${icon('phone', 'w-5 h-5 text-brand')}Llamar</a>` : `<span class="btn-soft flex-col gap-1! py-2 text-[12px] opacity-50">${icon('phone', 'w-5 h-5')}Sin teléfono</span>`}
       <button class="btn-soft flex-col gap-1! py-2 text-[12px]" data-act="cita" data-id="${c.id}">${icon('calendar-plus', 'w-5 h-5 text-brand')}Cita</button>
       <button class="btn-soft flex-col gap-1! py-2 text-[12px]" data-act="nota" data-id="${c.id}">${icon('notebook-pen', 'w-5 h-5 text-brand')}Nota</button>
@@ -810,26 +909,10 @@ function abrirDetalle(id, refrescar = false) {
       <select class="input" data-change="etapa" data-id="${c.id}">${opciones(etapas, c.etapa)}</select></label>
     ${!esCliente(c) && !['standby', 'cancelada'].includes(c.etapa) ? `<label class="field"><span>Estado en el embudo</span><select class="input" data-change="estado" data-id="${c.id}">${opciones(ESTADOS.slice(0, 7), c.estado)}</select></label>` : ''}
 
-    ${esCliente(c) ? `
-    <section class="card p-4 ${b === 'gracia' ? 'border-bad/40!' : ''}">
-      <div class="flex items-center justify-between mb-3"><h3 class="text-[17px]">Póliza y cobranza</h3><span class="text-[12px] text-ink3">${esc(c.aseguradora)}</span></div>
-      <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-[13.5px]">
-        <div><dt class="label">Póliza</dt><dd class="font-medium">${esc(c.poliza) || '—'}</dd></div>
-        <div><dt class="label">Forma de pago</dt><dd class="font-medium">${esc(c.formaPago)}</dd></div>
-        <div><dt class="label">Prima anual</dt><dd class="font-medium">${fDinero(c.prima, c.moneda)}</dd></div>
-        <div><dt class="label">Cada recibo</dt><dd class="font-medium">${fDinero(primaRecibo(c), c.moneda)}</dd></div>
-        <div><dt class="label">Próximo recibo</dt><dd class="font-medium ${b === 'gracia' ? 'text-bad' : b === 'pago' ? 'text-warn' : ''}">${fFecha(c.proxVencimiento, { day: 'numeric', month: 'short', year: 'numeric' })}<span class="block text-[12px] font-normal text-ink3">${c.proxVencimiento ? relDias(diasHasta(c.proxVencimiento)) : ''}</span></dd></div>
-        <div><dt class="label">Aniversario</dt><dd class="font-medium">${c.inicioVigencia ? fFecha(proximoAniversario(c.inicioVigencia), { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}<span class="block text-[12px] font-normal text-ink3">Vigente desde ${fFecha(c.inicioVigencia, { month: 'short', year: 'numeric' })}</span></dd></div>
-      </dl>
-      ${b === 'gracia' ? `<p class="mt-3 text-[13px] text-bad bg-bad-soft rounded-xl px-3 py-2">${icon('alert-triangle', 'w-4 h-4 inline -mt-0.5')} ${lineaGracia(c)}</p>` : ''}
-      <div class="grid grid-cols-2 gap-2 mt-4">
-        <button class="btn-primary btn-sm" data-act="pago" data-id="${c.id}">${icon('badge-dollar-sign', 'w-4 h-4')} Registrar pago</button>
-        <button class="btn-soft btn-sm" data-act="cita" data-id="${c.id}" data-tipo="anual">${icon('calendar-heart', 'w-4 h-4')} Revisión anual</button>
-        ${b !== 'gracia' ? `<button class="btn-ghost btn-sm col-span-2" data-act="gracia" data-id="${c.id}">${icon('hourglass', 'w-4 h-4')} Marcar en periodo de gracia</button>` : c.gracia ? `<button class="btn-ghost btn-sm col-span-2" data-act="quitar-gracia" data-id="${c.id}">Quitar marca de gracia</button>` : ''}
-      </div>
-      ${(c.pagos || []).length ? `<details class="mt-3"><summary class="text-[13px] text-brand font-medium cursor-pointer py-1">Historial de pagos (${c.pagos.length})</summary>
-        <ul class="mt-2 divide-y divide-line text-[13px]">${[...c.pagos].sort((a, b2) => b2.fecha.localeCompare(a.fecha)).map(p => `<li class="py-1.5 flex justify-between gap-2"><span>${fFecha(p.fecha, { day: 'numeric', month: 'short', year: 'numeric' })}<span class="text-ink3"> · recibo ${fFecha(p.recibo)}</span></span><span class="font-medium">${fDinero(p.monto, p.moneda)}</span></li>`).join('')}</ul></details>` : ''}
-    </section>` : ''}
+    ${polizas.length || ['tramite', 'emitida'].includes(c.etapa) ? `
+    <div class="flex items-center justify-between -mb-1"><h3 class="text-[19px]">Pólizas <span class="text-ink3 text-[15px]">(${vigentes(c).length} vigentes)</span></h3>
+      <button class="btn-ghost btn-sm" data-act="poliza" data-id="${c.id}">${icon('plus', 'w-4 h-4')} Agregar póliza</button></div>
+    ${polizas.length ? polizas.map(p => bloquePoliza(c, p)).join('') : vacioMini('file-badge', 'Aún sin póliza registrada', 'Cuando se emita, agrégala aquí para que pase a posventa.')}` : ''}
 
     <section class="card p-4">
       <div class="flex items-center justify-between mb-2"><h3 class="text-[17px]">Citas</h3><button class="btn-ghost btn-sm" data-act="cita" data-id="${c.id}">${icon('plus', 'w-4 h-4')} Agendar</button></div>
@@ -841,7 +924,7 @@ function abrirDetalle(id, refrescar = false) {
           ${x.status === 'programada' ? `<div class="flex gap-1.5 mt-2 flex-wrap">${botonesAsistencia(c.id, x.id)}</div>` : x.status === 'noasistio' ? `<button class="btn-primary btn-sm mt-2" data-act="reagendar" data-id="${c.id}" data-cita="${x.id}">${icon('calendar-clock', 'w-4 h-4')} Reagendar</button>` : ''}
           ${x.reagendas ? `<details class="mt-1.5"><summary class="text-[12.5px] text-warn cursor-pointer">Reagendada ${x.reagendas} ${x.reagendas === 1 ? 'vez' : 'veces'} · ver motivos</summary>
             <ul class="mt-1 text-[12.5px] text-ink2 flex flex-col gap-1">${x.bitacora.map(r => `<li>${fFecha(r.fecha)}: de ${fFecha(r.de)} a ${fFecha(r.a)}${r.motivo ? ` — “${esc(r.motivo)}”` : ''}</li>`).join('')}</ul></details>` : ''}
-        </li>`).join('')}</ul>` : `<p class="text-[13px] text-ink3 py-1">Sin citas todavía. Agenda la primera para avanzarlo en el pipeline.</p>`}
+        </li>`).join('')}</ul>` : `<p class="text-[13px] text-ink3 py-1">Sin citas todavía.${esCliente(c) ? ' Agenda su revisión anual para cuidar la renovación.' : ' Agenda la primera para avanzarlo en el pipeline.'}</p>`}
     </section>
 
     <section class="card p-4">
@@ -854,8 +937,7 @@ function abrirDetalle(id, refrescar = false) {
     <section class="card p-4">
       <div class="flex items-center justify-between mb-2"><h3 class="text-[17px]">Datos personales</h3><button class="btn-ghost btn-sm" data-act="editar" data-id="${c.id}">${icon('pencil', 'w-4 h-4')} Editar</button></div>
       <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-[13.5px]">
-        ${[['Teléfono', c.telefono], ['WhatsApp', c.whatsapp], ['Email', c.email], ['Edad', c.edad], ['Estado civil', c.civil], ['Hijos', c.hijos], ['Aseguradora', c.aseguradora], ['Prima anual', c.prima ? fDinero(c.prima, c.moneda) : '']]
-          .map(([k, v]) => `<div class="min-w-0"><dt class="label">${k}</dt><dd class="truncate">${v === '' || v == null ? '<span class="text-ink3">—</span>' : esc(v)}</dd></div>`).join('')}
+        ${datos.map(([k, v]) => `<div class="min-w-0"><dt class="label">${k}</dt><dd class="truncate">${v === '' || v == null ? '<span class="text-ink3">—</span>' : esc(v)}</dd></div>`).join('')}
       </dl>
     </section>
 
@@ -867,65 +949,90 @@ function abrirDetalle(id, refrescar = false) {
   } else abrirModal(html, { lateral: true });
 }
 
+const campoTexto = (name, val, type = 'text', extra = '') => `<input class="input" name="${name}" type="${type}" value="${esc(val ?? '')}" ${extra} />`;
+const campoLista = (name, arr, val) => `<select class="input" name="${name}">${opciones(arr, val)}</select>`;
+const pieFormulario = texto => `<div class="sticky bottom-0 -mx-5 px-5 py-3 bg-bg/95 backdrop-blur border-t border-line flex gap-2">
+  <button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button>
+  <button type="submit" class="btn-primary flex-1">${icon('check', 'w-4 h-4')} ${texto}</button></div>`;
+
 /* ---------- Nuevo / editar contacto ---------- */
-function abrirFormContacto(id, aviso = '') {
-  const c = id ? getC(id) : { prioridad: 'Media', ramo: 'Vida', formaPago: 'Anual', moneda: 'COP', edad: '36-45', civil: 'Casado(a)', hijos: 0, etapa: 'prospecto' };
-  const sel = (name, arr, val) => `<select class="input" name="${name}">${opciones(arr, val)}</select>`;
-  const asegSel = !c.aseguradora ? '' : ALIADAS.includes(c.aseguradora) ? c.aseguradora : 'Otra';
-  const polizaAbierta = !!aviso || ['tramite', 'emitida'].includes(c.etapa) || !!c.poliza;
-  const inp = (name, val, type = 'text', extra = '') => `<input class="input" name="${name}" type="${type}" value="${esc(val ?? '')}" ${extra} />`;
+function abrirFormContacto(id) {
+  const c = id ? getC(id) : { prioridad: 'Media', ramo: 'Vida', moneda: 'COP', edad: '36-45', civil: 'Casado(a)', hijos: 0, etapa: 'prospecto' };
+  const inp = campoTexto, sel = campoLista;
   abrirModal(`
   ${cabeceraModal(id ? 'Editar contacto' : 'Nuevo contacto', id ? esc(c.nombre) : 'Solo el nombre es obligatorio; lo demás lo completas cuando lo sepas')}
   <form data-form="contacto" data-id="${id || ''}" class="px-5 py-4 flex flex-col gap-5" novalidate>
-    ${aviso ? `<p class="text-[13px] bg-warn-soft text-warn rounded-xl px-3 py-2">${aviso}</p>` : ''}
     <fieldset class="flex flex-col gap-3"><legend class="label mb-2">Persona</legend>
       <label class="field"><span>Nombre completo *</span>${inp('nombre', c.nombre, 'text', 'required autocomplete="off"')}<small class="text-bad text-[12px] hidden" data-err="nombre">Escribe el nombre para poder guardarlo.</small></label>
       <div class="grid grid-cols-2 gap-3">
-        <label class="field"><span>Teléfono</span>${inp('telefono', c.telefono, 'tel', 'inputmode="tel"')}</label>
-        <label class="field"><span>WhatsApp</span>${inp('whatsapp', c.whatsapp, 'tel', 'inputmode="tel" placeholder="10 dígitos"')}</label>
+        <label class="field"><span>Cédula</span>${inp('cedula', c.cedula, 'text', 'inputmode="numeric"')}</label>
+        <label class="field"><span>Fecha de nacimiento</span>${inp('nacimiento', c.nacimiento, 'date')}</label>
+        <label class="field"><span>Celular</span>${inp('telefono', c.telefono, 'tel', 'inputmode="tel"')}</label>
+        <label class="field"><span>WhatsApp</span>${inp('whatsapp', c.whatsapp, 'tel', 'inputmode="tel" placeholder="Si es otro número"')}</label>
       </div>
       <label class="field"><span>Email</span>${inp('email', c.email, 'email', 'inputmode="email"')}</label>
-      <label class="field"><span>Ocupación</span>${inp('ocupacion', c.ocupacion)}</label>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="field"><span>Ciudad</span>${inp('ciudad', c.ciudad)}</label>
+        <label class="field"><span>Profesión</span>${inp('ocupacion', c.ocupacion)}</label>
+      </div>
       <div class="grid grid-cols-3 gap-3">
         <label class="field"><span>Edad</span>${sel('edad', EDADES, c.edad)}</label>
-        <label class="field col-span-1"><span>Estado civil</span>${sel('civil', CIVILES, c.civil)}</label>
+        <label class="field"><span>Estado civil</span>${sel('civil', CIVILES, c.civil)}</label>
         <label class="field"><span>Hijos</span>${inp('hijos', c.hijos, 'number', 'min="0" max="15" inputmode="numeric"')}</label>
       </div>
     </fieldset>
     <fieldset class="flex flex-col gap-3"><legend class="label mb-2">Oportunidad</legend>
       <div class="grid grid-cols-2 gap-3">
         <label class="field"><span>Prioridad</span>${sel('prioridad', PRIORIDADES, c.prioridad)}</label>
-        <label class="field"><span>Ramo</span>${sel('ramo', RAMOS, c.ramo)}</label>
+        <label class="field"><span>Ramo de interés</span>${sel('ramo', RAMOS, c.ramo)}</label>
       </div>
-      ${!id ? `<label class="field"><span>Etapa</span><select class="input" name="etapa" data-change="etapa-form">${opciones(VENTAS.map(e => [e.id, e.nombre]), c.etapa)}</select></label>` : ''}
+      ${!id ? `<label class="field"><span>Etapa</span>${sel('etapa', VENTAS.map(e => [e.id, e.nombre]), c.etapa)}</label>` : ''}
       <div class="grid grid-cols-[1fr_150px] gap-3">
-        <label class="field"><span>Prima anual ${c.etapa === 'emitida' ? '' : '(estimada)'}</span>${inp('prima', c.prima || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
+        <label class="field"><span>Prima anual estimada</span>${inp('prima', c.prima || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
         <label class="field"><span>Moneda</span>${sel('moneda', MONEDAS, c.moneda)}</label>
       </div>
-    </fieldset>
-    <details class="group rounded-2xl border border-line bg-surface" data-poliza ${polizaAbierta ? 'open' : ''}>
-      <summary class="list-none cursor-pointer flex items-center gap-3 p-4 min-h-11">
-        <span class="icon-chip bg-brand-soft text-brand w-9! h-9!">${icon('file-badge', 'w-[18px] h-[18px]')}</span>
-        <span class="flex-1 min-w-0"><span class="block font-medium text-[14.5px]">Póliza y pagos</span><span class="block text-[12.5px] text-ink3">${polizaAbierta ? 'Datos de la póliza emitida' : 'Llénalo cuando se emita la póliza · por ahora puedes dejarlo vacío'}</span></span>
-        ${icon('chevron-down', 'w-4 h-4 text-ink3 transition group-open:rotate-180')}
-      </summary>
-    <fieldset class="flex flex-col gap-3 px-4 pb-4">
+      <label class="field"><span>Objetivo principal</span>${inp('objetivo', c.objetivo, 'text', 'placeholder="Ej. Retiro, proteger familia, capitalizar"')}</label>
       <div class="grid grid-cols-2 gap-3">
-        <label class="field"><span>Aseguradora</span><select class="input" name="aseguradoraSel" data-change="aseg">${opciones([['', 'Elige…'], ...ALIADAS, ['Otra', 'Otra…']], asegSel)}</select></label>
-        <label class="field"><span>Núm. de póliza</span>${inp('poliza', c.poliza)}</label>
-        <label class="field col-span-2 ${asegSel === 'Otra' ? '' : 'hidden'}" data-otra><span>¿Cuál aseguradora?</span>${inp('aseguradoraOtra', asegSel === 'Otra' ? c.aseguradora : '', 'text', 'placeholder="Escribe el nombre"')}</label>
-        <label class="field"><span>Forma de pago</span>${sel('formaPago', Object.keys(FORMAS), c.formaPago)}</label>
-        <label class="field"><span>Inicio de vigencia</span>${inp('inicioVigencia', c.inicioVigencia, 'date')}</label>
+        <label class="field"><span>Cómo llegó</span>${sel('comoLlego', ['', 'Referido', 'Conocido', 'Llamada', 'Redes sociales', 'Otro'], c.comoLlego || '')}</label>
+        <label class="field"><span>Referido por</span>${inp('referidoPor', c.referidoPor)}</label>
       </div>
-      <label class="field"><span>Próximo vencimiento de prima</span>
-        <div class="flex gap-2">${inp('proxVencimiento', c.proxVencimiento, 'date')}<button type="button" class="btn-soft shrink-0" data-act="calcular">${icon('calculator', 'w-4 h-4')} Calcular</button></div>
-        <small class="text-[12px] text-ink3">Si lo dejas vacío, lo calculo con el inicio de vigencia y la forma de pago.</small></label>
+      <p class="text-[12.5px] text-ink3 flex gap-2">${icon('info', 'w-4 h-4 shrink-0 mt-0.5')} Las pólizas se registran desde la ficha del cliente cuando se emiten. Un cliente puede tener varias.</p>
     </fieldset>
-    </details>
-    <div class="sticky bottom-0 -mx-5 px-5 py-3 bg-bg/95 backdrop-blur border-t border-line flex gap-2">
-      <button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button>
-      <button type="submit" class="btn-primary flex-1">${icon('check', 'w-4 h-4')} ${id ? 'Guardar cambios' : 'Agregar contacto'}</button>
+    ${pieFormulario(id ? 'Guardar cambios' : 'Agregar contacto')}
+  </form>`);
+}
+
+/* ---------- Nueva / editar póliza ---------- */
+function abrirFormPoliza(cid, pid, aviso = '') {
+  const c = getC(cid);
+  const p = pid ? c.polizas.find(x => x.id === pid) : nuevaPoliza({ ramo: c.ramo || 'Vida', prima: c.prima || '', moneda: c.moneda || 'COP' });
+  const inp = campoTexto, sel = campoLista;
+  const asegSel = !p.aseguradora ? '' : ALIADAS.includes(p.aseguradora) ? p.aseguradora : 'Otra';
+  abrirModal(`
+  ${cabeceraModal(pid ? 'Editar póliza' : 'Registrar póliza', esc(c.nombre))}
+  <form data-form="poliza" data-id="${cid}" data-pol="${pid || ''}" class="px-5 py-4 flex flex-col gap-3" novalidate>
+    ${aviso ? `<p class="text-[13px] bg-warn-soft text-warn rounded-xl px-3 py-2">${aviso}</p>` : ''}
+    <div class="grid grid-cols-2 gap-3">
+      <label class="field"><span>Aseguradora</span><select class="input" name="aseguradoraSel" data-change="aseg">${opciones([['', 'Elige…'], ...ALIADAS, ['Otra', 'Otra…']], asegSel)}</select></label>
+      <label class="field"><span>Núm. de póliza</span>${inp('numero', p.numero)}</label>
+      <label class="field col-span-2 ${asegSel === 'Otra' ? '' : 'hidden'}" data-otra><span>¿Cuál aseguradora?</span>${inp('aseguradoraOtra', asegSel === 'Otra' ? p.aseguradora : '', 'text', 'placeholder="Ej. SURA"')}</label>
+      <label class="field col-span-2"><span>Tipo de plan</span>${inp('plan', p.plan, 'text', 'placeholder="Ej. Vida Entera Indexada, TEM 100, NOVA"')}</label>
+      <label class="field"><span>Ramo</span>${sel('ramo', RAMOS, p.ramo)}</label>
+      <label class="field"><span>Capa estratégica</span>${sel('capa', [['', '—'], ...CAPAS], p.capa)}</label>
+      <label class="field"><span>Forma de pago</span>${sel('formaPago', Object.keys(FORMAS), p.formaPago)}</label>
+      <label class="field"><span>Inicio de vigencia *</span>${inp('inicioVigencia', p.inicioVigencia, 'date')}<small class="text-bad text-[12px] hidden" data-err="inicioVigencia">Sin esta fecha no puedo calcular recibos ni renovación.</small></label>
     </div>
+    <label class="field"><span>Próximo recibo</span>
+      <div class="flex gap-2">${inp('proxVencimiento', p.proxVencimiento, 'date')}<button type="button" class="btn-soft shrink-0" data-act="calcular">${icon('calculator', 'w-4 h-4')} Calcular</button></div>
+      <small class="text-[12px] text-ink3">Si lo dejas vacío, lo calculo con el inicio de vigencia y la forma de pago.</small></label>
+    <div class="grid grid-cols-[1fr_150px] gap-3">
+      <label class="field"><span>Prima anual</span>${inp('prima', p.prima || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
+      <label class="field"><span>Moneda</span>${sel('moneda', MONEDAS, p.moneda)}</label>
+    </div>
+    <label class="field"><span>Suma asegurada</span>${inp('sumaAsegurada', p.sumaAsegurada || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
+    ${pid ? `<label class="field"><span>Estado de la póliza</span>${sel('estado', [['vigente', 'Vigente'], ['cancelada', 'Cancelada']], p.estado)}</label>` : ''}
+    ${pid ? `<button type="button" class="btn-ghost text-bad! self-start" data-act="borrar-poliza" data-id="${cid}" data-pol="${pid}">${icon('trash-2', 'w-4 h-4')} Borrar esta póliza</button>` : ''}
+    ${pieFormulario(pid ? 'Guardar póliza' : 'Registrar póliza')}
   </form>`);
 }
 
@@ -969,19 +1076,20 @@ function abrirReagendar(cid, xid) {
 }
 
 /* ---------- Registrar pago ---------- */
-function abrirPago(cid) {
-  const c = getC(cid);
-  if (!c.inicioVigencia || !c.proxVencimiento) { abrirFormContacto(cid, 'Completa el inicio de vigencia y el próximo vencimiento para poder registrar pagos.'); return; }
-  const nuevo = siguienteRecibo(c.inicioVigencia, c.formaPago, c.proxVencimiento);
-  const esAniv = mesesEntre(c.inicioVigencia, c.proxVencimiento) > 0 && mesesEntre(c.inicioVigencia, c.proxVencimiento) % 12 === 0;
+function abrirPago(cid, pid) {
+  const c = getC(cid), p = c.polizas.find(x => x.id === pid);
+  if (!p.inicioVigencia || !p.proxVencimiento) { abrirFormPoliza(cid, pid, 'Completa el inicio de vigencia y el próximo recibo para poder registrar pagos.'); return; }
+  const nuevo = siguienteRecibo(p.inicioVigencia, p.formaPago, p.proxVencimiento);
+  const meses = mesesEntre(p.inicioVigencia, p.proxVencimiento);
+  const esAniv = meses > 0 && meses % 12 === 0;
   abrirModal(`
-  ${cabeceraModal('Registrar pago', `${esc(c.nombre)} · póliza ${esc(c.poliza)}`)}
-  <form data-form="pago" data-id="${cid}" class="px-5 py-4 flex flex-col gap-3" novalidate>
+  ${cabeceraModal('Registrar pago', `${esc(c.nombre)} · ${esc([p.plan || p.ramo, p.numero].filter(Boolean).join(' · '))}`)}
+  <form data-form="pago" data-id="${cid}" data-pol="${pid}" class="px-5 py-4 flex flex-col gap-3" novalidate>
     <div class="card p-4 flex items-center gap-3"><div class="icon-chip bg-ok-soft text-ok">${icon('receipt', 'w-5 h-5')}</div>
-      <div class="min-w-0"><p class="text-[13px] text-ink2">Recibo del ${fFecha(c.proxVencimiento, { day: 'numeric', month: 'long', year: 'numeric' })}</p><p class="font-display text-[24px] leading-tight">${fDinero(primaRecibo(c), c.moneda)}</p></div></div>
+      <div class="min-w-0"><p class="text-[13px] text-ink2">Recibo del ${fFecha(p.proxVencimiento, { day: 'numeric', month: 'long', year: 'numeric' })}</p><p class="font-display text-[24px] leading-tight">${fDinero(primaRecibo(p), p.moneda)}</p></div></div>
     <div class="grid grid-cols-2 gap-3">
       <label class="field"><span>Fecha de pago</span><input class="input" type="date" name="fecha" value="${hoy()}" max="${hoy()}" required></label>
-      <label class="field"><span>Monto (${esc(c.moneda)})</span><input class="input" type="number" step="any" min="0" name="monto" value="${Math.round(primaRecibo(c) * 100) / 100}" inputmode="decimal" required></label>
+      <label class="field"><span>Monto (${esc(p.moneda)})</span><input class="input" type="number" step="any" min="0" name="monto" value="${Math.round(primaRecibo(p) * 100) / 100}" inputmode="decimal" required></label>
     </div>
     <p class="text-[13px] text-ink2 bg-sunken rounded-xl px-3 py-2">${icon('arrow-right-circle', 'w-4 h-4 inline -mt-0.5 text-brand')} El siguiente recibo quedará para el <strong class="font-semibold">${fFecha(nuevo, { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.${esAniv ? ' Este pago es la <strong class="font-semibold">renovación anual</strong>: la póliza contará como conservada.' : ''}</p>
     <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} Confirmar pago</button></div>
@@ -1020,10 +1128,10 @@ function abrirAjustes() {
     <section class="card p-4 flex flex-col gap-3">
       <div class="flex gap-3"><div class="icon-chip bg-ok-soft text-ok">${icon('sheet', 'w-5 h-5')}</div>
         <div class="min-w-0"><p class="font-medium text-[14.5px]">Cargar tu cartera desde Excel</p>
-        <p class="text-[13px] text-ink2">Descarga la plantilla, pega tus clientes (una fila por póliza), guárdala como CSV y súbela aquí. Así no los digitas uno por uno.</p></div></div>
+        <p class="text-[13px] text-ink2">Sube tu Excel tal cual: una fila por póliza. Si un cliente tiene varias pólizas, las agrupo solas por cédula o nombre. Si vuelves a subirlo, actualizo sin duplicar.</p></div></div>
       <div class="grid grid-cols-2 gap-2">
         <button class="btn-soft" data-act="plantilla">${icon('file-down', 'w-4 h-4')} Plantilla</button>
-        <label class="btn-primary">${icon('file-up', 'w-4 h-4')} Subir cartera<input type="file" accept=".csv,text/csv" class="sr-only" data-change="cartera"></label>
+        <label class="btn-primary">${icon('file-up', 'w-4 h-4')} Subir Excel<input type="file" accept=".xlsx,.xls,.csv" class="sr-only" data-change="cartera"></label>
       </div>
     </section>
     <form data-form="ajustes" class="card p-4 flex flex-col gap-3">
@@ -1039,15 +1147,48 @@ function abrirAjustes() {
   </div>`);
 }
 
-/* ---------- Importar cartera desde Excel (CSV) ---------- */
+/* ---------- Importar cartera desde Excel (.xlsx) o CSV ---------- */
+/* Una fila por póliza. Las filas del mismo cliente (misma cédula o mismo nombre) se agrupan en un solo contacto */
 const COLUMNAS_CARTERA = [
-  ['nombre', 'Nombre completo'], ['telefono', 'Teléfono'], ['whatsapp', 'WhatsApp'], ['email', 'Email'], ['ramo', 'Ramo'],
-  ['aseguradora', 'Aseguradora'], ['poliza', 'Número de póliza'], ['formaPago', 'Forma de pago'], ['inicioVigencia', 'Inicio de vigencia'],
-  ['proxVencimiento', 'Próximo vencimiento'], ['prima', 'Prima anual'], ['moneda', 'Moneda'], ['prioridad', 'Prioridad'],
+  ['cedula', 'Cédula', ['cedula', 'idcliente', 'idclientecc', 'cc', 'documento']],
+  ['nombre', 'Nombre completo', ['nombrecompleto', 'nombre', 'nombres', 'cliente']],
+  ['apellido1', 'Primer apellido', ['primerapellido']],
+  ['apellido2', 'Segundo apellido', ['segundoapellido']],
+  ['nacimiento', 'Fecha de nacimiento', ['fechadenacimiento', 'fechanacimiento', 'nacimiento']],
+  ['telefono', 'Celular', ['celular', 'telefono', 'movil']],
+  ['whatsapp', 'WhatsApp', ['whatsapp']],
+  ['email', 'Email', ['email', 'correo', 'correoelectronico']],
+  ['ciudad', 'Ciudad', ['ciudad']],
+  ['ocupacion', 'Profesión', ['profesion', 'ocupacion']],
+  ['civil', 'Estado civil', ['estadocivil']],
+  ['hijos', 'Hijos', ['hijos']],
+  ['objetivo', 'Objetivo principal', ['objetivoprincipal', 'objetivo']],
+  ['numero', 'Número de póliza', ['numerodepoliza', 'nodepoliza', 'nopoliza', 'poliza']],
+  ['aseguradora', 'Aseguradora', ['aseguradora', 'compania']],
+  ['plan', 'Tipo de plan', ['tipodeplan', 'plan', 'producto']],
+  ['capa', 'Capa estratégica', ['capaestrategica', 'capa']],
+  ['ramo', 'Ramo', ['ramo']],
+  ['cobertura', 'Cobertura', ['cobertura']],
+  ['estadoPoliza', 'Estado', ['estado', 'estadodelapoliza']],
+  ['moneda', 'Moneda', ['moneda']],
+  ['suma', 'Suma asegurada', ['sumaasegurada']],
+  ['prima', 'Prima anual', ['primaanual', 'prima']],
+  ['formaPago', 'Forma de pago', ['formadepago']],
+  ['inicioVigencia', 'Fecha inicio', ['fechainicio', 'fechadeinicio', 'iniciodevigencia', 'inicio']],
+  ['proxVencimiento', 'Próximo recibo', ['proximorecibo', 'proximovencimiento']],
+  ['anioPoliza', 'Año póliza', ['anopoliza', 'aniopoliza']],
+  ['potencial', 'Potencial estratégico', ['potencialestrategico', 'potencial']],
+  ['prioridad', 'Prioridad', ['prioridad']],
+  ['comoLlego', 'Cómo llegó', ['comollego', 'origen']],
+  ['referidoPor', 'Referido por', ['referidopor']],
+  ['ultimoContacto', 'Último contacto', ['ultimocontacto']],
+  ['proximaAccion', 'Próxima acción', ['proximaaccion']],
+  ['notas', 'Notas', ['notas', 'observaciones']],
 ];
-const normal = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
+const CAPA_A_RAMO = { proteccion: 'Vida', patrimonio: 'Ahorro/Inversión', liquidez: 'Ahorro/Inversión', retiro: 'Retiro', salud: 'Gastos Médicos' };
+const normal = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]/g, '');
 function leerCSV(texto) {
-  texto = texto.replace(/^\ufeff/, '');
+  texto = texto.replace(/^﻿/, '');
   const primera = texto.split(/\r?\n/)[0];
   const sep = (primera.match(/;/g) || []).length >= (primera.match(/,/g) || []).length ? ';' : ',';
   const filas = []; let fila = [], celda = '', comillas = false;
@@ -1060,10 +1201,11 @@ function leerCSV(texto) {
     else if (ch !== '\r') celda += ch;
   }
   if (celda || fila.length) { fila.push(celda); filas.push(fila); }
-  return filas.filter(f => f.some(c => c.trim()));
+  return filas;
 }
 function leerFecha(v) {
-  v = String(v || '').trim(); if (!v) return '';
+  if (typeof v === 'number' && v > 1000 && v < 100000) { const d = new Date(Math.round((v - 25569) * 864e5)); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; }
+  v = String(v ?? '').trim(); if (!v) return '';
   let m = v.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
   if (m) return `${m[1]}-${pad(m[2])}-${pad(m[3])}`;
   m = v.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})/);
@@ -1071,7 +1213,8 @@ function leerFecha(v) {
   return '';
 }
 function leerMonto(v) {
-  let t = String(v || '').replace(/[^\d.,-]/g, ''); if (!t) return 0;
+  if (typeof v === 'number') return v;
+  let t = String(v ?? '').replace(/[^\d.,-]/g, ''); if (!t) return 0;
   const p = t.lastIndexOf('.'), c = t.lastIndexOf(',');
   if (p > -1 && c > -1) t = p > c ? t.replace(/,/g, '') : t.replace(/\./g, '').replace(',', '.');
   else { const s = p > -1 ? '.' : c > -1 ? ',' : null;
@@ -1079,36 +1222,123 @@ function leerMonto(v) {
   return Number(t) || 0;
 }
 const elegir = (v, lista, defecto) => { const n = normal(v); return lista.find(x => normal(x) === n) || lista.find(x => n && normal(x).startsWith(n.slice(0, 4))) || defecto; };
-function importarCartera(texto) {
-  const filas = leerCSV(texto);
-  if (filas.length < 2) { toast('El archivo no tiene filas de clientes.', { tono: 'bad' }); return; }
-  const cab = filas[0].map(normal);
-  const idx = Object.fromEntries(COLUMNAS_CARTERA.map(([k, t]) => [k, cab.findIndex(h => h === normal(t) || h === normal(k) || (k === 'poliza' && h.includes('poliza')) || (k === 'prima' && h.startsWith('prima')))]));
-  if (idx.nombre < 0) { toast('No encontré la columna "Nombre completo". Usa la plantilla.', { tono: 'bad' }); return; }
-  const val = (f, k) => idx[k] >= 0 ? String(f[idx[k]] || '').trim() : '';
-  const nuevos = filas.slice(1).filter(f => val(f, 'nombre')).map(f => {
-    const formaPago = elegir(val(f, 'formaPago'), Object.keys(FORMAS), 'Anual');
-    const inicioVigencia = leerFecha(val(f, 'inicioVigencia'));
-    const aseg = val(f, 'aseguradora');
-    const c = { id: uid(), nombre: val(f, 'nombre'), telefono: val(f, 'telefono'), whatsapp: val(f, 'whatsapp') || val(f, 'telefono'), email: val(f, 'email'),
-      ocupacion: '', edad: '36-45', civil: 'Casado(a)', hijos: 0, prioridad: elegir(val(f, 'prioridad'), PRIORIDADES, 'Media'),
-      ramo: elegir(val(f, 'ramo'), RAMOS, 'Vida'), aseguradora: elegir(aseg, ALIADAS, aseg), poliza: val(f, 'poliza'), formaPago, inicioVigencia,
-      proxVencimiento: leerFecha(val(f, 'proxVencimiento')), prima: leerMonto(val(f, 'prima')), moneda: /us|dol/i.test(val(f, 'moneda')) ? 'USD' : 'COP',
-      etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0, fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: hoy() };
-    if (c.poliza && c.inicioVigencia) {
-      c.etapa = 'emitida'; c.estado = 'Cliente Activo'; c.fueCliente = true;
-      if (!c.proxVencimiento) c.proxVencimiento = reciboVigente(c.inicioVigencia, c.formaPago);
-    }
-    return c;
+
+function cargarLectorExcel() {
+  if (window.XLSX) return Promise.resolve();
+  return new Promise((ok, falla) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = ok; s.onerror = falla; document.head.appendChild(s);
   });
-  if (!nuevos.length) { toast('No encontré clientes con nombre en el archivo.', { tono: 'bad' }); return; }
-  const nClientes = nuevos.filter(esCliente).length;
-  if (!confirm(`Voy a agregar ${nuevos.length} contactos: ${nClientes} con póliza (van a Posventa) y ${nuevos.length - nClientes} sin póliza (van a Ventas).${db.esDemo ? '\n\nTambién quitaré los contactos de ejemplo (los que tú agregaste se quedan).' : ''}\n\n¿Continuar?`)) return;
+}
+/* De un libro de Excel toma la hoja que tenga encabezado con "Nombre" y más filas de datos */
+function filasDeExcel(buffer) {
+  const libro = XLSX.read(buffer, { type: 'array' });
+  let mejor = null;
+  libro.SheetNames.forEach(n => {
+    const filas = XLSX.utils.sheet_to_json(libro.Sheets[n], { header: 1, raw: true, defval: '' });
+    const i = buscarEncabezado(filas);
+    if (i < 0) return;
+    const cab = filas[i].map(normal);
+    const columnas = COLUMNAS_CARTERA.filter(c => cab.some(h => c[2].includes(h))).length;
+    const iNombre = cab.findIndex(h => COLUMNAS_CARTERA[1][2].includes(h));
+    const puntaje = columnas * filas.slice(i + 1).filter(f => String(f[iNombre] ?? '').trim()).length;
+    if (!mejor || puntaje > mejor.puntaje) mejor = { filas: filas.slice(i), puntaje };
+  });
+  return mejor ? mejor.filas : [];
+}
+function buscarEncabezado(filas) {
+  const alias = COLUMNAS_CARTERA.find(c => c[0] === 'nombre')[2];
+  return filas.slice(0, 20).findIndex(f => f.some(v => alias.includes(normal(v))));
+}
+
+function contactosDesdeFilas(filas) {
+  const i0 = buscarEncabezado(filas);
+  if (i0 < 0) return { error: 'No encontré una columna de nombre ("Nombre completo"). Revisa el archivo o usa la plantilla.' };
+  const cab = filas[i0].map(normal);
+  const idx = Object.fromEntries(COLUMNAS_CARTERA.map(([k, , alias]) => [k, cab.findIndex(h => alias.includes(h))]));
+  const val = (f, k) => idx[k] >= 0 ? f[idx[k]] : '';
+  const txt = (f, k) => String(val(f, k) ?? '').trim();
+  const grupos = new Map();
+  filas.slice(i0 + 1).forEach(f => {
+    const nombre = [txt(f, 'nombre'), txt(f, 'apellido1'), txt(f, 'apellido2')].filter(Boolean).join(' ').replace(/\s+/g, ' ');
+    if (!nombre) return;
+    const cedula = soloDigitos(txt(f, 'cedula'));
+    const clave = cedula || normal(nombre);
+    if (!grupos.has(clave)) {
+      const nacimiento = leerFecha(val(f, 'nacimiento'));
+      const estrellas = (txt(f, 'potencial').match(/⭐/g) || []).length || Number(txt(f, 'potencial')) || 0;
+      grupos.set(clave, {
+        id: uid(), nombre, cedula, nacimiento, telefono: txt(f, 'telefono'), whatsapp: txt(f, 'whatsapp') || txt(f, 'telefono'), email: txt(f, 'email'),
+        ciudad: txt(f, 'ciudad'), ocupacion: txt(f, 'ocupacion'), edad: rangoEdad(edadDe(nacimiento)), civil: elegir(txt(f, 'civil'), CIVILES, 'Soltero(a)'),
+        hijos: Number(txt(f, 'hijos')) || 0, objetivo: txt(f, 'objetivo'), comoLlego: txt(f, 'comoLlego'), referidoPor: txt(f, 'referidoPor'),
+        prioridad: estrellas ? (estrellas >= 4 ? 'Alta' : estrellas === 3 ? 'Media' : 'Baja') : elegir(txt(f, 'prioridad'), PRIORIDADES, 'Media'),
+        ramo: 'Vida', prima: 0, moneda: 'COP', etapa: 'prospecto', estado: 'Prospecto Frío', fueCliente: false, hitos: {}, notas: [], citas: [], polizas: [], creado: hoy(),
+      });
+    }
+    const c = grupos.get(clave);
+    const fechaNota = leerFecha(val(f, 'ultimoContacto')) || hoy();
+    [txt(f, 'notas'), txt(f, 'proximaAccion') && `Próxima acción: ${txt(f, 'proximaAccion')}`].filter(Boolean).forEach(texto => {
+      if (!c.notas.some(n => n.texto === texto)) c.notas.push({ id: uid(), fecha: fechaNota, hora: '', texto });
+    });
+    const numero = txt(f, 'numero'), inicioVigencia = leerFecha(val(f, 'inicioVigencia'));
+    if (!numero && !inicioVigencia) return;
+    const capa = elegir(txt(f, 'capa'), CAPAS, '');
+    const ramoTxt = txt(f, 'ramo');
+    const ramo = ramoTxt ? elegir(ramoTxt, RAMOS, 'Vida')
+      : /dano|terremoto|hogar/.test(normal(txt(f, 'cobertura') + txt(f, 'plan'))) ? 'Hogar' : CAPA_A_RAMO[normal(capa)] || 'Vida';
+    const formaPago = elegir(txt(f, 'formaPago'), Object.keys(FORMAS), 'Anual');
+    const anio = Number(txt(f, 'anioPoliza')) || 0;
+    const aseg = txt(f, 'aseguradora');
+    c.polizas.push(nuevaPoliza({
+      numero, aseguradora: elegir(aseg, ALIADAS, aseg), plan: txt(f, 'plan'), capa, ramo, formaPago, inicioVigencia,
+      proxVencimiento: leerFecha(val(f, 'proxVencimiento')) || (inicioVigencia ? reciboVigente(inicioVigencia, formaPago) : ''),
+      prima: leerMonto(val(f, 'prima')), moneda: /us|dol/i.test(txt(f, 'moneda')) ? 'USD' : 'COP', sumaAsegurada: leerMonto(val(f, 'suma')),
+      estado: /cancel|anul|caduc/i.test(txt(f, 'estadoPoliza')) ? 'cancelada' : 'vigente', renovaciones: anio > 1 ? anio - 1 : 0,
+    }));
+  });
+  const lista = [...grupos.values()];
+  lista.forEach(c => {
+    if (c.polizas.length) {
+      c.fueCliente = true;
+      c.etapa = vigentes(c).length ? 'emitida' : 'cancelada';
+      c.estado = c.etapa === 'emitida' ? 'Cliente Activo' : 'Cancelada';
+      c.ramo = (vigentes(c)[0] || c.polizas[0]).ramo;
+    }
+  });
+  return { lista };
+}
+
+function importarCartera(filas) {
+  const { lista, error } = contactosDesdeFilas(filas);
+  if (error) { toast(error, { tono: 'bad' }); return; }
+  if (!lista.length) { toast('No encontré clientes con nombre en el archivo.', { tono: 'bad' }); return; }
+  const reales = db.contactos.filter(c => !(db.esDemo && c.demo));
+  const existente = n => reales.find(c => (n.cedula && soloDigitos(c.cedula) === n.cedula) || normal(c.nombre) === normal(n.nombre));
+  const nPol = lista.reduce((s, c) => s + c.polizas.length, 0);
+  const nVig = lista.reduce((s, c) => s + vigentes(c).length, 0);
+  const nAct = lista.filter(existente).length;
+  const msg = `Encontré ${lista.length} clientes con ${nPol} pólizas (${nVig} vigentes${nPol - nVig ? `, ${nPol - nVig} canceladas` : ''}).`
+    + (nAct ? `\n${lista.length - nAct} son nuevos y ${nAct} ya estaban: a esos les actualizo los datos sin borrar lo que ya registraste.` : '')
+    + (db.esDemo ? '\n\nTambién quitaré los contactos de ejemplo.' : '') + '\n\n¿Continuar?';
+  if (!confirm(msg)) return;
   foto();
   if (db.esDemo) { db.contactos = db.contactos.filter(c => !c.demo); db.esDemo = false; }
-  db.contactos.push(...nuevos);
-  guardar(); cerrarModal(); location.hash = nClientes ? 'posventa' : 'ventas'; render();
-  toast(`${nuevos.length} contactos cargados`, { deshacer: true });
+  lista.forEach(n => {
+    const c = existente(n);
+    if (!c) { db.contactos.push(n); return; }
+    ['cedula', 'nacimiento', 'telefono', 'whatsapp', 'email', 'ciudad', 'ocupacion', 'objetivo', 'comoLlego', 'referidoPor'].forEach(k => { if (n[k]) c[k] = n[k]; });
+    c.polizas = c.polizas || [];
+    n.polizas.forEach(np => {
+      const p = c.polizas.find(x => np.numero && normal(x.numero) === normal(np.numero));
+      if (!p) { c.polizas.push(np); return; }
+      ['aseguradora', 'plan', 'capa', 'ramo', 'formaPago', 'inicioVigencia', 'prima', 'moneda', 'sumaAsegurada', 'estado'].forEach(k => { if (np[k] !== '' && np[k] != null) p[k] = np[k]; });
+    });
+    n.notas.forEach(nt => { if (!c.notas.some(x => x.texto === nt.texto)) c.notas.push(nt); });
+    if (vigentes(c).length && !esCliente(c)) { c.etapa = 'emitida'; c.estado = 'Cliente Activo'; c.fueCliente = true; }
+  });
+  guardar(); cerrarModal(); location.hash = 'posventa'; render();
+  toast(`Cartera cargada: ${lista.length} clientes, ${nPol} pólizas`, { deshacer: true });
 }
 
 /* =========================================================
@@ -1117,17 +1347,15 @@ function importarCartera(texto) {
 function moverEtapa(c, etapa) {
   if (c.etapa === etapa) return;
   if (etapa === 'emitida') {
-    if (!c.aseguradora || !c.poliza || !c.inicioVigencia) {
-      c._pendienteEmitir = true; guardar();
-      abrirFormContacto(c.id, 'Para pasar a posventa completa aseguradora, número de póliza e inicio de vigencia.');
+    if (!vigentes(c).length) {
+      abrirFormPoliza(c.id, null, 'Para pasar a posventa registra la póliza emitida.');
       return 'pendiente';
     }
     c.hitos = { ...c.hitos, cierre: c.hitos?.cierre || hoy() };
     c.fueCliente = true;
-    if (!c.proxVencimiento) c.proxVencimiento = reciboVigente(c.inicioVigencia, c.formaPago);
     c.estado = 'Cliente Activo';
   } else if (etapa === 'standby') c.estado = 'Standby';
-  else if (etapa === 'cancelada') c.estado = 'Cancelada';
+  else if (etapa === 'cancelada') { c.estado = 'Cancelada'; vigentes(c).forEach(p => (p.estado = 'cancelada')); }
   else {
     const mapa = { prospecto: c.estado === 'Contactado' ? 'Contactado' : 'Prospecto Frío', cita1: 'Cita 1 Agendada', propuesta: 'Cita 1 Realizada', cita2: 'Cita 2 Agendada', tramite: 'En Trámite' };
     c.estado = mapa[etapa];
@@ -1143,7 +1371,8 @@ const acciones = {
   ajustes: () => abrirAjustes(),
   cita: d => abrirFormCita(d.id, d.tipo),
   nota: d => abrirNota(d.id),
-  pago: d => abrirPago(d.id),
+  pago: d => abrirPago(d.id, d.pol),
+  poliza: d => abrirFormPoliza(d.id, d.pol),
   reagendar: d => abrirReagendar(d.id, d.cita),
   deshacer: () => deshacer(),
   'etapa-movil': d => { ui.etapaMovil = d.etapa; render(); },
@@ -1176,8 +1405,16 @@ const acciones = {
     guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true);
     toast('Quedó en "Por reagendar"', { deshacer: true });
   },
-  gracia: d => { foto(); const c = getC(d.id); c.gracia = true; guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true); toast('Marcada en periodo de gracia', { deshacer: true }); },
-  'quitar-gracia': d => { foto(); const c = getC(d.id); c.gracia = false; guardar(); render(); abrirDetalle(d.id, true); toast('Marca de gracia retirada', { deshacer: true }); },
+  gracia: d => { foto(); getP(d).gracia = true; guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true); toast('Póliza marcada en periodo de gracia', { deshacer: true }); },
+  'quitar-gracia': d => { foto(); getP(d).gracia = false; guardar(); render(); abrirDetalle(d.id, true); toast('Marca de gracia retirada', { deshacer: true }); },
+  'borrar-poliza': d => {
+    if (!confirm('¿Borrar esta póliza y su historial de pagos? Si solo se canceló, mejor cambia su estado a "Cancelada" para que cuente en tu persistencia.')) return;
+    foto();
+    const c = getC(d.id);
+    c.polizas = c.polizas.filter(p => p.id !== d.pol);
+    if (esCliente(c) && !vigentes(c).length) { c.etapa = 'tramite'; c.estado = 'En Trámite'; }
+    guardar(); render(); abrirDetalle(c.id); toast('Póliza borrada', { deshacer: true });
+  },
   eliminar: d => {
     const c = getC(d.id);
     if (!confirm(`¿Eliminar a ${c.nombre}? Se borran también sus citas, notas y pagos.`)) return;
@@ -1185,9 +1422,9 @@ const acciones = {
     toast('Contacto eliminado', { deshacer: true });
   },
   plantilla: () => {
-    const filas = [COLUMNAS_CARTERA.map(c => c[1]),
-      ['Ana María Gómez', '3001234567', '3001234567', 'ana@correo.com', 'Vida', 'MetLife', 'VID-12345', 'Anual', '15/03/2024', '', '2400000', 'COP', 'Media'],
-      ['Carlos Pérez', '3109876543', '3109876543', '', 'Retiro', 'Skandia', 'RET-778', 'Mensual', '01/08/2025', '01/11/2026', '1800', 'USD', 'Alta']];
+    const filas = [['Cédula', 'Nombre completo', 'Celular', 'Email', 'Ciudad', 'Fecha de nacimiento', 'Número de póliza', 'Aseguradora', 'Tipo de plan', 'Ramo', 'Estado', 'Moneda', 'Suma asegurada', 'Prima anual', 'Forma de pago', 'Fecha inicio', 'Notas'],
+      ['1020304050', 'Ana María Gómez', '3001234567', 'ana@correo.com', 'Bogotá', '15/03/1985', 'VID-12345', 'MetLife', 'Vida temporal', 'Vida', 'Vigente', 'COP', '200000000', '2400000', 'Anual', '15/03/2024', 'Referida por Carlos'],
+      ['1020304050', 'Ana María Gómez', '3001234567', 'ana@correo.com', 'Bogotá', '15/03/1985', 'RET-778', 'Skandia', 'Crea Patrimonio', 'Retiro', 'Vigente', 'USD', '50000', '1800', 'Mensual', '01/08/2025', 'Segunda póliza de Ana']];
     const csv = '\ufeff' + filas.map(f => f.map(v => /[;"\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v).join(';')).join('\r\n');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' })); a.download = 'plantilla-cartera-lirios.csv'; a.click();
@@ -1214,27 +1451,45 @@ const acciones = {
 const formularios = {
   contacto: (f, fd) => {
     const nombre = (fd.get('nombre') || '').trim();
-    const err = f.querySelector('[data-err=nombre]');
-    if (!nombre) { err.classList.remove('hidden'); f.nombre.focus(); return; }
+    if (!nombre) { f.querySelector('[data-err=nombre]').classList.remove('hidden'); f.nombre.focus(); return; }
+    const t = k => (fd.get(k) || '').trim();
+    const nacimiento = fd.get('nacimiento');
     const datos = {
-      nombre, telefono: fd.get('telefono').trim(), whatsapp: fd.get('whatsapp').trim(), email: fd.get('email').trim(), ocupacion: fd.get('ocupacion').trim(),
-      edad: fd.get('edad'), civil: fd.get('civil'), hijos: Number(fd.get('hijos')) || 0, prioridad: fd.get('prioridad'), ramo: fd.get('ramo'),
-      prima: Number(fd.get('prima')) || 0, moneda: fd.get('moneda'), aseguradora: fd.get('aseguradoraSel') === 'Otra' ? fd.get('aseguradoraOtra').trim() : fd.get('aseguradoraSel'), poliza: fd.get('poliza').trim(),
-      formaPago: fd.get('formaPago'), inicioVigencia: fd.get('inicioVigencia'), proxVencimiento: fd.get('proxVencimiento'),
+      nombre, cedula: t('cedula'), nacimiento, telefono: t('telefono'), whatsapp: t('whatsapp'), email: t('email'), ciudad: t('ciudad'), ocupacion: t('ocupacion'),
+      edad: nacimiento ? rangoEdad(edadDe(nacimiento)) : fd.get('edad'), civil: fd.get('civil'), hijos: Number(fd.get('hijos')) || 0,
+      prioridad: fd.get('prioridad'), ramo: fd.get('ramo'), prima: Number(fd.get('prima')) || 0, moneda: fd.get('moneda'),
+      objetivo: t('objetivo'), comoLlego: fd.get('comoLlego'), referidoPor: t('referidoPor'),
     };
-    if (!datos.proxVencimiento && datos.inicioVigencia) datos.proxVencimiento = reciboVigente(datos.inicioVigencia, datos.formaPago);
     foto();
     let c;
-    if (f.dataset.id) {
-      c = getC(f.dataset.id); Object.assign(c, datos);
-      if (c._pendienteEmitir) { delete c._pendienteEmitir; if (c.aseguradora && c.poliza && c.inicioVigencia) moverEtapa(c, 'emitida'); }
-    } else {
-      c = { id: uid(), ...datos, etapa: 'prospecto', estado: 'Prospecto Frío', gracia: false, renovadoEn: null, renovaciones: 0, fueCliente: false, hitos: {}, notas: [], citas: [], pagos: [], creado: hoy() };
+    if (f.dataset.id) { c = getC(f.dataset.id); Object.assign(c, datos); }
+    else {
+      c = { id: uid(), ...datos, etapa: 'prospecto', estado: 'Prospecto Frío', fueCliente: false, hitos: {}, notas: [], citas: [], polizas: [], creado: hoy() };
       db.contactos.push(c);
-      if (moverEtapa(c, fd.get('etapa') || 'prospecto') === 'pendiente') { render(); return; }
+      if (moverEtapa(c, fd.get('etapa') || 'prospecto') === 'pendiente') { guardar(); render(); return; }
     }
     guardar(); render(); abrirDetalle(c.id);
     toast(f.dataset.id ? 'Cambios guardados' : `${c.nombre.split(' ')[0]} ya está en tu CRM`, { deshacer: true });
+  },
+  poliza: (f, fd) => {
+    const inicio = fd.get('inicioVigencia');
+    if (!inicio) { f.querySelector('[data-err=inicioVigencia]').classList.remove('hidden'); f.inicioVigencia.focus(); return; }
+    const c = getC(f.dataset.id);
+    const datos = {
+      numero: fd.get('numero').trim(), aseguradora: fd.get('aseguradoraSel') === 'Otra' ? fd.get('aseguradoraOtra').trim() : fd.get('aseguradoraSel'),
+      plan: fd.get('plan').trim(), ramo: fd.get('ramo'), capa: fd.get('capa'), formaPago: fd.get('formaPago'), inicioVigencia: inicio,
+      proxVencimiento: fd.get('proxVencimiento') || reciboVigente(inicio, fd.get('formaPago')), prima: Number(fd.get('prima')) || 0,
+      moneda: fd.get('moneda'), sumaAsegurada: Number(fd.get('sumaAsegurada')) || 0,
+    };
+    if (fd.get('estado')) datos.estado = fd.get('estado');
+    foto();
+    c.polizas = c.polizas || [];
+    const p = f.dataset.pol && c.polizas.find(x => x.id === f.dataset.pol);
+    if (p) Object.assign(p, datos); else c.polizas.push(nuevaPoliza(datos));
+    if (vigentes(c).length && !esCliente(c)) moverEtapa(c, 'emitida');
+    if (!vigentes(c).length && esCliente(c)) { c.etapa = 'cancelada'; c.estado = 'Cancelada'; }
+    guardar(); render(); abrirDetalle(c.id);
+    toast(p ? 'Póliza actualizada' : `Póliza registrada · ${c.nombre.split(' ')[0]} ya está en posventa`, { deshacer: true });
   },
   cita: (f, fd) => {
     const c = getC(fd.get('cid')); if (!c) return;
@@ -1255,17 +1510,18 @@ const formularios = {
     toast(`Reagendada (${x.reagendas}×) para el ${fFecha(x.fecha, { day: 'numeric', month: 'long' })}`, { deshacer: true });
   },
   pago: (f, fd) => {
-    const c = getC(f.dataset.id);
+    const c = getC(f.dataset.id), p = c.polizas.find(x => x.id === f.dataset.pol);
     foto();
-    const recibo = c.proxVencimiento;
-    c.pagos.push({ id: uid(), fecha: fd.get('fecha'), monto: Number(fd.get('monto')) || 0, moneda: c.moneda, recibo });
-    const meses = mesesEntre(c.inicioVigencia, recibo);
+    const recibo = p.proxVencimiento;
+    p.pagos = p.pagos || [];
+    p.pagos.push({ id: uid(), fecha: fd.get('fecha'), monto: Number(fd.get('monto')) || 0, moneda: p.moneda, recibo });
+    const meses = mesesEntre(p.inicioVigencia, recibo);
     const esAniv = meses > 0 && meses % 12 === 0;
-    c.proxVencimiento = siguienteRecibo(c.inicioVigencia, c.formaPago, recibo);
-    c.gracia = false;
-    if (esAniv) { c.renovadoEn = fd.get('fecha'); c.renovaciones = (c.renovaciones || 0) + 1; }
+    p.proxVencimiento = siguienteRecibo(p.inicioVigencia, p.formaPago, recibo);
+    p.gracia = false;
+    if (esAniv) { p.renovadoEn = fd.get('fecha'); p.renovaciones = (p.renovaciones || 0) + 1; }
     guardar(); render(); abrirDetalle(c.id);
-    toast(esAniv ? '¡Póliza renovada! Cuenta como conservada' : `Pago registrado · siguiente recibo ${fFecha(c.proxVencimiento)}`, { deshacer: true });
+    toast(esAniv ? '¡Póliza renovada! Cuenta como conservada' : `Pago registrado · siguiente recibo ${fFecha(p.proxVencimiento)}`, { deshacer: true });
   },
   nota: (f, fd) => {
     const texto = (fd.get('texto') || '').trim();
@@ -1318,11 +1574,12 @@ document.addEventListener('change', e => {
   }
   if (el.dataset.change === 'estado') { foto(); const c = getC(el.dataset.id); c.estado = el.value; guardar(); render(); abrirDetalle(c.id, true); toast('Estado actualizado', { deshacer: true }); }
   if (el.dataset.change === 'aseg') { const f = el.closest('form'); const otra = f.querySelector('[data-otra]'); otra.classList.toggle('hidden', el.value !== 'Otra'); if (el.value === 'Otra') f.aseguradoraOtra.focus(); }
-  if (el.dataset.change === 'etapa-form' && ['tramite', 'emitida'].includes(el.value)) el.closest('form').querySelector('[data-poliza]').open = true;
   if (el.dataset.change === 'cartera') {
-    const file = el.files[0]; if (!file) return;
-    file.text().then(t => importarCartera(t)).catch(() => toast('No pude leer ese archivo. Guárdalo desde Excel como "CSV".', { tono: 'bad' }));
-    el.value = '';
+    const file = el.files[0]; el.value = ''; if (!file) return;
+    const esExcel = /\.xlsx?$/i.test(file.name);
+    (esExcel ? cargarLectorExcel().then(() => file.arrayBuffer()).then(b => filasDeExcel(new Uint8Array(b))) : file.text().then(leerCSV))
+      .then(importarCartera)
+      .catch(() => toast(esExcel ? 'No pude abrir ese Excel. Revisa tu conexión a internet e inténtalo de nuevo.' : 'No pude leer ese archivo.', { tono: 'bad' }));
   }
   if (el.dataset.change === 'importar') {
     const file = el.files[0]; if (!file) return;
@@ -1330,7 +1587,7 @@ document.addEventListener('change', e => {
       const d = JSON.parse(t);
       if (!d || !Array.isArray(d.contactos)) throw new Error('formato');
       if (!confirm(`Este respaldo tiene ${d.contactos.length} contactos y reemplazará lo que ves ahora. ¿Continuar?`)) return;
-      foto(); db = d; db.ajustes = db.ajustes || { usd: TASA_USD_INICIAL }; guardar(); cerrarModal(); render(); toast('Respaldo cargado', { deshacer: true });
+      foto(); db = d; db.ajustes = db.ajustes || { usd: TASA_USD_INICIAL }; db.contactos.forEach(aFormatoPolizas); db.version = 3; guardar(); cerrarModal(); render(); toast('Respaldo cargado', { deshacer: true });
     }).catch(() => toast('Ese archivo no es un respaldo de Lirios CRM.', { tono: 'bad' }));
   }
 });
@@ -1338,7 +1595,7 @@ document.addEventListener('input', e => {
   if (e.target.id === 'buscador') {
     ui.busqueda = e.target.value;
     const q = ui.busqueda.trim().toLowerCase();
-    const lista = db.contactos.filter(c => aplicaFiltro(c, ui.filtro)).filter(c => !q || [c.nombre, c.poliza, c.prioridad, c.telefono, c.email, c.aseguradora, c.ramo].join(' ').toLowerCase().includes(q)).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+    const lista = db.contactos.filter(c => aplicaFiltro(c, ui.filtro)).filter(c => !q || textoBusqueda(c).includes(q)).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
     document.getElementById('lista-contactos').innerHTML = listaContactos(lista);
     pintarIconos();
   }
