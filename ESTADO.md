@@ -346,6 +346,21 @@ paso exacto: probar una cancelación o reembolso de una de las 2 compras de prue
 (apoyogyr@gmail.com o apoyolaboral1231@gmail.com) y confirmar que el acceso se corta
 correctamente en la app.
 
+⏸️ CHECKPOINT (2026-10-17) — fecha límite opcional en "Tu meta" (pedido por la usuaria): al crear
+o editar una meta de monto (ahorro/deuda) ahora puede elegir una fecha objetivo, opcional. La
+tarjeta de progreso muestra "Te quedan N días (23 dic)" o, si ya pasó, "Tu fecha límite ya pasó
+(23 dic)" — no bloquea nada, es solo informativo. No aplica a metas de hábito (se miden en racha).
+Implementado:
+- `supabase/migrations/20261017010000_meta_fecha_limite.sql`: columna `fecha_limite` (date,
+  opcional) en `metas`. **Falta que la usuaria la ejecute** (mismo procedimiento SQL de siempre).
+- `lib/app.ts`: `Meta.fechaLimite`.
+- `lib/supabase/datos.ts`: `crearMetaMontoSupabase` y `actualizarDetalleMetaSupabase` ahora
+  reciben la fecha límite (o `null`); `obtenerEstadoApp` la lee.
+- `app/app/meta/page.tsx`: input de fecha (`type="date"`, mínimo hoy) al crear y al editar la
+  meta + el texto de cuenta regresiva en la tarjeta de progreso.
+Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox. Pendiente: que la usuaria
+ejecute la migración y pruebe poner/editar una fecha límite en `/app/meta`.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→

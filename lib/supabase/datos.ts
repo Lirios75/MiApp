@@ -26,7 +26,7 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
       .eq('id', uid)
       .maybeSingle(),
     supabase.from('checkins').select('fecha, estado, nota').eq('user_id', uid).order('fecha'),
-    supabase.from('metas').select('tipo, nombre, modo, objetivo, actual, frecuencia').eq('user_id', uid).maybeSingle(),
+    supabase.from('metas').select('tipo, nombre, modo, objetivo, actual, frecuencia, fecha_limite').eq('user_id', uid).maybeSingle(),
   ]);
   if (errorCheckins) throw errorCheckins;
   if (errorMeta) throw errorMeta;
@@ -48,6 +48,7 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
           objetivo: Number(meta.objetivo),
           actual: Number(meta.actual),
           frecuencia: (meta.frecuencia as Frecuencia | null) ?? null,
+          fechaLimite: meta.fecha_limite ?? null,
         }
       : null,
     fechaInicioTrial,
@@ -123,29 +124,38 @@ export async function crearMetaMontoSupabase(
   nombre: string,
   objetivo: number,
   actual: number,
-  frecuencia: Frecuencia
+  frecuencia: Frecuencia,
+  fechaLimite: string | null
 ): Promise<EstadoApp> {
   const supabase = crearClienteSupabase();
   const uid = await usuarioId();
-  const { error } = await supabase
-    .from('metas')
-    .upsert({ user_id: uid, tipo, nombre, modo: 'monto', objetivo: Math.max(1, objetivo), actual: Math.max(0, actual), frecuencia });
+  const { error } = await supabase.from('metas').upsert({
+    user_id: uid,
+    tipo,
+    nombre,
+    modo: 'monto',
+    objetivo: Math.max(1, objetivo),
+    actual: Math.max(0, actual),
+    frecuencia,
+    fecha_limite: fechaLimite,
+  });
   if (error) throw error;
   return obtenerEstadoApp();
 }
 
-/** Cambiar el nombre, la frecuencia y/o el monto total de una meta "monto" ya creada
- * (Editar en /app/meta) — no toca cuánto lleva ahorrado (actual). */
+/** Cambiar el nombre, la frecuencia, el monto total y/o la fecha límite de una meta "monto"
+ * ya creada (Editar en /app/meta) — no toca cuánto lleva ahorrado (actual). */
 export async function actualizarDetalleMetaSupabase(
   nombre: string,
   frecuencia: Frecuencia,
-  objetivo: number
+  objetivo: number,
+  fechaLimite: string | null
 ): Promise<EstadoApp> {
   const supabase = crearClienteSupabase();
   const uid = await usuarioId();
   const { error } = await supabase
     .from('metas')
-    .update({ nombre, frecuencia, objetivo: Math.max(1, objetivo) })
+    .update({ nombre, frecuencia, objetivo: Math.max(1, objetivo), fecha_limite: fechaLimite })
     .eq('user_id', uid);
   if (error) throw error;
   return obtenerEstadoApp();

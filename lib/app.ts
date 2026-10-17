@@ -31,6 +31,7 @@ export interface Meta {
   objetivo: number; // monto objetivo (modo monto) o días objetivo (modo habito)
   actual: number; // monto actual (modo monto) o días actuales (modo habito)
   frecuencia: Frecuencia | null; // cada cuánto ahorra — solo aplica en modo monto
+  fechaLimite: string | null; // YYYY-MM-DD, opcional — solo aplica en modo monto
 }
 
 // Estado real de la membresía (lo llena el webhook de Hotmart al confirmar un pago) — null

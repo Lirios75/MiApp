@@ -10,6 +10,7 @@ import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { Pencil, Plus, X } from 'lucide-react';
 import {
   calcularRacha,
+  hoyISO,
   metaInicialDesdeOnboarding,
   metaSincronizada,
   OPCIONES_FRECUENCIA,
@@ -179,6 +180,7 @@ function ConfigurarMeta({
   const [nombre, setNombre] = useState('');
   const [monto, setMonto] = useState('');
   const [frecuencia, setFrecuencia] = useState<Frecuencia>('mensual');
+  const [fechaLimite, setFechaLimite] = useState('');
   const [guardando, setGuardando] = useState(false);
   const esHabito = inicial.modo === 'habito';
 
@@ -192,7 +194,7 @@ function ConfigurarMeta({
       } else {
         const objetivo = Number(monto);
         if (!objetivo || objetivo <= 0 || !nombre.trim()) return;
-        onCreada(await crearMetaMontoSupabase(inicial.tipo, nombre.trim(), objetivo, 0, frecuencia));
+        onCreada(await crearMetaMontoSupabase(inicial.tipo, nombre.trim(), objetivo, 0, frecuencia, fechaLimite || null));
       }
     } finally {
       setGuardando(false);
@@ -239,8 +241,15 @@ function ConfigurarMeta({
             className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
           />
 
-          <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Cada cuánto quieres ahorrar?</p>
-          <SelectorFrecuencia valor={frecuencia} onElegir={setFrecuencia} />
+          <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Para cuándo quieres lograrla? (opcional)</p>
+          <input
+            type="date"
+            min={hoyISO()}
+            value={fechaLimite}
+            onChange={(e) => setFechaLimite(e.target.value)}
+            aria-label="Fecha límite de la meta"
+            className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+          />
         </>
       )}
       <motion.button
@@ -253,6 +262,19 @@ function ConfigurarMeta({
       </motion.button>
     </form>
   );
+}
+
+function formatearFechaCorta(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  const fecha = new Date(y, m - 1, d);
+  return fecha.toLocaleDateString('es', { day: 'numeric', month: 'short' });
+}
+
+function copyFechaLimite(fechaLimite: string): string {
+  const dias = Math.ceil((new Date(fechaLimite).getTime() - new Date(hoyISO()).getTime()) / 86_400_000);
+  if (dias < 0) return `Tu fecha límite ya pasó (${formatearFechaCorta(fechaLimite)})`;
+  if (dias === 0) return `Tu fecha límite es hoy`;
+  return `Te quedan ${dias} días (${formatearFechaCorta(fechaLimite)})`;
 }
 
 function ProgresoMeta({
@@ -333,6 +355,9 @@ function ProgresoMeta({
         </AnilloProgreso>
       </div>
       <p className="mt-4 text-center text-[15px] leading-relaxed text-[var(--text-primary)]">{copy}</p>
+      {meta.modo === 'monto' && meta.fechaLimite && (
+        <p className="mt-1 text-center text-[13px] text-[var(--text-tertiary)]">{copyFechaLimite(meta.fechaLimite)}</p>
+      )}
 
       {meta.modo === 'monto' ? (
         <form onSubmit={registrar} className="mt-5 flex gap-2">
@@ -376,6 +401,7 @@ function EditarDetalleMeta({
   const [nombre, setNombre] = useState(meta.nombre);
   const [frecuencia, setFrecuencia] = useState<Frecuencia>(meta.frecuencia ?? 'mensual');
   const [objetivo, setObjetivo] = useState(String(meta.objetivo));
+  const [fechaLimite, setFechaLimite] = useState(meta.fechaLimite ?? '');
   const [guardando, setGuardando] = useState(false);
 
   async function guardar(e: FormEvent) {
@@ -384,7 +410,7 @@ function EditarDetalleMeta({
     if (guardando || !nombre.trim() || !nuevoObjetivo || nuevoObjetivo <= 0) return;
     setGuardando(true);
     try {
-      onGuardada(await actualizarDetalleMetaSupabase(nombre.trim(), frecuencia, nuevoObjetivo));
+      onGuardada(await actualizarDetalleMetaSupabase(nombre.trim(), frecuencia, nuevoObjetivo, fechaLimite || null));
     } finally {
       setGuardando(false);
     }
@@ -428,6 +454,16 @@ function EditarDetalleMeta({
 
       <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Cada cuánto quieres ahorrar?</p>
       <SelectorFrecuencia valor={frecuencia} onElegir={setFrecuencia} />
+
+      <p className="mt-4 text-[13px] font-semibold text-[var(--text-secondary)]">¿Para cuándo quieres lograrla? (opcional)</p>
+      <input
+        type="date"
+        min={hoyISO()}
+        value={fechaLimite}
+        onChange={(e) => setFechaLimite(e.target.value)}
+        aria-label="Fecha límite de la meta"
+        className="mt-2 h-[52px] w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-4 text-[16px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+      />
 
       <motion.button
         type="submit"
