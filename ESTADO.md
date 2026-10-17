@@ -341,6 +341,10 @@ probar un reembolso/cancelación de prueba (para confirmar que el acceso se cort
 checkpoint de más arriba). Siguiente paso sugerido: la usuaria puede anunciar la venta — o, si
 quiere más tranquilidad antes, hacer una prueba de cancelación/reembolso con cualquiera de las
 2 compras de prueba ya hechas.
+La usuaria decidió dejar la prueba de reembolso/cancelación para la próxima sesión. Siguiente
+paso exacto: probar una cancelación o reembolso de una de las 2 compras de prueba ya hechas
+(apoyogyr@gmail.com o apoyolaboral1231@gmail.com) y confirmar que el acceso se corta
+correctamente en la app.
 
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
