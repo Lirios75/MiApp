@@ -53,14 +53,19 @@ function extraerDatosDelEvento(payload: Record<string, unknown>) {
   };
 }
 
-function montoEsperadoValido(valor: number, moneda: string | null): boolean {
-  if (moneda && moneda !== 'USD') return false;
-  if (valor === 0) return true; // inicio de prueba gratis
-  const PRECIOS_VALIDOS = [6.99, 49.99];
-  return PRECIOS_VALIDOS.some((p) => Math.abs(p - valor) < 0.01);
+/**
+ * Valida el importe de forma laxa a propósito: Hotmart cobra a cada comprador en SU moneda
+ * local (confirmado con la primera compra real — el panel muestra USD, pero el correo de un
+ * comprador en Colombia llegó en COP), así que no hay un monto/moneda fijo contra el que
+ * comparar sin rechazar por error ventas reales de todo LATAM. La defensa real contra eventos
+ * ajenos es el `productId` (paso 5 de abajo); aquí solo se descarta un valor imposible
+ * (negativo), nunca un monto legítimo en otra moneda.
+ */
+function montoEsperadoValido(valor: number): boolean {
+  return valor >= 0;
 }
 
-function calcularVentanasDeAcceso(estado: EstadoMembresia, valor: number) {
+function calcularVentanasDeAcceso(estado: EstadoMembresia, planName: string | null) {
   const ahora = Date.now();
   let trialEndsAt: string | null = null;
   let accessUntil: string | null = null;
@@ -74,8 +79,9 @@ function calcularVentanasDeAcceso(estado: EstadoMembresia, valor: number) {
   }
   if (estado === 'cancelled') {
     // No siempre viene la fecha exacta del próximo cobro en este evento — se usa el ciclo del
-    // plan (mensual ~30 días, anual ~365) como piso razonable del acceso ya pagado.
-    const diasDelCiclo = Math.abs(valor - 49.99) < 0.01 ? 365 : 30;
+    // plan (mensual ~30 días, anual ~365) como piso razonable del acceso ya pagado. Se decide
+    // por el NOMBRE del plan, no por el monto (el monto puede venir en cualquier moneda local).
+    const diasDelCiclo = planName?.toLowerCase().includes('anual') ? 365 : 30;
     accessUntil = new Date(ahora + diasDelCiclo * 86_400_000).toISOString();
   }
   if (estado === 'expired') {
@@ -137,7 +143,7 @@ export async function POST(req: NextRequest) {
     `${datos.evento}:${datos.email}:${datos.fechaMs ?? ''}`;
 
   // 5. Catálogo permitido: producto, moneda e importe esperados — nunca confiar en el payload.
-  if (datos.productId !== HOTMART_PRODUCT_ID || !montoEsperadoValido(datos.valor, datos.moneda)) {
+  if (datos.productId !== HOTMART_PRODUCT_ID || !montoEsperadoValido(datos.valor)) {
     console.error('webhook hotmart: evento fuera del catálogo esperado', {
       evento: datos.evento,
       productId: datos.productId,
@@ -170,7 +176,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'processing failed' }, { status: 500 });
   }
 
-  const { trialEndsAt, accessUntil, graceEndsAt } = calcularVentanasDeAcceso(nuevoEstado, datos.valor);
+  const { trialEndsAt, accessUntil, graceEndsAt } = calcularVentanasDeAcceso(nuevoEstado, datos.planName);
   const payloadHash = crypto.createHash('sha256').update(rawBody).digest('hex');
 
   // 8. Idempotencia + cambio de estado, atómicos (ver la función en la migración).

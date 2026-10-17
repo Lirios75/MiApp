@@ -296,6 +296,31 @@ checkout correcto → el webhook la procesa → se crea la cuenta → llega el c
 entrar, Cuenta muestra el plan activo. Siguiente paso exacto: guiar a la usuaria a abrir su app
 en el celular, llegar hasta el paywall, y hacer la compra de prueba.
 
+⏸️ CHECKPOINT (2026-10-17) — PRUEBA E2E REAL hecha + BUG REAL encontrado y corregido antes de
+que afectara una venta real. La usuaria compró de verdad (plan Anual, prueba gratis, comprador
+"Pedro Torres" / apoyogyr@gmail.com, transacción HP1983914456) — "¡Compra aprobada!" en Hotmart,
+y le llegaron los 2 correos propios de Hotmart (instructivo de acceso + "definir contraseña").
+Revisando el correo de Hotmart encontré que el precio aparecía en **COP (pesos colombianos)**,
+no en USD — la usuaria confirmó: en el checkout de Hotmart el comprador puede elegir pagar en su
+moneda local y Hotmart lo liquida a la TRM (tasa de cambio) del día. El webhook tenía un filtro
+de seguridad (`montoEsperadoValido` en `app/api/webhooks/hotmart/route.ts`) que SOLO aceptaba
+pagos en USD con los montos exactos $6.99/$49.99 — con pagos en otra moneda, ese filtro iba a
+**rechazar por error compras reales** de LATAM (el mercado entero de esta app). Corregido:
+- `montoEsperadoValido` ya no exige USD ni un monto exacto — solo descarta un valor negativo
+  (imposible). La defensa real contra eventos ajenos sigue siendo el `productId` (HOTMART_PRODUCT_ID).
+- `calcularVentanasDeAcceso` (decide si un plan cancelado es mensual o anual para calcular hasta
+  cuándo le queda acceso pagado) ya NO compara el monto contra $49.99 — ahora usa el NOMBRE del
+  plan (`hotmart_plan_name`, que sí es estable sin importar la moneda).
+Verificado: tsc ✓ build ✓. Publicado.
+⚠️ Pendiente de confirmar (no se pudo verificar en este sandbox, sin acceso a Supabase/Vercel):
+con el filtro viejo todavía activo en el momento de esta compra de prueba, es MUY PROBABLE que
+el webhook haya rechazado el evento (lo registra como "ignorado por catálogo", responde 200 de
+todos modos — por eso Hotmart no mostró ningún error) y que la cuenta de apoyogyr@gmail.com NO
+se haya creado ni haya recibido el correo de acceso de Respira (los 2 correos que llegaron son
+de Hotmart, no de Respira/Resend). Siguiente paso exacto: repetir la compra de prueba (otra vez
+gratis, con la prueba del plan) ahora que el filtro está corregido, y confirmar esta vez que SÍ
+llega el correo de Respira y que el plan queda activo en Cuenta.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→
