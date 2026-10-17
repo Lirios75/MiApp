@@ -671,6 +671,8 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 6: servicios externos (GitHub ya está, falta Supabase real, IA si aplica, Vercel, Resend, dominio, Hotmart) — ahí se reemplazan los placeholders del carrusel de la landing por screenshots reales de la app.
 
 ## Problemas conocidos ⚠️
+- [veredicto:landing] POSPUESTO (anterior a la sesión del 2026-10-17): docs/revisiones/landing-veredicto.md sigue en NO LISTA; la usuaria aprobó la landing en sustancia y decidió avanzar. Pendiente: corregir defectos y relanzar revisor-visual antes de vender.
+- [veredicto:onboarding] POSPUESTO (anterior a la sesión del 2026-10-17): docs/revisiones/onboarding-veredicto.md en NO LISTA (29/40 · 17/20); la usuaria decidió avanzar sin iterar más (ver "Decisión de la usuaria" en el veredicto). Pendiente: 5 puntos no bloqueantes + relanzar revisor antes de vender.
 - onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (ver "Puertas de etapa") tras 16 pasadas del revisor-visual. Quedan 5 pendientes conocidos, NO bloqueantes, aceptados así por la usuaria el 2026-09-18 (detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"):
   1. Botón "Salir sin guardar" del aviso de salida no cambia a "Salir" cuando ya te comprometiste — contradice el mensaje de arriba ("tu compromiso ya quedó guardado").
   2. Las 2 pantallas del compromiso (antes de sostener el botón, y la de "¡Listo, quedó registrado!") tienen casi la mitad de la pantalla vacía arriba del título — confirmado con capturas reales en docs/revisiones/vivo/.
