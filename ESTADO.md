@@ -361,6 +361,24 @@ Implementado:
 Verificado: tsc ✓ build ✓. NO se pudo probar en vivo en este sandbox. Pendiente: que la usuaria
 ejecute la migración y pruebe poner/editar una fecha límite en `/app/meta`.
 
+⏸️ CHECKPOINT (2026-10-17, noche) — ADQUISICIÓN arrancada (skill `/adquisicion`, etapa 0: 0
+clientes reales, 0 testimonios). Plan acordado con la usuaria: ella publica en sus redes propias
+(tiene "un poco de audiencia") + se activa el Programa de Afiliados de Hotmart (riesgo cero).
+Paid ads explícitamente NO se activa todavía (sin CAC/LTV reales, per regla del 34).
+- **Programa de Afiliados ACTIVADO en Hotmart**: aprobación manual (no "1 clic", para filtrar
+  calidad al inicio), comisión 35% recurrente en ambos planes (Mensual y Anual) — dentro del
+  rango 30-40% recomendado por `40-UNIT-ECONOMICS.md` para suscripción, correo de contacto
+  `lina.rios@ikigaihumano.com` (corregido un typo que había quedado como `.com.co`), descripción
+  del programa ya redactada y guardada en Hotmart.
+- `docs/copy/kit-afiliados.md` (NUEVO): el kit completo de materiales para afiliados — 5 ángulos
+  de venta (del `FICHA-AVATAR.md`), 15 copys de Instagram/TikTok, 1 guion de Reel UGC, 5 stories,
+  swipe de 4 emails, ideas de creativos visuales, FAQ de objeciones y las reglas del programa.
+  **Pendiente de la usuaria**: subir este contenido al área de "Material de Divulgación" del
+  Programa de Afiliados en Hotmart (o parte de él — los copys y el FAQ son lo más urgente).
+Siguiente paso sugerido: reclutar 3-10 primeros afiliados del nicho a mano (no esperar a que
+lleguen solos del marketplace) — ver PASO 4 de `34-ADQUISICION-Y-TRAFICO.md` cuando ella quiera
+retomar este frente.
+
 ✅ CHECKPOINT (2026-10-14): Resend conectado y FUNCIONANDO de verdad en producción — probado
 end-to-end. Dominio `mail.ikigaihumano.com` verificado en Resend (DNS en Hostinger: TXT
 `resend._domainkey.mail`, CNAME `rsend.mail`→`rsend-sae1.forge.rmta.net`, CNAME `send.mail`→
