@@ -1126,10 +1126,10 @@ function bloqueSeguimiento(c) {
       <button class="btn-soft btn-sm" data-act="llamada" data-id="${c.id}" data-r="intento">${icon('phone-missed', 'w-4 h-4')} No contestó</button>
       <button class="btn-primary btn-sm" data-act="llamada" data-id="${c.id}" data-r="efectivo">${icon('phone-call', 'w-4 h-4')} Hablamos</button>
     </div>
-    <div class="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-line">
+    ${esCliente(c) ? '' : `<div class="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-line">
       <div class="min-w-0"><p class="text-[14px] font-medium">Prospecto calificado (AND)</p><p class="text-[12.5px] text-ink3">${c.calificadoEn ? `Calificado el ${fFecha(c.calificadoEn, { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Cumple el perfil para seguir el proceso'}</p></div>
       <button class="btn-sm btn ${c.calificadoEn ? 'bg-ok-soft text-ok' : 'btn-soft'} shrink-0" data-act="calificar" data-id="${c.id}" aria-pressed="${!!c.calificadoEn}">${icon(c.calificadoEn ? 'badge-check' : 'badge-plus', 'w-4 h-4')} ${c.calificadoEn ? 'Calificado' : 'Calificar'}</button>
-    </div>
+    </div>`}
   </section>`;
 }
 
@@ -1331,7 +1331,7 @@ function abrirDetalle(id, refrescar = false) {
       <button class="btn-soft flex-col gap-1! py-2 text-[12px]" data-act="nota" data-id="${c.id}">${icon('notebook-pen', 'w-5 h-5 text-brand')}Nota</button>
     </div>
 
-    ${!esCliente(c) && c.etapa !== 'cancelada' ? bloqueSeguimiento(c) : ''}
+    ${c.etapa !== 'cancelada' ? bloqueSeguimiento(c) : ''}
 
     <label class="field"><span>Etapa en el pipeline</span>
       <select class="input" data-change="etapa" data-id="${c.id}">${opciones(etapas, c.etapa)}</select></label>
