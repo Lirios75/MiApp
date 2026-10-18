@@ -523,7 +523,7 @@ function deshacer() { if (!fotoPrevia) return; db = JSON.parse(fotoPrevia); foto
 /* ---------- Estado de interfaz ---------- */
 const ui = {
   vista: (location.hash.slice(1) || 'hoy'),
-  busqueda: '', filtro: 'todos', busquedaClientes: '',
+  busqueda: '', filtro: 'todos', busquedaClientes: '', aliadosModo: 'cartera',
   etapaMovil: 'prospecto', cubetaMovil: 'gracia',
   semana: lunesDe(hoy()), filtroCitas: 'todas',
   citasModo: 'agenda', statsTipo: 'mes', statsRef: hoy(), informeSemana: lunesDe(hoy()),
@@ -1218,7 +1218,33 @@ function vistaClientes() {
     ${icon('search', 'w-[18px] h-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 text-ink3')}
     <input id="buscador-clientes" type="search" class="input pl-11! bg-surface!" placeholder="Busca por nombre, cédula, póliza o aliado" value="${esc(ui.busquedaClientes)}" aria-label="Buscar clientes" autocomplete="off" />
   </div>
+  ${porAliado()}
   <div id="lista-clientes">${listaClientes()}</div>`;
+}
+/* Participación de cada aliado: por pólizas vigentes o por ventas del año (fecha de inicio de vigencia) */
+function porAliado() {
+  const anio = hoy().slice(0, 4);
+  const todas = db.contactos.flatMap(c => (c.polizas || []).map(p => ({ c, p })));
+  const base = ui.aliadosModo === 'anio'
+    ? todas.filter(({ p }) => (p.inicioVigencia || '').startsWith(anio))
+    : todas.filter(({ c, p }) => esCliente(c) && p.estado !== 'cancelada');
+  const grupos = {};
+  base.forEach(({ p }) => { const a = p.aseguradora || 'Sin aliado'; (grupos[a] = grupos[a] || []).push(p); });
+  const filas = Object.entries(grupos).map(([a, ps]) => ({ a, n: ps.length, primas: textosMoneda(sumarPorMoneda(ps, p => p.prima, p => p.moneda)) })).sort((x, y) => y.n - x.n);
+  const total = base.length;
+  const lider = filas[0];
+  return `<section class="card p-5 mb-4" aria-labelledby="h-aliados">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <h2 id="h-aliados" class="text-[20px]">Por aliado</h2>
+      <div class="flex gap-1 card p-1 rounded-xl!">${[['cartera', 'Cartera vigente'], ['anio', `Ventas ${anio}`]].map(([id, n]) => `<button class="chip border-0! min-h-8! ${ui.aliadosModo === id ? '' : 'bg-transparent!'}" data-act="aliados-modo" data-m="${id}" aria-pressed="${ui.aliadosModo === id}">${n}</button>`).join('')}</div>
+    </div>
+    ${!total ? `<p class="text-[13.5px] text-ink3">${ui.aliadosModo === 'anio' ? `Aún no hay pólizas con inicio de vigencia en ${anio}.` : 'Aún no tienes pólizas vigentes.'}</p>` : `
+    <ul class="flex flex-col gap-3">${filas.map(f => { const pct = Math.round(f.n / total * 100);
+      return `<li><div class="flex items-baseline justify-between gap-3 text-[14px]"><span class="font-medium">${esc(f.a)}</span><span class="tabular-nums"><span class="font-semibold">${pct}%</span><span class="text-ink3 text-[12.5px]"> · ${f.n} ${f.n === 1 ? 'póliza' : 'pólizas'}</span></span></div>
+        <div class="h-2.5 rounded-full bg-sunken overflow-hidden mt-1"><div class="bar h-full rounded-full bg-brand" style="width:${Math.max(3, pct)}%"></div></div>
+        <p class="text-[12px] text-ink3 mt-1 tabular-nums">${f.primas.length ? f.primas.join(' · ') + ' en prima anual' : 'Sin prima registrada'}</p></li>`; }).join('')}</ul>
+    <p class="text-[12.5px] text-ink2 mt-4 pt-3 border-t border-line">${ui.aliadosModo === 'anio' ? `En ${anio} llevas ${total} ${total === 1 ? 'póliza vendida' : 'pólizas vendidas'}` : `De tus ${total} pólizas vigentes`}, <strong class="font-semibold">${esc(lider.a)}</strong> tiene la mayor parte (${Math.round(lider.n / total * 100)}%). El porcentaje se mide por número de pólizas.</p>`}
+  </section>`;
 }
 function listaClientes() {
   const q = ui.busquedaClientes.trim().toLowerCase();
@@ -1881,6 +1907,7 @@ const acciones = {
     guardar(); render(); abrirDetalle(c.id, true);
     toast(c.calificadoEn ? 'Marcado como prospecto calificado' : 'Se quitó la calificación', { deshacer: true });
   },
+  'aliados-modo': d => { ui.aliadosModo = d.m; render(); },
   'ver-stats': () => { ui.citasModo = 'stats'; ui.statsTipo = 'semana'; ui.statsRef = hoy(); if (location.hash === '#citas') render(); else location.hash = 'citas'; },
   'stats-dia': d => { ui.statsTipo = 'dia'; ui.statsRef = d.d; render(); },
   'cancelar-cita': async d => {
