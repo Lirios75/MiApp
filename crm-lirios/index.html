@@ -207,7 +207,8 @@ const icon = (name, cls = '') => `<i data-lucide="${name}" class="${cls}" aria-h
 /* Un contacto puede tener varias pólizas; cobranza, renovación y semáforo se miden por póliza */
 const esCliente = c => c.etapa === 'emitida';
 const enVentas = c => !esCliente(c) && c.etapa !== 'cancelada';
-const vigentes = c => (c.polizas || []).filter(p => p.estado !== 'cancelada');
+const activa = p => !p.estado || p.estado === 'vigente';
+const vigentes = c => (c.polizas || []).filter(activa);
 const polizasCartera = () => db.contactos.filter(esCliente).flatMap(c => vigentes(c).map(p => ({ c, p })));
 const primaRecibo = p => (Number(p.prima) || 0) / (12 / (FORMAS[p.formaPago] || 12));
 
@@ -747,7 +748,8 @@ function kpis() {
   const cs = db.contactos;
   const pipeline = cs.filter(c => enVentas(c) && c.etapa !== 'standby');
   const cartera = polizasCartera();
-  const todas = cs.flatMap(c => c.polizas || []);
+  /* Persistencia: una póliza "terminada" (crédito pagado o vencida) no cuenta como pérdida; "cancelada" sí, sea o no de deudor */
+  const todas = cs.flatMap(c => c.polizas || []).filter(p => p.estado !== 'terminada');
   const renovadas = todas.reduce((s, p) => s + (Number(p.renovaciones) || 0), 0);
   const canceladas = todas.filter(p => p.estado === 'cancelada').length;
   return {
@@ -1234,7 +1236,7 @@ function porAliado() {
   const todas = db.contactos.flatMap(c => (c.polizas || []).map(p => ({ c, p })));
   const base = ui.aliadosModo === 'anio'
     ? todas.filter(({ p }) => (p.inicioVigencia || '').startsWith(anio))
-    : todas.filter(({ c, p }) => esCliente(c) && p.estado !== 'cancelada');
+    : todas.filter(({ c, p }) => esCliente(c) && activa(p));
   const grupos = {};
   base.forEach(({ p }) => { const a = p.aseguradora || 'Sin aliado'; (grupos[a] = grupos[a] || []).push(p); });
   const filas = Object.entries(grupos).map(([a, ps]) => ({ a, n: ps.length, primas: textosMoneda(sumarPorMoneda(ps, p => p.prima, p => p.moneda)) })).sort((x, y) => y.n - x.n);
@@ -1374,7 +1376,7 @@ const opciones = (arr, sel) => arr.map(o => { const [v, t] = Array.isArray(o) ? 
 
 /* ---------- Detalle del contacto ---------- */
 function bloquePoliza(c, p) {
-  const cancelada = p.estado === 'cancelada';
+  const cancelada = !activa(p);
   const b = cancelada ? null : cubeta(p), t = cancelada ? null : semaforo(p);
   const ids = `data-id="${c.id}" data-pol="${p.id}"`;
   const pagos = p.pagos || [];
@@ -1382,8 +1384,8 @@ function bloquePoliza(c, p) {
   return `<section class="card p-4 ${b === 'gracia' ? 'border-bad/40!' : ''} ${cancelada ? 'opacity-75' : ''}">
     <div class="flex items-start gap-2 mb-3">
       <div class="min-w-0 flex-1"><h3 class="text-[17px] leading-snug">${esc(p.plan || p.ramo)}</h3>
-        <p class="text-[12.5px] text-ink3">${esc(p.aseguradora || 'Sin aseguradora')}${p.numero ? ` · ${esc(p.numero)}` : ''}${p.capa ? ` · Capa ${esc(p.capa)}` : ''}</p></div>
-      ${cancelada ? `<span class="tag bg-sunken text-ink3">Cancelada</span>` : `<span class="tag ${TONOS[t].tag}"><span class="dot ${TONOS[t].dot}"></span>${b === 'gracia' ? 'En gracia' : TONOS[t].texto}</span>`}
+        <p class="text-[12.5px] text-ink3">${esc(p.aseguradora || 'Sin aseguradora')}${p.numero ? ` · ${esc(p.numero)}` : ''}${p.capa ? ` · Capa ${esc(p.capa)}` : ''}</p>${p.deudor ? `<span class="tag bg-sunken text-ink2 mt-1">${icon('landmark', 'w-3 h-3')} Deudor</span>` : ''}</div>
+      ${cancelada ? `<span class="tag bg-sunken text-ink3">${p.estado === 'terminada' ? 'Terminada' : 'Cancelada'}</span>` : `<span class="tag ${TONOS[t].tag}"><span class="dot ${TONOS[t].dot}"></span>${b === 'gracia' ? 'En gracia' : TONOS[t].texto}</span>`}
       <button class="grid place-items-center w-9 h-9 -mr-1 -mt-1 rounded-lg hover:bg-sunken text-ink3 shrink-0" data-act="poliza" ${ids} aria-label="Editar póliza">${icon('pencil', 'w-4 h-4')}</button>
     </div>
     <dl class="grid grid-cols-2 gap-x-4 gap-y-3 text-[13.5px]">
@@ -1407,7 +1409,7 @@ function abrirDetalle(id, refrescar = false) {
   const c = getC(id); if (!c) return;
   ui.detalle = id;
   const t = semaforoContacto(c);
-  const polizas = [...(c.polizas || [])].sort((a, b) => (a.estado === 'cancelada') - (b.estado === 'cancelada'));
+  const polizas = [...(c.polizas || [])].sort((a, b) => activa(b) - activa(a));
   const citas = [...(c.citas || [])].sort((a, b2) => (b2.fecha + b2.hora).localeCompare(a.fecha + a.hora));
   const notas = [...(c.notas || [])].sort((a, b2) => (b2.fecha + (b2.hora || '')).localeCompare(a.fecha + (a.hora || '')));
   const etapas = [...VENTAS.map(e => [e.id, e.id === 'emitida' ? 'Póliza emitida (cliente)' : e.nombre]), ['cancelada', 'Cancelada']];
@@ -1566,7 +1568,9 @@ function abrirFormPoliza(cid, pid, aviso = '') {
     <label class="field"><span>Valor de cada recibo <span class="font-normal text-ink3" data-recibo-etiqueta>(${esc(p.formaPago.toLowerCase())})</span></span>${inp('recibo', p.prima ? Math.round(primaRecibo(p) * 100) / 100 : '', 'number', 'min="0" step="any" inputmode="decimal" data-prima="recibo"')}
       <small class="text-[12px] text-ink3">Escribe uno de los dos valores y calculo el otro.</small></label>
     <label class="field"><span>Suma asegurada</span>${inp('sumaAsegurada', p.sumaAsegurada || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
-    ${pid ? `<label class="field"><span>Estado de la póliza</span>${sel('estado', [['vigente', 'Vigente'], ['cancelada', 'Cancelada']], p.estado)}</label>` : ''}
+    <label class="flex items-start gap-3 card p-3 cursor-pointer"><input type="checkbox" name="deudor" class="mt-1 w-4 h-4 accent-[var(--color-brand)]" ${p.deudor ? 'checked' : ''} />
+      <span class="min-w-0"><span class="block text-[14px] font-medium">Póliza de deudor (atada a un crédito)</span><span class="block text-[12.5px] text-ink3">Si termina porque el crédito quedó en cero, márcala como "Terminada" y no baja tu persistencia. Si el cliente se cambió por precio o servicio, es "Cancelada".</span></span></label>
+    ${pid ? `<label class="field"><span>Estado de la póliza</span>${sel('estado', [['vigente', 'Vigente'], ['cancelada', 'Cancelada (el cliente la dejó)'], ['terminada', 'Terminada (crédito pagado o vencida)']], p.estado)}</label>` : ''}
     ${pid ? `<button type="button" class="btn-ghost text-bad! self-start" data-act="borrar-poliza" data-id="${cid}" data-pol="${pid}">${icon('trash-2', 'w-4 h-4')} Borrar esta póliza</button>` : ''}
     ${pieFormulario(pid ? 'Guardar póliza' : 'Registrar póliza')}
   </form>`);
@@ -1829,7 +1833,8 @@ function contactosDesdeFilas(filas) {
       numero, aseguradora: elegir(aseg, ALIADAS, aseg), plan: txt(f, 'plan'), capa, ramo, formaPago, inicioVigencia,
       proxVencimiento: leerFecha(val(f, 'proxVencimiento')) || (inicioVigencia ? reciboVigente(inicioVigencia, formaPago) : ''),
       prima: leerMonto(val(f, 'prima')), moneda: /us|dol/i.test(txt(f, 'moneda')) ? 'USD' : 'COP', sumaAsegurada: leerMonto(val(f, 'suma')),
-      estado: /cancel|anul|caduc/i.test(txt(f, 'estadoPoliza')) ? 'cancelada' : 'vigente', renovaciones: anio > 1 ? anio - 1 : 0,
+      estado: /termin|pagad/i.test(txt(f, 'estadoPoliza')) ? 'terminada' : /cancel|anul|caduc/i.test(txt(f, 'estadoPoliza')) ? 'cancelada' : 'vigente', renovaciones: anio > 1 ? anio - 1 : 0,
+      deudor: /endoso|deudor/i.test(txt(f, 'plan')) || /credito/.test(normal(txt(f, 'objetivo'))),
     }));
   });
   const lista = [...grupos.values()];
@@ -1867,7 +1872,7 @@ async function importarCartera(filas) {
     n.polizas.forEach(np => {
       const p = c.polizas.find(x => np.numero && normal(x.numero) === normal(np.numero));
       if (!p) { c.polizas.push(np); return; }
-      ['aseguradora', 'plan', 'capa', 'ramo', 'formaPago', 'inicioVigencia', 'prima', 'moneda', 'sumaAsegurada', 'estado'].forEach(k => { if (np[k] !== '' && np[k] != null) p[k] = np[k]; });
+      ['aseguradora', 'plan', 'capa', 'ramo', 'formaPago', 'inicioVigencia', 'prima', 'moneda', 'sumaAsegurada', 'estado', 'deudor'].forEach(k => { if (np[k] !== '' && np[k] != null) p[k] = np[k]; });
     });
     n.notas.forEach(nt => { if (!c.notas.some(x => x.texto === nt.texto)) c.notas.push(nt); });
     if (vigentes(c).length && !esCliente(c)) { c.etapa = 'emitida'; c.estado = 'Cliente Activo'; c.fueCliente = true; }
@@ -2057,7 +2062,7 @@ const formularios = {
       numero: fd.get('numero').trim(), aseguradora: fd.get('aseguradoraSel') === 'Otra' ? fd.get('aseguradoraOtra').trim() : fd.get('aseguradoraSel'),
       plan: fd.get('plan').trim(), ramo: fd.get('ramo'), capa: fd.get('capa'), formaPago: fd.get('formaPago'), inicioVigencia: inicio,
       proxVencimiento: fd.get('proxVencimiento') || reciboVigente(inicio, fd.get('formaPago')), prima: Number(fd.get('prima')) || 0,
-      moneda: fd.get('moneda'), sumaAsegurada: Number(fd.get('sumaAsegurada')) || 0,
+      moneda: fd.get('moneda'), sumaAsegurada: Number(fd.get('sumaAsegurada')) || 0, deudor: fd.get('deudor') === 'on',
     };
     if (fd.get('estado')) datos.estado = fd.get('estado');
     foto();
