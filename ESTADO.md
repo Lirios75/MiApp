@@ -12,8 +12,10 @@ mirarlo en código. Reemplaza al anillo único azul que tenía la app antes. Cam
 regenerados `app/icon.png`, `app/apple-icon.png`, `public/icons/icon-192.png`, `icon-512.png`,
 `icon-512-maskable.png`. Documentado en FICHA-ARTE.md. Verificado: tsc ✓ build ✓ · visto en el
 navegador real en la landing y como ícono. NO se tocó el anillo grande decorativo del fondo del
-Hero de la landing (es otro elemento, ya certificado, no es el logo). Pendiente: que la usuaria
-confirme que le gusta cómo quedó en la app real antes de darlo por cerrado del todo.
+Hero de la landing (es otro elemento, ya certificado, no es el logo). **CERRADO (2026-10-18,
+noche): la usuaria confirmó en su celular real que el logo nuevo se ve bien** (tras mover los
+últimos commits a `main` — producción solo publica desde ahí — y reinstalar el ícono de la
+pantalla de inicio, que se queda guardado en el celular y no se actualiza solo). Nada pendiente.
 
 ⏸️ CHECKPOINT (2026-10-18): cerrado el bug real de moneda del webhook de Hotmart (el pago en COP de
 compradores LATAM ya no se rechaza) y re-verificado con una segunda compra real completa. Agregada
