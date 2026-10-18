@@ -677,6 +677,7 @@ function vistaHoy() {
             ${icon('chevron-right', 'w-4 h-4 text-ink3')}
           </a>`).join('')}
       </div>
+      ${resumenCancelaciones()}
     </section>
 
     <section class="card p-5 lg:col-span-3" aria-labelledby="h-kpi">
@@ -1255,6 +1256,17 @@ function porAliado() {
         <p class="text-[12px] text-ink3 mt-1 tabular-nums">${f.primas.length ? f.primas.join(' · ') + ' en prima anual' : 'Sin prima registrada'}</p></li>`; }).join('')}</ul>
     <p class="text-[12.5px] text-ink2 mt-4 pt-3 border-t border-line">${ui.aliadosModo === 'anio' ? `En ${anio} llevas ${total} ${total === 1 ? 'póliza vendida' : 'pólizas vendidas'}` : `De tus ${total} pólizas vigentes`}, <strong class="font-semibold">${esc(lider.a)}</strong> tiene la mayor parte (${Math.round(lider.n / total * 100)}%). El porcentaje se mide por número de pólizas.</p>`}
   </section>`;
+}
+/* Resumen de cancelaciones dentro del semáforo de Hoy; el detalle vive en Clientes */
+function resumenCancelaciones() {
+  const ps = db.contactos.flatMap(c => c.polizas || []);
+  if (!ps.length) return '';
+  const term = ps.filter(p => p.estado === 'terminada').length, canc = ps.filter(p => p.estado === 'cancelada').length;
+  return `<div class="mt-2 pt-2 border-t border-line"><a href="#clientes" class="flex items-center gap-3 rounded-xl p-2.5 hover:bg-sunken transition" aria-label="Ver detalle de cancelaciones">
+    <span class="w-11 h-11 rounded-xl grid place-items-center font-display text-[16px] bg-sunken text-ink tabular-nums">${Math.round((term + canc) / ps.length * 100)}%</span>
+    <span class="min-w-0 flex-1"><span class="block font-medium text-[14.5px]">Cancelaciones</span><span class="block text-[12.5px] text-ink3 truncate">${term} por crédito · ${canc} por el cliente</span></span>
+    ${icon('chevron-right', 'w-4 h-4 text-ink3')}
+  </a></div>`;
 }
 /* Cancelaciones por cualquier causa (crédito pagado/vencida + el cliente la dejó) sobre todas las pólizas registradas */
 function cancelaciones() {
