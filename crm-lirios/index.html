@@ -1494,9 +1494,11 @@ function abrirFormPoliza(cid, pid, aviso = '') {
       <div class="flex gap-2">${inp('proxVencimiento', p.proxVencimiento, 'date')}<button type="button" class="btn-soft shrink-0" data-act="calcular">${icon('calculator', 'w-4 h-4')} Calcular</button></div>
       <small class="text-[12px] text-ink3">Si lo dejas vacío, lo calculo con el inicio de vigencia y la forma de pago.</small></label>
     <div class="grid grid-cols-[1fr_150px] gap-3">
-      <label class="field"><span>Prima anual</span>${inp('prima', p.prima || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
+      <label class="field"><span>Prima anual</span>${inp('prima', p.prima || '', 'number', 'min="0" step="any" inputmode="decimal" data-prima="anual"')}</label>
       <label class="field"><span>Moneda</span>${sel('moneda', MONEDAS, p.moneda)}</label>
     </div>
+    <label class="field"><span>Valor de cada recibo <span class="font-normal text-ink3" data-recibo-etiqueta>(${esc(p.formaPago.toLowerCase())})</span></span>${inp('recibo', p.prima ? Math.round(primaRecibo(p) * 100) / 100 : '', 'number', 'min="0" step="any" inputmode="decimal" data-prima="recibo"')}
+      <small class="text-[12px] text-ink3">Escribe uno de los dos valores y calculo el otro.</small></label>
     <label class="field"><span>Suma asegurada</span>${inp('sumaAsegurada', p.sumaAsegurada || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
     ${pid ? `<label class="field"><span>Estado de la póliza</span>${sel('estado', [['vigente', 'Vigente'], ['cancelada', 'Cancelada']], p.estado)}</label>` : ''}
     ${pid ? `<button type="button" class="btn-ghost text-bad! self-start" data-act="borrar-poliza" data-id="${cid}" data-pol="${pid}">${icon('trash-2', 'w-4 h-4')} Borrar esta póliza</button>` : ''}
@@ -2085,6 +2087,7 @@ document.addEventListener('submit', e => {
   formularios[f.dataset.form](f, new FormData(f));
 });
 document.addEventListener('change', e => {
+  if (e.target.name === 'formaPago' && e.target.form?.dataset.form === 'poliza') sincronizarPrima(e.target.form, 'anual');
   const el = e.target.closest('[data-change]'); if (!el) return;
   if (el.dataset.change === 'etapa') {
     foto(); const c = getC(el.dataset.id);
@@ -2111,7 +2114,16 @@ document.addEventListener('change', e => {
     }).catch(() => toast('Ese archivo no es un respaldo de Lirios CRM.', { tono: 'bad' }));
   }
 });
+/* En el formulario de póliza, prima anual y valor de cada recibo se calculan entre sí */
+function sincronizarPrima(f, origen) {
+  const periodos = 12 / (FORMAS[f.formaPago.value] || 12);
+  const r2 = v => Math.round(v * 100) / 100;
+  if (origen === 'recibo') f.prima.value = f.recibo.value === '' ? '' : r2(Number(f.recibo.value) * periodos);
+  else f.recibo.value = f.prima.value === '' ? '' : r2(Number(f.prima.value) / periodos);
+  const et = f.querySelector('[data-recibo-etiqueta]'); if (et) et.textContent = `(${f.formaPago.value.toLowerCase()})`;
+}
 document.addEventListener('input', e => {
+  if (e.target.dataset.prima) sincronizarPrima(e.target.form, e.target.dataset.prima);
   if (e.target.id === 'buscador-clientes') {
     ui.busquedaClientes = e.target.value;
     document.getElementById('lista-clientes').innerHTML = listaClientes();
