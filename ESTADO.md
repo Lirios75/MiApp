@@ -1,6 +1,20 @@
 # ESTADO — Respira
 Última actualización: 2026-10-18 | Sesión actual: 6
 
+⏸️ CHECKPOINT (2026-10-18, noche): nuevo LOGO implementado — la usuaria vio 3 opciones (anillo
+partido / dos anillos / mitad y mitad) en una comparativa y eligió "dos anillos" (verde afuera,
+naranja adentro, como inhalar/exhalar). Al construirlo encontré y corregí un bug real de matemática
+de arcos SVG (el segundo valor de `stroke-dasharray` tiene que ser el COMPLEMENTO del arco, no la
+circunferencia completa — si no, el anillo interior se veía como un pedacito roto en vez de un arco
+completo); lo verifiqué renderizando con un navegador real antes de darlo por bueno, no solo de
+mirarlo en código. Reemplaza al anillo único azul que tenía la app antes. Cambiado en:
+`components/RespiraMark.tsx` (la marca animada que usan el header y varias pantallas) y
+regenerados `app/icon.png`, `app/apple-icon.png`, `public/icons/icon-192.png`, `icon-512.png`,
+`icon-512-maskable.png`. Documentado en FICHA-ARTE.md. Verificado: tsc ✓ build ✓ · visto en el
+navegador real en la landing y como ícono. NO se tocó el anillo grande decorativo del fondo del
+Hero de la landing (es otro elemento, ya certificado, no es el logo). Pendiente: que la usuaria
+confirme que le gusta cómo quedó en la app real antes de darlo por cerrado del todo.
+
 ⏸️ CHECKPOINT (2026-10-18): cerrado el bug real de moneda del webhook de Hotmart (el pago en COP de
 compradores LATAM ya no se rechaza) y re-verificado con una segunda compra real completa. Agregada
 fecha límite opcional a metas de monto (migración ejecutada, falta probarla en vivo). Activado el
