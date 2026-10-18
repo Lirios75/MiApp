@@ -135,6 +135,9 @@ const TIPOS_CITA = {
   anual: 'Revisión anual',
   posventa: 'Seguimiento posventa',
 };
+/* Color por tipo de cita: verde 1ª (venta), azul 2ª (propuesta), amarillo servicio a clientes */
+const COLOR_CITA = { cita1: ['bg-ok-soft text-ok', '1ª cita'], cita2: ['bg-brand-soft text-brand', '2ª cita'], anual: ['bg-warn-soft text-warn', 'Servicio'], posventa: ['bg-warn-soft text-warn', 'Servicio'] };
+const tipoTag = t => `<span class="tag ${(COLOR_CITA[t] || COLOR_CITA.posventa)[0]} shrink-0">${(COLOR_CITA[t] || COLOR_CITA.posventa)[1]}</span>`;
 const RAMO_ICON = { 'Vida': 'heart-handshake', 'Retiro': 'sunset', 'Gastos Médicos': 'stethoscope', 'Ahorro/Inversión': 'piggy-bank', 'Accidentes personales': 'shield-plus', 'Hogar': 'home' };
 
 /* ---------- Fechas (siempre YYYY-MM-DD en hora local) ---------- */
@@ -646,7 +649,7 @@ function vistaHoy() {
         <li class="rounded-xl bg-white/8 border border-white/10 p-3 flex flex-col sm:flex-row sm:items-center gap-3">
           <button class="flex items-center gap-3 flex-1 min-w-0 text-left" data-act="detalle" data-id="${x.contacto.id}">
             <div class="text-center w-14 shrink-0"><p class="font-display text-[20px] leading-none">${fHora(x.hora).split(' ')[0]}</p><p class="text-[11px] text-on-brand2 mt-1">${fHora(x.hora).split(' ')[1]}</p></div>
-            <div class="min-w-0"><p class="font-medium truncate">${esc(x.contacto.nombre)}</p><p class="text-[12.5px] text-on-brand2 truncate">${TIPOS_CITA[x.tipo]} · ${x.modalidad === 'Virtual' ? 'Virtual' : 'Presencial'}</p></div>
+            <div class="min-w-0"><p class="font-medium truncate flex items-center gap-2">${tipoTag(x.tipo)}<span class="truncate">${esc(x.contacto.nombre)}</span></p><p class="text-[12.5px] text-on-brand2 truncate">${TIPOS_CITA[x.tipo]} · ${x.modalidad === 'Virtual' ? 'Virtual' : 'Presencial'}</p></div>
           </button>
           <div class="flex gap-1.5">${botonesAsistencia(x.contacto.id, x.id, true)}</div>
         </li>`).join('')}</ul>`
@@ -656,7 +659,7 @@ function vistaHoy() {
         <li><button class="w-full flex items-center gap-3 py-2.5 text-left" data-act="detalle" data-id="${x.contacto.id}">
           <span class="w-14 shrink-0 text-[12.5px] text-on-brand2 capitalize">${fFecha(x.fecha, { weekday: 'short', day: 'numeric' })}</span>
           <span class="min-w-0 flex-1"><span class="block text-[14px] truncate">${esc(x.contacto.nombre)}</span><span class="block text-[12px] text-on-brand2 truncate">${TIPOS_CITA[x.tipo]} · ${fHora(x.hora)}</span></span>
-          ${icon(x.modalidad === 'Virtual' ? 'video' : 'map-pin', 'w-4 h-4 text-on-brand2 shrink-0')}
+          ${tipoTag(x.tipo)}
         </button></li>`).join('')}</ul>` : ''}
       ${resumenSemana()}
     </section>
@@ -1160,6 +1163,7 @@ function vistaCitas() {
     </div>
     ${ini !== lunesDe(T) ? `<button class="btn-ghost btn-sm" data-act="semana" data-delta="0">Hoy</button>` : ''}
     <div class="flex gap-2 scroll-x">${[['todas', 'Todas'], ['ventas', 'De venta'], ['posventa', 'Posventa']].map(([id, n]) => `<button class="chip" data-act="filtro-citas" data-f="${id}" aria-pressed="${filtro === id}">${n}</button>`).join('')}</div>
+    <div class="flex items-center gap-2 text-[12px] text-ink3 w-full sm:w-auto sm:ml-auto">${tipoTag('cita1')}${tipoTag('cita2')}${tipoTag('anual')}<span>revisión o posventa</span></div>
   </div>
 
   ${pendientes.length ? `<section class="card p-4 mb-4 border-bad/30! fade-in" aria-labelledby="h-pend">
@@ -1189,8 +1193,8 @@ function filaCita(x, pendiente = false) {
     <button class="flex items-start gap-3 text-left" data-act="detalle" data-id="${x.contacto.id}">
       <div class="w-[68px] shrink-0"><p class="text-[13.5px] font-semibold whitespace-nowrap">${fHora(x.hora)}</p>${pendiente ? `<p class="text-[11.5px] text-ink3">${fFecha(x.fecha)}</p>` : ''}</div>
       <div class="min-w-0 flex-1"><p class="font-medium text-[14px] truncate">${esc(x.contacto.nombre)}</p>
-        <p class="text-[12.5px] text-ink2 truncate">${TIPOS_CITA[x.tipo]}${x.objetivo ? ` · ${esc(x.objetivo)}` : ''}</p>
-        <p class="text-[12px] text-ink3 flex items-center gap-1.5 mt-0.5">${icon(x.modalidad === 'Virtual' ? 'video' : 'map-pin', 'w-3.5 h-3.5')} ${x.modalidad}${x.reagendas ? ` · <span class="text-warn">reagendada ${x.reagendas}×</span>` : ''}</p></div>
+        <p class="text-[12.5px] text-ink2 truncate flex items-center gap-1.5">${tipoTag(x.tipo)}<span class="truncate">${x.objetivo ? esc(x.objetivo) : TIPOS_CITA[x.tipo]}</span></p>
+        <p class="text-[12px] text-ink3 flex flex-wrap items-center gap-x-1.5 mt-0.5">${icon(x.modalidad === 'Virtual' ? 'video' : 'map-pin', 'w-3.5 h-3.5')} ${x.modalidad}${x.reagendas ? `<span class="text-warn whitespace-nowrap">· reagendada ${x.reagendas}×</span>` : ''}</p></div>
       ${estadoCitaTag(x)}
     </button>
     ${x.status === 'programada' || pendiente ? `<div class="flex gap-1.5 flex-wrap pl-[80px]">${x.link && x.status === 'programada' ? `<a class="btn-soft btn-sm" href="${esc(x.link)}" target="_blank" rel="noopener">${icon('video', 'w-4 h-4')} Entrar</a>` : ''}${pendiente ? `<button class="btn-primary btn-sm" data-act="reagendar" data-id="${x.contacto.id}" data-cita="${x.id}">${icon('calendar-clock', 'w-4 h-4')} Reagendar</button>` : botonesAsistencia(x.contacto.id, x.id)}</div>` : ''}
@@ -1346,7 +1350,7 @@ function abrirDetalle(id, refrescar = false) {
       <div class="flex items-center justify-between mb-2"><h3 class="text-[17px]">Citas</h3><button class="btn-ghost btn-sm" data-act="cita" data-id="${c.id}">${icon('plus', 'w-4 h-4')} Agendar</button></div>
       ${citas.length ? `<ul class="divide-y divide-line">${citas.map(x => `
         <li class="py-2.5">
-          <div class="flex items-start gap-2"><div class="min-w-0 flex-1"><p class="text-[14px] font-medium">${TIPOS_CITA[x.tipo]}</p>
+          <div class="flex items-start gap-2"><div class="min-w-0 flex-1"><p class="text-[14px] font-medium flex items-center gap-2">${tipoTag(x.tipo)}${TIPOS_CITA[x.tipo]}</p>
             <p class="text-[12.5px] text-ink2">${fFecha(x.fecha, { weekday: 'short', day: 'numeric', month: 'short' })} · ${fHora(x.hora)} · ${x.modalidad}</p>
             ${x.objetivo ? `<p class="text-[12.5px] text-ink3">${esc(x.objetivo)}</p>` : ''}</div>${estadoCitaTag(x)}</div>
           ${x.status === 'programada' ? `<div class="flex gap-1.5 mt-2 flex-wrap">${botonesAsistencia(c.id, x.id)}</div>` : x.status === 'noasistio' ? `<button class="btn-primary btn-sm mt-2" data-act="reagendar" data-id="${c.id}" data-cita="${x.id}">${icon('calendar-clock', 'w-4 h-4')} Reagendar</button>` : ''}
