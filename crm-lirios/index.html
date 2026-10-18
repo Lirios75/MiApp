@@ -1358,7 +1358,9 @@ function abrirDetalle(id, refrescar = false) {
     <section class="card p-4">
       <div class="flex items-center justify-between mb-2"><h3 class="text-[17px]">Bitácora</h3><button class="btn-ghost btn-sm" data-act="nota" data-id="${c.id}">${icon('plus', 'w-4 h-4')} Nota</button></div>
       ${notas.length ? `<ol class="relative border-l border-line ml-1.5 flex flex-col gap-3 py-1">${notas.map(n => `<li class="pl-4 relative"><span class="absolute -left-[5px] top-1.5 w-2.5 h-2.5 rounded-full bg-brand ring-4 ring-surface"></span>
-        <p class="text-[12px] text-ink3">${fFecha(n.fecha, { day: 'numeric', month: 'short', year: 'numeric' })}${n.hora ? ` · ${fHora(n.hora)}` : ''}</p><p class="text-[14px] whitespace-pre-line">${esc(n.texto)}</p></li>`).join('')}</ol>`
+        <div class="flex items-start gap-2"><div class="min-w-0 flex-1"><p class="text-[12px] text-ink3">${fFecha(n.fecha, { day: 'numeric', month: 'short', year: 'numeric' })}${n.hora ? ` · ${fHora(n.hora)}` : ''}</p><p class="text-[14px] whitespace-pre-line break-words">${esc(n.texto)}</p></div>
+        <div class="flex shrink-0 -mr-1"><button class="grid place-items-center w-9 h-9 rounded-lg text-ink3 hover:bg-sunken hover:text-ink" data-act="nota" data-id="${c.id}" data-nota="${n.id}" aria-label="Editar nota" title="Editar">${icon('pencil', 'w-4 h-4')}</button>
+        <button class="grid place-items-center w-9 h-9 rounded-lg text-ink3 hover:bg-bad-soft hover:text-bad" data-act="borrar-nota" data-id="${c.id}" data-nota="${n.id}" aria-label="Borrar nota" title="Borrar">${icon('trash-2', 'w-4 h-4')}</button></div></div></li>`).join('')}</ol>`
       : `<p class="text-[13px] text-ink3 py-1">Anota aquí cada llamada, acuerdo o detalle personal. Tu yo del próximo año te lo agradecerá.</p>`}
     </section>
 
@@ -1526,17 +1528,18 @@ function abrirPago(cid, pid) {
 }
 
 /* ---------- Nota ---------- */
-function abrirNota(cid) {
+function abrirNota(cid, nid) {
   const c = getC(cid);
   const ahora = new Date();
+  const n = nid ? c.notas.find(x => x.id === nid) : { fecha: hoy(), hora: `${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`, texto: '' };
   abrirModal(`
-  ${cabeceraModal('Nota de seguimiento', esc(c.nombre))}
-  <form data-form="nota" data-id="${cid}" class="px-5 py-4 flex flex-col gap-3" novalidate>
+  ${cabeceraModal(nid ? 'Editar nota' : 'Nota de seguimiento', esc(c.nombre))}
+  <form data-form="nota" data-id="${cid}" data-nota="${nid || ''}" class="px-5 py-4 flex flex-col gap-3" novalidate>
     <div class="grid grid-cols-2 gap-3">
-      <label class="field"><span>Fecha</span><input class="input" type="date" name="fecha" value="${hoy()}"></label>
-      <label class="field"><span>Hora</span><input class="input" type="time" name="hora" value="${pad(ahora.getHours())}:${pad(ahora.getMinutes())}"></label>
+      <label class="field"><span>Fecha</span><input class="input" type="date" name="fecha" value="${esc(n.fecha)}"></label>
+      <label class="field"><span>Hora</span><input class="input" type="time" name="hora" value="${esc(n.hora || '')}"></label>
     </div>
-    <label class="field"><span>¿Qué pasó?</span><textarea class="input" name="texto" rows="4" placeholder="Ej. Llamé, quedó de revisar la propuesta con su esposa el fin de semana."></textarea><small class="text-bad text-[12px] hidden" data-err="texto">Escribe algo antes de guardar.</small></label>
+    <label class="field"><span>¿Qué pasó?</span><textarea class="input" name="texto" rows="4" placeholder="Ej. Llamé, quedó de revisar la propuesta con su esposa el fin de semana.">${esc(n.texto)}</textarea><small class="text-bad text-[12px] hidden" data-err="texto">Escribe algo antes de guardar.</small></label>
     <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} Guardar nota</button></div>
   </form>`);
 }
@@ -1794,7 +1797,15 @@ const acciones = {
   cerrar: () => cerrarModal(),
   ajustes: () => abrirAjustes(),
   cita: d => abrirFormCita(d.id, d.tipo),
-  nota: d => abrirNota(d.id),
+  nota: d => abrirNota(d.id, d.nota),
+  'borrar-nota': async d => {
+    if (!(await confirmar('¿Borrar esta nota de la bitácora?', { si: 'Borrar nota', no: 'Volver', peligro: true }))) return;
+    foto();
+    const c = getC(d.id);
+    c.notas = c.notas.filter(n => n.id !== d.nota);
+    guardar(); render(); abrirDetalle(c.id, true);
+    toast('Nota borrada', { deshacer: true });
+  },
   pago: d => abrirPago(d.id, d.pol),
   poliza: d => abrirFormPoliza(d.id, d.pol),
   reagendar: d => abrirReagendar(d.id, d.cita),
@@ -1999,9 +2010,11 @@ const formularios = {
     if (!texto) { f.querySelector('[data-err=texto]').classList.remove('hidden'); f.texto.focus(); return; }
     const c = getC(f.dataset.id);
     foto();
-    c.notas.push({ id: uid(), fecha: fd.get('fecha') || hoy(), hora: fd.get('hora'), texto });
+    const existente = f.dataset.nota && c.notas.find(n => n.id === f.dataset.nota);
+    if (existente) Object.assign(existente, { fecha: fd.get('fecha') || existente.fecha, hora: fd.get('hora'), texto });
+    else c.notas.push({ id: uid(), fecha: fd.get('fecha') || hoy(), hora: fd.get('hora'), texto });
     guardar(); render(); abrirDetalle(c.id);
-    toast('Nota guardada', { deshacer: true });
+    toast(existente ? 'Nota actualizada' : 'Nota guardada', { deshacer: true });
   },
 };
 
