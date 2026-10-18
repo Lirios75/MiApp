@@ -1,5 +1,17 @@
 # ESTADO — Respira
-Última actualización: 2026-10-15 | Sesión actual: 6
+Última actualización: 2026-10-18 | Sesión actual: 6
+
+⏸️ CHECKPOINT (2026-10-18): cerrado el bug real de moneda del webhook de Hotmart (el pago en COP de
+compradores LATAM ya no se rechaza) y re-verificado con una segunda compra real completa. Agregada
+fecha límite opcional a metas de monto (migración ejecutada, falta probarla en vivo). Activado el
+programa de afiliados de Hotmart (35% recurrente, aprobación manual) con kit de afiliados completo
+subido a Drive. Construido aviso por correo a la dueña en cada venta real (`lib/email.ts` +
+`RESEND_API_KEY` en Vercel, desplegado, aún sin probar con una venta real). Corregidas y aprobadas
+3 piezas de copy en la landing (PS a "15 Días", "Check-in"→"Registro", aclaración de cobro día 8
+bajo cada plan) y entregado el calendario de contenido de 30 días. Confirmado: la app y la landing
+NO tienen ningún número de celular/WhatsApp configurado — el único contacto es el correo
+lina.rios@ikigaihumano.com (footer, legales, Cuenta). Próximo paso: probar en vivo el aviso de
+venta real y la fecha límite de metas; pendiente de antes, la prueba de reembolso/cancelación.
 
 ⏸️ CHECKPOINT (2026-10-15): tras migrar Hoy/Semana/Meta/Cuenta a Supabase real, las 3 pantallas
 quedaron con el skeleton de carga pegado — causa real: faltaban los GRANT base de Postgres para
@@ -709,12 +721,13 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
   - Los placeholders de "la app por dentro" (Hero + carrusel, sin app real — Sesión 5 no empezada) le cuestan a USABILIDAD ~2-3 puntos más — esto no depende de esta pantalla, es scope de Sesión 5.
   - Aun revirtiendo las 2 excepciones, usabilidad solo llegaría a ~33/40 (sigue sin pasar) hasta que exista la app real — por eso no tiene sentido seguir iterando esta pantalla ahora.
   - NO re-abrir esta decisión ni volver a proponer revertir "check-in"/emojis sin que el usuario lo pida — ya se le explicó el costo exacto y eligió mantenerlos.
+  - ACTUALIZACIÓN (2026-10-17): la usuaria pidió explícitamente revertir la excepción de "Check-in diario" → ahora dice "Registro diario" en ambas tarjetas de Oferta (y en `docs/copy/landing.md`). La nota de "~2 puntos de usabilidad" de la línea de arriba ya NO aplica a esa excepción puntual (sigue vigente solo para los emojis a color, que la usuaria no pidió tocar). No se ha relanzado el revisor-visual tras este cambio — pendiente, no bloqueante (la usuaria ya aprobó el cambio viéndolo en producción).
   - Anillo del Hero (18% de opacidad en código, confirmado): no se logró verificar visualmente en el PNG headless de este sandbox (posible limitación del renderer con z-index negativo bajo software rendering, no del valor en sí) — pendiente de re-verificar con navegador real si se vuelve a tocar esta pantalla. No bloqueante por sí solo.
 - carrusel "La app por dentro" y visual del Hero: AMBOS RESUELTOS (2026-09-21) — los 4 placeholders del carrusel y el placeholder dashed del Hero se reemplazaron por capturas reales de la app en `public/images/app-por-dentro/` (registro-diario.png = Hoy sin marcar, metas.png = Tu meta con el anillo, pantalla-principal.png = Hoy confirmado con racha [reusada en el Hero], reporte-semanal.png = Semana). Verificado en el navegador (docs/revisiones/vivo/landing-carrusel-app.png y landing-hero-visual.png). El Hero reutiliza el mismo marco de teléfono (`w-[250px] rounded-[30px] border-[5px]`) ya establecido en `AppPorDentro.tsx` en vez de inventar medidas nuevas — el linter mecánico de diseño lo marca como "fuera de escala" pero es un falso positivo conocido (esa escala rige espaciado, no las medidas fijas de un dispositivo ya aprobado).
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
 - Garantía (footer/reembolsos): el piso legal dice "política de reembolso de Hotmart" SIN número de días porque Hotmart aún no está configurado (Sesión 6) — no prometer un plazo exacto hasta configurarlo.
 - Garantía en 14 días (prueba en 7, 14>7 cumple la regla dura de 18-VENTA-HOTMART.md) — historial completo de la ida y vuelta 14→7→14 en FICHA-MERCADO.md §4.
-- Páginas legales (privacidad/términos/reembolsos): son borrador funcional, les falta el nombre/razón social del responsable, el país de operación y confirmar el email de soporte real (hoy usan el provisional `hola@respira.app`) — ver "Pendientes del usuario".
+- Páginas legales (privacidad/términos/reembolsos): son borrador funcional, les falta el nombre/razón social del responsable y el país de operación — ver "Pendientes del usuario". El email de soporte YA quedó confirmado y actualizado en todo el proyecto (footer, legales, Cuenta, avisos de Hotmart/Resend): `lina.rios@ikigaihumano.com` — el provisional `hola@respira.app` ya no está en uso en ningún archivo (confirmado 2026-10-18). No hay ningún número de celular/WhatsApp configurado en la app ni en la landing — solo correo.
 
 ## Pendientes del usuario (acciones que el usuario debe hacer)
 - [ ] (no bloqueante) Verificar "Respira" en el registro oficial de marcas (SIC/IMPI) antes de comprar dominio.
