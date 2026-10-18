@@ -1459,6 +1459,7 @@ function abrirFormContacto(id) {
         <label class="field"><span>Prima anual estimada</span>${inp('prima', c.prima || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
         <label class="field"><span>Moneda</span>${sel('moneda', MONEDAS, c.moneda)}</label>
       </div>
+      <p class="text-[12.5px] text-ink2 -mt-1" data-vista-prima>${vistaPrima(c.prima, c.moneda)}</p>
       <label class="field"><span>Objetivo principal</span>${inp('objetivo', c.objetivo, 'text', 'placeholder="Ej. Retiro, proteger familia, capitalizar"')}</label>
       <div class="grid grid-cols-2 gap-3">
         <label class="field"><span>Cómo llegó</span>${sel('comoLlego', ['', 'Referido', 'Conocido', 'Llamada', 'Redes sociales', 'Otro'], c.comoLlego || '')}</label>
@@ -1497,6 +1498,7 @@ function abrirFormPoliza(cid, pid, aviso = '') {
       <label class="field"><span>Prima anual</span>${inp('prima', p.prima || '', 'number', 'min="0" step="any" inputmode="decimal" data-prima="anual"')}</label>
       <label class="field"><span>Moneda</span>${sel('moneda', MONEDAS, p.moneda)}</label>
     </div>
+    <p class="text-[12.5px] text-ink2 -mt-1" data-vista-prima>${vistaPrima(p.prima, p.moneda)}</p>
     <label class="field"><span>Valor de cada recibo <span class="font-normal text-ink3" data-recibo-etiqueta>(${esc(p.formaPago.toLowerCase())})</span></span>${inp('recibo', p.prima ? Math.round(primaRecibo(p) * 100) / 100 : '', 'number', 'min="0" step="any" inputmode="decimal" data-prima="recibo"')}
       <small class="text-[12px] text-ink3">Escribe uno de los dos valores y calculo el otro.</small></label>
     <label class="field"><span>Suma asegurada</span>${inp('sumaAsegurada', p.sumaAsegurada || '', 'number', 'min="0" step="any" inputmode="decimal"')}</label>
@@ -2088,6 +2090,7 @@ document.addEventListener('submit', e => {
 });
 document.addEventListener('change', e => {
   if (e.target.name === 'formaPago' && e.target.form?.dataset.form === 'poliza') sincronizarPrima(e.target.form, 'anual');
+  if (e.target.name === 'moneda') refrescarVistaPrima(e.target.form);
   const el = e.target.closest('[data-change]'); if (!el) return;
   if (el.dataset.change === 'etapa') {
     foto(); const c = getC(el.dataset.id);
@@ -2114,6 +2117,12 @@ document.addEventListener('change', e => {
     }).catch(() => toast('Ese archivo no es un respaldo de Lirios CRM.', { tono: 'bad' }));
   }
 });
+/* Muestra la prima escrita con formato de moneda para evitar ceros de más o de menos */
+const vistaPrima = (v, moneda) => Number(v) ? `= <strong class="font-semibold">${fDinero(Number(v), moneda)}</strong> al año` : 'Escribe el valor completo, sin puntos ni signo $. Ej.: 360000';
+function refrescarVistaPrima(f) {
+  const el = f && f.querySelector('[data-vista-prima]');
+  if (el) el.innerHTML = vistaPrima(f.prima.value, f.moneda.value);
+}
 /* En el formulario de póliza, prima anual y valor de cada recibo se calculan entre sí */
 function sincronizarPrima(f, origen) {
   const periodos = 12 / (FORMAS[f.formaPago.value] || 12);
@@ -2124,6 +2133,7 @@ function sincronizarPrima(f, origen) {
 }
 document.addEventListener('input', e => {
   if (e.target.dataset.prima) sincronizarPrima(e.target.form, e.target.dataset.prima);
+  if (['prima', 'recibo'].includes(e.target.name)) refrescarVistaPrima(e.target.form);
   if (e.target.id === 'buscador-clientes') {
     ui.busquedaClientes = e.target.value;
     document.getElementById('lista-clientes').innerHTML = listaClientes();
