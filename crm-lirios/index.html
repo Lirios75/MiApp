@@ -523,7 +523,7 @@ function deshacer() { if (!fotoPrevia) return; db = JSON.parse(fotoPrevia); foto
 /* ---------- Estado de interfaz ---------- */
 const ui = {
   vista: (location.hash.slice(1) || 'hoy'),
-  busqueda: '', filtro: 'todos',
+  busqueda: '', filtro: 'todos', busquedaClientes: '',
   etapaMovil: 'prospecto', cubetaMovil: 'gracia',
   semana: lunesDe(hoy()), filtroCitas: 'todas',
   citasModo: 'agenda', statsTipo: 'mes', statsRef: hoy(), informeSemana: lunesDe(hoy()),
@@ -555,6 +555,7 @@ function pintarIconos() { if (window.lucide) lucide.createIcons(); }
 const NAV = [
   { id: 'hoy', nombre: 'Hoy', icono: 'sun' },
   { id: 'ventas', nombre: 'Ventas', icono: 'kanban-square' },
+  { id: 'clientes', nombre: 'Clientes', icono: 'user-check' },
   { id: 'posventa', nombre: 'Posventa', icono: 'shield-check' },
   { id: 'citas', nombre: 'Citas', icono: 'calendar-days' },
   { id: 'contactos', nombre: 'Contactos', icono: 'users' },
@@ -585,7 +586,7 @@ function render() {
   </header>
 
   <main class="md:ml-64 min-w-0 gutter pt-5 md:pt-8 pb-28 md:pb-12 max-w-[1400px]">
-    ${ui.cargando ? vistaCargando() : ({ hoy: vistaHoy, ventas: vistaVentas, posventa: vistaPosventa, citas: vistaCitas, contactos: vistaContactos }[ui.vista] || vistaHoy)()}
+    ${ui.cargando ? vistaCargando() : ({ hoy: vistaHoy, ventas: vistaVentas, posventa: vistaPosventa, citas: vistaCitas, clientes: vistaClientes, contactos: vistaContactos }[ui.vista] || vistaHoy)()}
   </main>
 
   <nav class="md:hidden fixed bottom-0 inset-x-0 z-20 bg-surface/95 backdrop-blur border-t border-line flex px-1 pb-[env(safe-area-inset-bottom)]" aria-label="Secciones">
@@ -1205,6 +1206,39 @@ function botonesAsistencia(cid, xid, sobreMarca = false) {
   return `<button class="${sobreMarca ? 'btn btn-sm bg-on-brand text-brand' : 'btn-sm btn bg-ok-soft text-ok hover:bg-ok hover:text-white'}" data-act="asistio" data-id="${cid}" data-cita="${xid}">${icon('check', 'w-4 h-4')} Asistió</button>
     <button class="${base}" data-act="noasistio" data-id="${cid}" data-cita="${xid}" aria-label="No asistió">${icon('user-x', 'w-4 h-4')}<span class="hidden sm:inline">Plantón</span></button>
     <button class="${base}" data-act="reagendar" data-id="${cid}" data-cita="${xid}" aria-label="Solicitó reagendar">${icon('calendar-clock', 'w-4 h-4')}<span class="hidden sm:inline">Reagendar</span></button>`;
+}
+
+/* ---------- CLIENTES (contactos con al menos una póliza vigente) ---------- */
+function vistaClientes() {
+  const clientes = db.contactos.filter(esCliente);
+  const nPol = clientes.reduce((s, c) => s + vigentes(c).length, 0);
+  return `
+  ${encabezado('Clientes', `${clientes.length} ${clientes.length === 1 ? 'cliente' : 'clientes'} · ${nPol} pólizas vigentes`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('user-plus', 'w-4 h-4')} Nuevo contacto</button>`)}
+  <div class="relative mb-4">
+    ${icon('search', 'w-[18px] h-[18px] absolute left-3.5 top-1/2 -translate-y-1/2 text-ink3')}
+    <input id="buscador-clientes" type="search" class="input pl-11! bg-surface!" placeholder="Busca por nombre, cédula, póliza o aliado" value="${esc(ui.busquedaClientes)}" aria-label="Buscar clientes" autocomplete="off" />
+  </div>
+  <div id="lista-clientes">${listaClientes()}</div>`;
+}
+function listaClientes() {
+  const q = ui.busquedaClientes.trim().toLowerCase();
+  const lista = db.contactos.filter(esCliente).filter(c => !q || textoBusqueda(c).includes(q)).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'));
+  if (!lista.length) return q
+    ? `<div class="card p-8 text-center"><p class="font-display text-[20px]">Ningún cliente coincide</p><p class="text-[13.5px] text-ink2 mt-1">Prueba con otro nombre, cédula o número de póliza.</p></div>`
+    : `<div class="card p-8 text-center"><div class="icon-chip bg-brand-soft text-brand mx-auto mb-3">${icon('user-check', 'w-5 h-5')}</div><p class="font-display text-[20px]">Aún no tienes clientes</p><p class="text-[13.5px] text-ink2 mt-1">Cuando registres la póliza de un prospecto, aparecerá aquí.</p></div>`;
+  return `<ul class="card divide-y divide-line overflow-hidden">${lista.map(c => {
+    const v = vigentes(c), t = semaforoContacto(c);
+    const proximo = v.map(p => p.proxVencimiento).filter(Boolean).sort()[0];
+    const aliados = [...new Set(v.map(p => p.aseguradora).filter(Boolean))].join(', ');
+    const primas = textosMoneda(sumarPorMoneda(v, p => p.prima, p => p.moneda));
+    return `<li><button class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sunken/60 transition" data-act="detalle" data-id="${c.id}">
+      ${avatar(c)}
+      <span class="min-w-0 flex-1"><span class="flex items-center gap-2"><span class="font-medium text-[14.5px] truncate">${esc(c.nombre)}</span>${t ? `<span class="dot ${TONOS[t].dot}" title="${TONOS[t].texto}"></span>` : ''}</span>
+        <span class="block text-[12.5px] text-ink3 truncate">${v.length} ${v.length === 1 ? 'póliza' : 'pólizas'}${aliados ? ` · ${esc(aliados)}` : ''}${proximo ? ` · próximo recibo ${fFecha(proximo, proximo.slice(0, 4) === hoy().slice(0, 4) ? undefined : { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}</span></span>
+      <span class="hidden sm:flex flex-col items-end text-[12.5px] text-ink2 tabular-nums shrink-0">${primas.map(x => `<span>${x}/año</span>`).join('')}</span>
+      ${icon('chevron-right', 'w-4 h-4 text-ink3 shrink-0')}
+    </button></li>`;
+  }).join('')}</ul>`;
 }
 
 /* ---------- CONTACTOS ---------- */
@@ -2078,6 +2112,11 @@ document.addEventListener('change', e => {
   }
 });
 document.addEventListener('input', e => {
+  if (e.target.id === 'buscador-clientes') {
+    ui.busquedaClientes = e.target.value;
+    document.getElementById('lista-clientes').innerHTML = listaClientes();
+    pintarIconos();
+  }
   if (e.target.id === 'buscador') {
     ui.busqueda = e.target.value;
     const q = ui.busqueda.trim().toLowerCase();
