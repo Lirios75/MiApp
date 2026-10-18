@@ -124,7 +124,7 @@ const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
 const MONEDAS = [['COP', 'Pesos (COP)'], ['USD', 'Dólares (USD)']];
 const CODIGOS_MONEDA = MONEDAS.map(m => m[0]);
 const TASA_USD_INICIAL = 4000;
-const OBJETIVOS_BASE = { referidos: [10, 50], intentos: [0, 0], efectivos: [7, 35], ands: [2, 10], c1ag: [3, 15], c1re: [3, 15], c2ag: [1, 5], c2re: [1, 4], svag: [0, 2], svre: [0, 0], vida: [0, 1], ap: [0, 1], nbs: [0, 0] };
+const OBJETIVOS_BASE = { referidos: [10, 50], intentos: [0, 0], efectivos: [7, 35], rechazos: [0, 0], ands: [2, 10], c1ag: [3, 15], c1re: [3, 15], c2ag: [1, 5], c2re: [1, 4], svag: [0, 2], svre: [0, 0], vida: [0, 1], ap: [0, 1], nbs: [0, 0] };
 const ALIADAS = ['MetLife', 'Allianz', 'BMI', 'Skandia', 'SURA'];
 const PRIORIDADES = ['Alta','Media','Baja'];
 const EDADES = ['18-25','26-35','36-45','46-55','56-65','65+'];
@@ -234,7 +234,7 @@ function semaforoContacto(c) {
   return vigentes(c).map(semaforo).sort((a, b) => PESO_TONO[b] - PESO_TONO[a])[0] || null;
 }
 function estadoDe(c) {
-  if (c.etapa === 'cancelada') return 'Cancelada';
+  if (c.etapa === 'cancelada') return c.rechazoEn ? 'No le interesa' : 'Cancelada';
   if (c.etapa === 'standby') return 'En pausa';
   if (esCliente(c)) return vigentes(c).some(p => cubeta(p) === 'renovacion') ? 'En Renovación' : 'Cliente Activo';
   return c.estado || 'Prospecto Frío';
@@ -787,6 +787,7 @@ function vistaVentas() {
   const total = sumarPorMoneda(lista.filter(c => enVentas(c) && c.etapa !== 'standby'), c => c.prima, c => c.moneda);
   return `
   ${encabezado('Pipeline de ventas', `${fSumaMonedas(total)} en prima anual por cerrar · arrastra las tarjetas para moverlas`, `<button class="btn-primary hidden sm:inline-flex" data-act="nuevo">${icon('plus', 'w-4 h-4')} Prospecto</button>`)}
+  ${estadoProspeccion()}
   <div class="md:hidden scroll-x -mx-4 px-4 flex gap-2 pb-3 mb-1">
     ${VENTAS.map(e => `<button class="chip" data-act="etapa-movil" data-etapa="${e.id}" aria-pressed="${ui.etapaMovil === e.id}">${e.nombre} <span class="opacity-70">${porEtapa(e.id).length}</span></button>`).join('')}
   </div>
@@ -906,9 +907,12 @@ function statsCitas(ini, fin) {
   const en = citas.filter(x => x.fecha >= ini && x.fecha <= fin);
   const cuenta = (lista, st) => lista.filter(x => x.status === st).length;
   const ef = cuenta(en, 'asistio'), no = cuenta(en, 'noasistio'), can = cuenta(en, 'cancelada'), pen = cuenta(en, 'programada');
-  const reag = citas.reduce((s, x) => s + (x.bitacora || []).filter(r => r.de >= ini && r.de <= fin).length, 0);
+  const movidas = x => (x.bitacora || []).filter(r => r.de >= ini && r.de <= fin).length;
+  const reag = citas.reduce((s, x) => s + movidas(x), 0);
+  const reag1 = citas.filter(x => x.tipo === 'cita1').reduce((s, x) => s + movidas(x), 0);
+  const reag2 = citas.filter(x => x.tipo === 'cita2').reduce((s, x) => s + movidas(x), 0);
   const cerradas = ef + no + can;
-  return { en, total: en.length, ef, no, can, pen, reag, efectividad: cerradas ? Math.round(ef / cerradas * 100) : null };
+  return { en, total: en.length, ef, no, can, pen, reag, reag1, reag2, efectividad: cerradas ? Math.round(ef / cerradas * 100) : null };
 }
 function vistaEstadisticas() {
   const tipo = ui.statsTipo, rango = rangoPeriodo(tipo, ui.statsRef), [ini, fin] = rango;
@@ -921,7 +925,7 @@ function vistaEstadisticas() {
     ['Agendadas', s.total, 'en estas fechas', 'calendar-days', 'text-ink', 'bg-sunken text-ink2'],
     ['Efectivas', s.ef, 'asistió a la cita', 'circle-check', 'text-ok', 'bg-ok-soft text-ok'],
     ['Pendientes', s.pen, 'aún sin registrar', 'clock', 'text-brand', 'bg-brand-soft text-brand'],
-    ['Reagendadas', s.reag, 'se movieron de fecha', 'calendar-clock', 'text-warn', 'bg-warn-soft text-warn'],
+    ['Reagendadas', s.reag, `1ª: ${s.reag1} · 2ª: ${s.reag2}${s.reag - s.reag1 - s.reag2 ? ` · servicio: ${s.reag - s.reag1 - s.reag2}` : ''}`, 'calendar-clock', 'text-warn', 'bg-warn-soft text-warn'],
     ['No asistió', s.no, 'plantón', 'user-x', 'text-bad', 'bg-bad-soft text-bad'],
     ['Canceladas', s.can, 'no se realizaron', 'calendar-x', 'text-ink2', 'bg-sunken text-ink2'],
   ];
@@ -990,7 +994,7 @@ function graficoDiario(ini, fin) {
 /* ---------- INFORME SEMANAL (actividad del consultor) ----------
    Cada indicador = lo que el CRM cuenta solo + un ajuste manual por día (db.actividad[fecha][clave]). */
 const INFORME = [
-  { grupo: 'Prospección', filas: [['referidos', 'Referidos'], ['intentos', 'Intentos de contacto'], ['efectivos', 'Contactos efectivos'], ['ands', "AND's calificados"]] },
+  { grupo: 'Prospección', filas: [['referidos', 'Referidos'], ['intentos', 'Intentos de contacto'], ['efectivos', 'Contactos efectivos'], ['rechazos', 'Rechazos'], ['ands', "AND's calificados"]] },
   { grupo: 'Citas', filas: [['c1ag', 'Citas de 1ª agendadas'], ['c1re', 'Citas de 1ª realizadas'], ['c2ag', 'Citas de 2ª agendadas'], ['c2re', 'Citas de 2ª realizadas'], ['svag', 'Citas de servicio agendadas'], ['svre', 'Citas de servicio realizadas']] },
   { grupo: 'Cierre', filas: [['vida', 'Pólizas de vida vendidas'], ['ap', 'Pólizas de AP vendidas'], ['nbs', 'NBS (millones de pesos)']] },
 ];
@@ -998,6 +1002,7 @@ const COMO_SE_CUENTA = {
   referidos: 'Contactos nuevos con "Cómo llegó: Referido", creados ese día.',
   intentos: 'Llamadas registradas en la ficha del contacto (No contestó o Hablamos).',
   efectivos: 'Llamadas registradas como "Hablamos".',
+  rechazos: 'Llamadas registradas como "No le interesa".',
   ands: 'Contactos que marcaste como prospecto calificado ese día.',
   c1ag: 'Citas de 1ª que agendaste ese día.', c1re: 'Citas de 1ª de ese día marcadas "Asistió".',
   c2ag: 'Citas de 2ª que agendaste ese día.', c2re: 'Citas de 2ª de ese día marcadas "Asistió".',
@@ -1017,6 +1022,7 @@ function autoDia(k, d) {
     case 'referidos': return cs.filter(c => c.creado === d && c.comoLlego === 'Referido').length;
     case 'intentos': return llamadas();
     case 'efectivos': return llamadas('efectivo');
+    case 'rechazos': return llamadas('rechazo');
     case 'ands': return cs.filter(c => c.calificadoEn === d).length;
     case 'c1ag': return citas().filter(x => x.tipo === 'cita1' && x.creadaEn === d).length;
     case 'c1re': return citas().filter(x => x.tipo === 'cita1' && x.status === 'asistio' && x.fecha === d).length;
@@ -1125,10 +1131,11 @@ function bloqueSeguimiento(c) {
   const ll = c.llamadas || [], ef = ll.filter(l => l.resultado === 'efectivo').length, ult = ll[ll.length - 1];
   return `<section class="card p-4">
     <div class="flex items-center justify-between gap-2 mb-1"><h3 class="text-[17px]">Llamadas</h3><span class="text-[12.5px] text-ink3">${ll.length} ${ll.length === 1 ? 'intento' : 'intentos'} · ${ef} ${ef === 1 ? 'efectivo' : 'efectivos'}</span></div>
-    <p class="text-[12.5px] text-ink3 mb-3">${ult ? `Última: ${fFecha(ult.fecha)} · ${ult.resultado === 'efectivo' ? 'hablaron' : 'no contestó'}` : 'Registra cada llamada para tu informe semanal.'}</p>
-    <div class="grid grid-cols-2 gap-2">
-      <button class="btn-soft btn-sm" data-act="llamada" data-id="${c.id}" data-r="intento">${icon('phone-missed', 'w-4 h-4')} No contestó</button>
-      <button class="btn-primary btn-sm" data-act="llamada" data-id="${c.id}" data-r="efectivo">${icon('phone-call', 'w-4 h-4')} Hablamos</button>
+    <p class="text-[12.5px] text-ink3 mb-3">${ult ? `Última: ${fFecha(ult.fecha)} · ${{ efectivo: 'hablaron', rechazo: 'no le interesa' }[ult.resultado] || 'no contestó'}` : 'Registra cada llamada para tu informe semanal.'}</p>
+    <div class="grid ${esCliente(c) ? 'grid-cols-2' : 'grid-cols-3'} gap-2">
+      <button class="btn-soft btn-sm px-2!" data-act="llamada" data-id="${c.id}" data-r="intento">${icon('phone-missed', 'w-4 h-4 shrink-0 hidden sm:block')} No contestó</button>
+      <button class="btn-primary btn-sm px-2!" data-act="llamada" data-id="${c.id}" data-r="efectivo">${icon('phone-call', 'w-4 h-4 shrink-0 hidden sm:block')} Hablamos</button>
+      ${esCliente(c) ? '' : `<button class="btn-soft btn-sm px-2! text-bad!" data-act="llamada" data-id="${c.id}" data-r="rechazo">${icon('phone-off', 'w-4 h-4 shrink-0 hidden sm:block')} No le interesa</button>`}
     </div>
     ${esCliente(c) ? '' : `<div class="flex items-center justify-between gap-3 mt-3 pt-3 border-t border-line">
       <div class="min-w-0"><p class="text-[14px] font-medium">Prospecto calificado (AND)</p><p class="text-[12.5px] text-ink3">${c.calificadoEn ? `Calificado el ${fFecha(c.calificadoEn, { day: 'numeric', month: 'short', year: 'numeric' })}` : 'Cumple el perfil para seguir el proceso'}</p></div>
@@ -1267,10 +1274,33 @@ function listaClientes() {
   }).join('')}</ul>`;
 }
 
+/* Estado de prospección (como el "Status HDN"): cada prospecto según sus llamadas registradas */
+function estadoLlamadas(c) {
+  if (c.rechazoEn) return 'rechazo';
+  const ll = c.llamadas || [];
+  if (ll.some(l => l.resultado === 'efectivo')) return 'efectivo';
+  return ll.length ? 'intento' : 'pendiente';
+}
+const universoProspeccion = c => !esCliente(c) && (c.etapa !== 'cancelada' || c.rechazoEn);
+function estadoProspeccion() {
+  const ps = db.contactos.filter(universoProspeccion);
+  const n = k => ps.filter(c => estadoLlamadas(c) === k).length;
+  const cajas = [['efectivo', 'Efectivos', 'ya hablaron', 'phone-call', 'bg-ok-soft text-ok'], ['intento', 'Intentos', 'sin respuesta', 'phone-missed', 'bg-warn-soft text-warn'],
+    ['pendiente', 'Pendientes', 'aún sin llamar', 'phone', 'bg-brand-soft text-brand'], ['rechazo', 'Rechazos', 'no interesa', 'phone-off', 'bg-bad-soft text-bad']];
+  return `<section class="card p-4 mb-4" aria-label="Estado de prospección">
+    <p class="label mb-3">Estado de prospección · ${ps.length} prospectos</p>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">${cajas.map(([k, t, sub, ic, chip]) => `
+      <button class="flex items-center gap-3 rounded-xl p-2.5 hover:bg-sunken text-left min-w-0" data-act="ver-llamadas" data-k="${k}">
+        <span class="w-10 h-10 rounded-xl grid place-items-center shrink-0 ${chip}">${icon(ic, 'w-4 h-4')}</span>
+        <span class="min-w-0"><span class="block font-display text-[22px] leading-none tabular-nums">${n(k)}</span><span class="block text-[13px] text-ink">${t}</span><span class="block text-[11.5px] text-ink3 truncate">${sub}</span></span>
+      </button>`).join('')}</div>
+  </section>`;
+}
+
 /* ---------- CONTACTOS ---------- */
 const FILTROS = [
   ['todos', 'Todos'], ['prospectos', 'Prospectos'], ['clientes', 'Clientes'], ['alta', 'Prioridad alta'],
-  ['vencidas', 'Prima vencida este mes'], ['renov30', 'Renovaciones 30 días'], ['citaspos', 'Citas posventa'], ['inactivos', 'En pausa / canceladas'],
+  ['vencidas', 'Prima vencida este mes'], ['renov30', 'Renovaciones 30 días'], ['citaspos', 'Citas posventa'], ['sinllamar', 'Sin llamar'], ['rechazos', 'No les interesa'], ['inactivos', 'En pausa / canceladas'],
 ];
 function aplicaFiltro(c, f) {
   switch (f) {
@@ -1280,6 +1310,10 @@ function aplicaFiltro(c, f) {
     case 'vencidas': return esCliente(c) && vigentes(c).some(p => cubeta(p) === 'gracia');
     case 'renov30': return esCliente(c) && vigentes(c).some(p => p.inicioVigencia && diasHasta(proximoAniversario(p.inicioVigencia)) <= 30);
     case 'citaspos': return (c.citas || []).some(x => ['anual', 'posventa'].includes(x.tipo) && x.status === 'programada');
+    case 'sinllamar': return universoProspeccion(c) && estadoLlamadas(c) === 'pendiente';
+    case 'rechazos': return !!c.rechazoEn && !esCliente(c);
+    case 'efectivos': return universoProspeccion(c) && estadoLlamadas(c) === 'efectivo';
+    case 'intentos': return universoProspeccion(c) && estadoLlamadas(c) === 'intento';
     case 'inactivos': return ['standby', 'cancelada'].includes(c.etapa);
     default: return true;
   }
@@ -1380,7 +1414,7 @@ function abrirDetalle(id, refrescar = false) {
   const edad = edadDe(c.nacimiento), cumple = proximoCumple(c.nacimiento);
   const datos = [['Cédula', c.cedula], ['Teléfono', c.telefono], ['WhatsApp', c.whatsapp], ['Email', c.email], ['Ciudad', c.ciudad],
     ['Nacimiento', c.nacimiento ? `${fFecha(c.nacimiento, { day: 'numeric', month: 'short', year: 'numeric' })} · ${edad} años` : ''],
-    ['Edad', c.nacimiento ? '' : c.edad], ['Estado civil', c.civil], ['Hijos', c.hijos], ['Objetivo', c.objetivo], ['Cómo llegó', c.comoLlego], ['Referido por', c.referidoPor],
+    ['Edad', c.nacimiento ? '' : c.edad], ['Estado civil', c.civil], ['Hijos', c.hijos], ['Edades de los hijos', c.edadesHijos], ['Ingresos mensuales', c.ingresos ? fDinero(c.ingresos, 'COP') : ''], ['Objetivo', c.objetivo], ['Cómo llegó', c.comoLlego], ['Referido por', c.referidoPor],
     ['Prima estimada', !esCliente(c) && c.prima ? fDinero(c.prima, c.moneda) : '']].filter(([k, v]) => !(k === 'Edad' && !v) && !(k === 'Prima estimada' && !v));
   const html = `
   ${cabeceraModal(esc(c.nombre), `${estadoDe(c)}${c.ocupacion ? ` · ${esc(c.ocupacion)}` : ''}`)}
@@ -1473,6 +1507,10 @@ function abrirFormContacto(id) {
         <label class="field"><span>Edad</span>${sel('edad', EDADES, c.edad)}</label>
         <label class="field"><span>Estado civil</span>${sel('civil', CIVILES, c.civil)}</label>
         <label class="field"><span>Hijos</span>${inp('hijos', c.hijos, 'number', 'min="0" max="15" inputmode="numeric"')}</label>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <label class="field"><span>Edades de los hijos</span>${inp('edadesHijos', c.edadesHijos, 'text', 'placeholder="Ej. 5 y 9 años"')}</label>
+        <label class="field"><span>Ingresos mensuales</span>${inp('ingresos', c.ingresos || '', 'number', 'min="0" step="any" inputmode="decimal" placeholder="En pesos"')}</label>
       </div>
     </fieldset>
     <fieldset class="flex flex-col gap-3"><legend class="label mb-2">Oportunidad</legend>
@@ -1657,6 +1695,8 @@ const COLUMNAS_CARTERA = [
   ['ocupacion', 'Profesión', ['profesion', 'ocupacion']],
   ['civil', 'Estado civil', ['estadocivil']],
   ['hijos', 'Hijos', ['hijos']],
+  ['edadesHijos', 'Edades de los hijos', ['edadeshijos', 'edadesdeloshijos']],
+  ['ingresos', 'Ingresos mensuales', ['ingresosmensuales', 'ingresosmes', 'ingresos']],
   ['objetivo', 'Objetivo principal', ['objetivoprincipal', 'objetivo']],
   ['numero', 'Número de póliza', ['numerodepoliza', 'nodepoliza', 'nopoliza', 'poliza']],
   ['aseguradora', 'Aseguradora', ['aseguradora', 'compania']],
@@ -1766,7 +1806,7 @@ function contactosDesdeFilas(filas) {
       grupos.set(clave, {
         id: uid(), nombre, cedula, nacimiento, telefono: txt(f, 'telefono'), whatsapp: txt(f, 'whatsapp') || txt(f, 'telefono'), email: txt(f, 'email'),
         ciudad: txt(f, 'ciudad'), ocupacion: txt(f, 'ocupacion'), edad: rangoEdad(edadDe(nacimiento)), civil: elegir(txt(f, 'civil'), CIVILES, 'Soltero(a)'),
-        hijos: Number(txt(f, 'hijos')) || 0, objetivo: txt(f, 'objetivo'), comoLlego: txt(f, 'comoLlego'), referidoPor: txt(f, 'referidoPor'),
+        hijos: Number(txt(f, 'hijos')) || 0, edadesHijos: txt(f, 'edadesHijos'), ingresos: leerMonto(val(f, 'ingresos')), objetivo: txt(f, 'objetivo'), comoLlego: txt(f, 'comoLlego'), referidoPor: txt(f, 'referidoPor'),
         prioridad: estrellas ? (estrellas >= 4 ? 'Alta' : estrellas === 3 ? 'Media' : 'Baja') : elegir(txt(f, 'prioridad'), PRIORIDADES, 'Media'),
         ramo: 'Vida', prima: 0, moneda: 'COP', etapa: 'prospecto', estado: 'Prospecto Frío', fueCliente: false, hitos: {}, notas: [], citas: [], polizas: [], creado: hoy(),
       });
@@ -1822,7 +1862,7 @@ async function importarCartera(filas) {
   lista.forEach(n => {
     const c = existente(n);
     if (!c) { db.contactos.push(n); return; }
-    ['cedula', 'nacimiento', 'telefono', 'whatsapp', 'email', 'ciudad', 'ocupacion', 'objetivo', 'comoLlego', 'referidoPor'].forEach(k => { if (n[k]) c[k] = n[k]; });
+    ['cedula', 'nacimiento', 'telefono', 'whatsapp', 'email', 'ciudad', 'ocupacion', 'objetivo', 'comoLlego', 'referidoPor', 'edadesHijos', 'ingresos'].forEach(k => { if (n[k]) c[k] = n[k]; });
     c.polizas = c.polizas || [];
     n.polizas.forEach(np => {
       const p = c.polizas.find(x => np.numero && normal(x.numero) === normal(np.numero));
@@ -1855,6 +1895,7 @@ function moverEtapa(c, etapa) {
     const mapa = { prospecto: c.estado === 'Contactado' ? 'Contactado' : 'Prospecto Frío', cita1: 'Cita 1 Agendada', propuesta: 'Cita 1 Realizada', cita2: 'Cita 2 Agendada', tramite: 'Radicada (en estudio)' };
     c.estado = mapa[etapa];
   }
+  if (etapa !== 'cancelada') c.rechazoEn = null;
   c.etapa = etapa;
 }
 
@@ -1895,10 +1936,11 @@ const acciones = {
     const c = getC(d.id), ahora = new Date().toTimeString().slice(0, 5);
     c.llamadas = c.llamadas || [];
     c.llamadas.push({ id: uid(), fecha: hoy(), hora: ahora, resultado: d.r });
-    c.notas.push({ id: uid(), fecha: hoy(), hora: ahora, texto: d.r === 'efectivo' ? 'Llamada: hablamos.' : 'Llamada: no contestó.' });
+    c.notas.push({ id: uid(), fecha: hoy(), hora: ahora, texto: { efectivo: 'Llamada: hablamos.', rechazo: 'Llamada: no le interesa.' }[d.r] || 'Llamada: no contestó.' });
     if (d.r === 'efectivo' && c.etapa === 'prospecto' && c.estado === 'Prospecto Frío') c.estado = 'Contactado';
+    if (d.r === 'rechazo' && !esCliente(c)) { c.rechazoEn = hoy(); c.etapa = 'cancelada'; c.estado = 'Cancelada'; }
     guardar(); render(); abrirDetalle(c.id, true);
-    toast(d.r === 'efectivo' ? 'Contacto efectivo registrado' : 'Intento de contacto registrado', { deshacer: true });
+    toast({ efectivo: 'Contacto efectivo registrado', rechazo: 'Registrado: no le interesa. Pasó a En pausa / canceladas' }[d.r] || 'Intento de contacto registrado', { deshacer: true });
   },
   calificar: d => {
     foto();
@@ -1907,6 +1949,7 @@ const acciones = {
     guardar(); render(); abrirDetalle(c.id, true);
     toast(c.calificadoEn ? 'Marcado como prospecto calificado' : 'Se quitó la calificación', { deshacer: true });
   },
+  'ver-llamadas': d => { ui.filtro = { pendiente: 'sinllamar', rechazo: 'rechazos', efectivo: 'efectivos', intento: 'intentos' }[d.k]; ui.busqueda = ''; if (location.hash === '#contactos') render(); else location.hash = 'contactos'; },
   'aliados-modo': d => { ui.aliadosModo = d.m; render(); },
   'ver-stats': () => { ui.citasModo = 'stats'; ui.statsTipo = 'semana'; ui.statsRef = hoy(); if (location.hash === '#citas') render(); else location.hash = 'citas'; },
   'stats-dia': d => { ui.statsTipo = 'dia'; ui.statsRef = d.d; render(); },
@@ -1991,7 +2034,7 @@ const formularios = {
     const nacimiento = fd.get('nacimiento');
     const datos = {
       nombre, cedula: t('cedula'), nacimiento, telefono: t('telefono'), whatsapp: t('whatsapp'), email: t('email'), ciudad: t('ciudad'), ocupacion: t('ocupacion'),
-      edad: nacimiento ? rangoEdad(edadDe(nacimiento)) : fd.get('edad'), civil: fd.get('civil'), hijos: Number(fd.get('hijos')) || 0,
+      edad: nacimiento ? rangoEdad(edadDe(nacimiento)) : fd.get('edad'), civil: fd.get('civil'), hijos: Number(fd.get('hijos')) || 0, edadesHijos: t('edadesHijos'), ingresos: Number(fd.get('ingresos')) || 0,
       prioridad: fd.get('prioridad'), ramo: fd.get('ramo'), prima: Number(fd.get('prima')) || 0, moneda: fd.get('moneda'),
       objetivo: t('objetivo'), comoLlego: fd.get('comoLlego'), referidoPor: t('referidoPor'),
     };
