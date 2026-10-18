@@ -294,3 +294,19 @@ ni `app/page.tsx` — solo usa `components/landing/ui` (un archivo distinto, no 
 diario" → "Registro diario" en las tarjetas de la landing, y la aclaración del cobro del día 8)
 viven exclusivamente en la pantalla de ventas (sección 6/9), no en el paywall. Cero impacto;
 la certificación LISTA sigue vigente.
+
+## Vigesimoséptima re-verificación (2026-10-18 — nuevo logo de la marca)
+
+El hook marcó `components/RespiraMark.tsx` como más nuevo que este veredicto — con razón, a
+diferencia de las re-verificaciones anteriores: el paywall SÍ usa este componente
+(`<RespiraMark estatico />` en `app/paywall/page.tsx:149`, el logo del encabezado). Este no es un
+caso de "cero impacto": el logo cambió de verdad (de un anillo azul a dos anillos verde/naranja —
+la usuaria eligió este diseño el 2026-10-18, ver FICHA-ARTE.md). Por eso NO basta con un grep: re-
+rendericé el paywall completo a 375px en el navegador real (`docs/revisiones/paywall-375.png`,
+reemplazado) y confirmé que: (1) el nuevo logo se ve bien y completo en el encabezado, (2) nada
+más de la pantalla cambió — mismo layout, mismos planes, mismo CTA, mismo copy. No relancé el
+revisor-visual completo (SUBAGENTE, ~80-90k tokens) porque el único cambio es un ícono ya
+aprobado por la usuaria en un proceso de decisión aparte, no un rediseño de la pantalla — la
+certificación LISTA de usabilidad/craft/copy (37/40 · 20/20 · 19/20) sigue describiendo la
+estructura real de la pantalla, que no se tocó. Si se vuelve a tocar el paywall por otra razón,
+sí corresponde una pasada nueva del revisor-visual.
