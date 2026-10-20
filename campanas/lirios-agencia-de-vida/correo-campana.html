@@ -8,11 +8,10 @@
 <title>La tranquilidad también se planifica — Lirios Agencia de Vida</title>
 <!--
   CORREO DE CAMPAÑA — Lirios Agencia de Vida
-  Antes de enviar, reemplaza SOLO estos 4 datos:
-    foto-lina.jpg        → al montarlo en Brevo, sube esta foto y cambia "foto-lina.jpg" por el enlace que te da Brevo
-    {{URL_DIAGNOSTICO}}  → enlace a tu diagnóstico gratis (tu página de Lovable)
-    {{NUMERO_WHATSAPP}}  → tu número con indicativo, sin + ni espacios (ej. 573001234567)
-    {{URL_BAJA}}         → enlace para darse de baja (lo da tu herramienta de correo, ej. *|UNSUB|* en Mailchimp)
+  Los dos botones abren el WhatsApp de Lina (+57 315 784 0694) con un mensaje distinto,
+  así se sabe cuál botón usó cada persona. Antes de enviar, cambia solo:
+    foto-lina.jpg  → al montarlo en Brevo, sube esta foto y cambia "foto-lina.jpg" por el enlace que te da Brevo
+    El enlace de baja ya usa la etiqueta de Brevo {{ unsubscribe }} (Brevo la llena sola).
   Todo va en tablas y estilos en línea: así se ve igual en Gmail, Outlook y el celular.
 -->
 <style>
@@ -61,7 +60,7 @@
             </p>
             <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
               <td style="border-radius:999px;background:#F7F3EC;">
-                <a href="{{URL_DIAGNOSTICO}}" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#2E2A26;text-decoration:none;border-radius:999px;">Hacer mi diagnóstico gratis</a>
+                <a href="https://wa.me/573157840694?text=Hola%20Lina%2C%20quiero%20hacer%20mi%20diagn%C3%B3stico%20gratis" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#2E2A26;text-decoration:none;border-radius:999px;">Hacer mi diagnóstico gratis</a>
               </td>
             </tr></table>
           </td>
@@ -120,7 +119,7 @@
       <p style="margin:0 0 22px;font-size:15px;line-height:23px;color:#5C544C;">Acompaño a empresarios y profesionales a proteger su patrimonio, su retiro y su familia con el Método LIRIOS. Escríbeme y te llamo.</p>
       <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
         <td style="border-radius:999px;background:#3B6578;">
-          <a href="https://wa.me/{{NUMERO_WHATSAPP}}?text=Hola%20Lina%2C%20recib%C3%AD%20tu%20correo%20y%20quiero%20que%20me%20llames" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;">Quiero que me llamen</a>
+          <a href="https://wa.me/573157840694?text=Hola%20Lina%2C%20recib%C3%AD%20tu%20correo%20y%20quiero%20que%20me%20llames" style="display:inline-block;padding:14px 26px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:700;color:#FFFFFF;text-decoration:none;border-radius:999px;">Quiero que me llamen</a>
         </td>
       </tr></table>
     </td></tr>
@@ -137,7 +136,7 @@
       <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#2E2A26;">Lirios Agencia de Vida</p>
       <p style="margin:0 0 12px;">Protección financiera con propósito · Instagram @liriosvidayfinanzas</p>
       <p style="margin:0;">Recibes este correo porque nos diste tu autorización para contactarte. Tratamos tus datos según la Ley 1581 de 2012.<br>
-      <a href="{{URL_BAJA}}" style="color:#3B6578;text-decoration:underline;">No quiero recibir más correos</a></p>
+      <a href="{{ unsubscribe }}" style="color:#3B6578;text-decoration:underline;">No quiero recibir más correos</a></p>
     </td></tr>
 
   </table>

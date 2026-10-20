@@ -35,7 +35,8 @@ Hola {{1}}, te comparto algo que reviso con mis clientes en el diagnóstico grat
 🏡 Patrimonio: lo que construiste y la educación de tus hijos
 🩺 Salud: acceso oportuno cuando lo necesitas
 
-Puedes hacer tu diagnóstico aquí, toma 3 minutos: {{2}}
+Lo revisamos juntas en una llamada de 15 minutos, sin costo.
+Responde *DIAGNÓSTICO* y te escribo para agendar.
 
 ---
 
