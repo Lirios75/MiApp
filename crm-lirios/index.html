@@ -1440,7 +1440,8 @@ function bloquePoliza(c, p) {
       ${b !== 'gracia' ? `<button class="btn-ghost btn-sm col-span-2" data-act="gracia" ${ids}>${icon('hourglass', 'w-4 h-4')} Marcar en periodo de gracia</button>` : p.gracia ? `<button class="btn-ghost btn-sm col-span-2" data-act="quitar-gracia" ${ids}>Quitar marca de gracia</button>` : ''}
     </div>`}
     ${pagos.length ? `<details class="mt-3"><summary class="text-[13px] text-brand font-medium cursor-pointer py-1">Historial de pagos (${pagos.length})</summary>
-      <ul class="mt-2 divide-y divide-line text-[13px]">${[...pagos].sort((a, b2) => b2.fecha.localeCompare(a.fecha)).map(x => `<li class="py-1.5 flex justify-between gap-2"><span>${fLarga(x.fecha)}<span class="text-ink3"> · recibo ${fFecha(x.recibo)}</span></span><span class="font-medium">${fDinero(x.monto, x.moneda)}</span></li>`).join('')}</ul></details>` : ''}
+      <ul class="mt-2 divide-y divide-line text-[13px]">${[...pagos].sort((a, b2) => (b2.recibo || '').localeCompare(a.recibo || '') || b2.fecha.localeCompare(a.fecha)).map((x, i) => `<li class="py-1.5 flex items-center justify-between gap-2"><span class="min-w-0">${fLarga(x.fecha)}<span class="text-ink3"> · recibo ${fFecha(x.recibo)}</span></span><span class="flex items-center gap-1 shrink-0"><span class="font-medium">${fDinero(x.monto, x.moneda)}</span>${i === 0 && x.recibo ? `<button class="grid place-items-center w-8 h-8 rounded-lg hover:bg-sunken text-ink3" data-act="borrar-pago" ${ids} data-pago="${x.id}" aria-label="Borrar este pago">${icon('trash-2', 'w-3.5 h-3.5')}</button>` : ''}</span></li>`).join('')}</ul>
+      <p class="text-[12px] text-ink3 mt-1">Si anotaste un pago por error, bórralo con el ícono de la papelera: el recibo vuelve a quedar pendiente.</p></details>` : ''}
   </section>`;
 }
 function abrirDetalle(id, refrescar = false) {
@@ -1661,6 +1662,10 @@ function abrirPago(cid, pid) {
   const nuevo = siguienteRecibo(p.inicioVigencia, p.formaPago, p.proxVencimiento);
   const meses = mesesEntre(p.inicioVigencia, p.proxVencimiento);
   const esAniv = meses > 0 && meses % 12 === 0;
+  /* Si el recibo aún está lejos, casi siempre es un pago repetido: se avisa antes de confirmar */
+  const faltan = diasHasta(p.proxVencimiento);
+  const ultimo = [...(p.pagos || [])].sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+  const adelantado = faltan > 45;
   abrirModal(`
   ${cabeceraModal('Registrar pago', `${esc(c.nombre)} · ${esc([p.plan || p.ramo, p.numero].filter(Boolean).join(' · '))}`)}
   <form data-form="pago" data-id="${cid}" data-pol="${pid}" class="px-5 py-4 flex flex-col gap-3" novalidate>
@@ -1670,8 +1675,9 @@ function abrirPago(cid, pid) {
       <label class="field"><span>Fecha de pago</span><input class="input" type="date" name="fecha" value="${hoy()}" max="${hoy()}" required></label>
       <label class="field"><span>Monto (${esc(p.moneda)})</span><input class="input" type="number" step="any" min="0" name="monto" value="${Math.round(primaRecibo(p) * 100) / 100}" inputmode="decimal" required></label>
     </div>
+    ${adelantado ? `<p class="text-[13px] text-warn bg-warn-soft rounded-xl px-3 py-2">${icon('alert-triangle', 'w-4 h-4 inline -mt-0.5')} <strong class="font-semibold">¿Ya lo habías registrado?</strong> Este recibo vence ${relDias(faltan)}${ultimo ? ` y el último pago quedó anotado el ${fFecha(ultimo.fecha, { day: 'numeric', month: 'long' })}` : ''}. Confirma solo si el cliente pagó por adelantado.</p>` : ''}
     <p class="text-[13px] text-ink2 bg-sunken rounded-xl px-3 py-2">${icon('arrow-right-circle', 'w-4 h-4 inline -mt-0.5 text-brand')} El siguiente recibo quedará para el <strong class="font-semibold">${fFecha(nuevo, { day: 'numeric', month: 'long', year: 'numeric' })}</strong>.${esAniv ? ' Este pago es la <strong class="font-semibold">renovación anual</strong>: la póliza contará como conservada.' : ''}</p>
-    <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} Confirmar pago</button></div>
+    <div class="flex gap-2 pt-2"><button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button><button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} ${adelantado ? 'Sí, pagó por adelantado' : 'Confirmar pago'}</button></div>
   </form>`);
 }
 
@@ -2032,6 +2038,21 @@ const acciones = {
     toast('Quedó en "Por reagendar"', { deshacer: true });
   },
   gracia: d => { foto(); getP(d).gracia = true; guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true); toast('Póliza marcada en periodo de gracia', { deshacer: true }); },
+  'borrar-pago': async d => {
+    const p = getP(d), x = (p.pagos || []).find(y => y.id === d.pago);
+    if (!x || !(await confirmar(`¿Borrar el pago del ${fFecha(x.fecha, { day: 'numeric', month: 'long' })}? El recibo del ${fFecha(x.recibo, { day: 'numeric', month: 'long', year: 'numeric' })} vuelve a quedar pendiente.`, { si: 'Borrar pago', peligro: true }))) return;
+    foto();
+    p.pagos = p.pagos.filter(y => y.id !== x.id);
+    p.proxVencimiento = x.recibo;
+    const meses = mesesEntre(p.inicioVigencia, x.recibo);
+    if (meses > 0 && meses % 12 === 0) {
+      p.renovaciones = Math.max(0, (Number(p.renovaciones) || 0) - 1);
+      const previo = p.pagos.filter(y => { const m = mesesEntre(p.inicioVigencia, y.recibo); return m > 0 && m % 12 === 0; }).sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+      if (previo) p.renovadoEn = previo.fecha; else delete p.renovadoEn;
+    }
+    guardar(); render(); abrirDetalle(d.id, true);
+    toast('Pago borrado · el recibo volvió a quedar pendiente', { deshacer: true });
+  },
   'quitar-gracia': d => { foto(); getP(d).gracia = false; guardar(); render(); abrirDetalle(d.id, true); toast('Marca de gracia retirada', { deshacer: true }); },
   'borrar-poliza': async d => {
     if (!(await confirmar('¿Borrar esta póliza y su historial de pagos? Si solo se canceló, mejor cambia su estado a "Cancelada" para que cuente en tu persistencia.', { si: 'Borrar póliza', peligro: true }))) return;
