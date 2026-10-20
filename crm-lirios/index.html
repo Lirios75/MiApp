@@ -212,12 +212,17 @@ const vigentes = c => (c.polizas || []).filter(activa);
 const polizasCartera = () => db.contactos.filter(esCliente).flatMap(c => vigentes(c).map(p => ({ c, p })));
 const primaRecibo = p => (Number(p.prima) || 0) / (12 / (FORMAS[p.formaPago] || 12));
 
+/* Aniversario que aún falta por pagar: si el recibo del aniversario ya se pagó, la renovación está hecha */
+function aniversarioPendiente(p) {
+  const ani = p.inicioVigencia ? proximoAniversario(p.inicioVigencia) : null;
+  return ani && (!p.proxVencimiento || p.proxVencimiento <= ani) ? ani : null;
+}
 function cubeta(p) {
   if (!p.proxVencimiento) return 'activa';
   const dv = diasHasta(p.proxVencimiento);
   if (p.gracia || dv < 0) return 'gracia';
   if (dv <= 15) return 'pago';
-  const ani = p.inicioVigencia ? proximoAniversario(p.inicioVigencia) : null;
+  const ani = aniversarioPendiente(p);
   if (ani && diasHasta(ani) <= 60) return 'renovacion';
   if (p.renovadoEn && diasEntre(p.renovadoEn, hoy()) <= 90) return 'conservada';
   return 'activa';
@@ -225,7 +230,7 @@ function cubeta(p) {
 function semaforo(p) {
   if (cubeta(p) === 'gracia') return 'bad';
   const dv = p.proxVencimiento ? diasHasta(p.proxVencimiento) : 999;
-  const ani = p.inicioVigencia ? proximoAniversario(p.inicioVigencia) : null;
+  const ani = aniversarioPendiente(p);
   if (dv <= 15 || (ani && diasHasta(ani) < 30)) return 'warn';
   return 'ok';
 }
