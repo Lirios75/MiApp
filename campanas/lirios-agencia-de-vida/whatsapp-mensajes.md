@@ -66,3 +66,48 @@ protección, aquí estaré. Solo responde *LLÁMAME*.
    proveedor como Meta directamente, Wati, Twilio o Brevo). Cuesta por mensaje y exige que
    Meta apruebe cada plantilla, pero es la única vía segura para volumen.
 4. Envía en grupos pequeños, nunca cientos de golpe, y quita de inmediato a quien diga SALIR.
+
+---
+
+# Mensajes para pedir referidos
+
+> Regla: el referido entra a tu lista solo cuando ÉL acepta que le escribas
+> (tu cliente le pregunta primero, o te escribe directamente).
+
+## R1 — A clientes activos (enviar 2-3 días después del correo)
+
+Hola [Nombre] 😊, ¿cómo estás?
+
+Gracias por confiar en mí para proteger lo que más te importa. Te escribo con una pregunta:
+¿conoces a 2 personas que tengan un crédito de vivienda o de vehículo?
+
+Muchas pagan un seguro con el crédito sin saberlo, y revisarlo les puede bajar la cuota.
+Yo les hago el diagnóstico gratis, en 15 minutos y sin compromiso.
+
+Si se te ocurre alguien, pregúntale si le puedo escribir y me pasas su número, o
+reenvíale este mensaje para que me escriba directo 👉 wa.me/573157840694
+
+¡Gracias de corazón! 🙏
+
+## R2 — Mensaje que tu cliente puede reenviar a su amigo
+
+Hola 👋, te comparto el contacto de Lina Ríos, mi asesora de seguros (Lirios Agencia de Vida).
+Me ayudó a revisar mis seguros y es muy clara. Si tienes un crédito de vivienda o de vehículo,
+ella te revisa gratis si puedes bajar la cuota. Escríbele aquí: wa.me/573157840694
+
+## R3 — Tu primer mensaje al referido (solo si ya aceptó que le escribas)
+
+Hola [Nombre] 👋, soy Lina Ríos de Lirios Agencia de Vida. [Nombre del cliente] me pasó tu
+contacto y me dijo que te podía escribir.
+
+¿Tienes un crédito de vivienda o de vehículo? En muchos casos se puede revisar el seguro para
+bajar la cuota. ¿Te gustaría que lo revisemos en una llamada de 15 minutos, sin costo?
+
+## R4 — A clientes cancelados
+
+Hola [Nombre] 😊, soy Lina Ríos. Hace un tiempo trabajamos juntos tu protección y quería saber
+cómo estás.
+
+Esta semana estoy revisando con mis clientes el seguro de sus créditos: en muchos casos se
+puede endosar y bajar la cuota. Si tienes un crédito, con gusto lo revisamos gratis. Y si no,
+también me ayudaría mucho saber si conoces a alguien a quien le pueda servir. 🙏
