@@ -726,6 +726,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Brevo: cuenta "Lirios Agencia de Vida", remitente lina.rios@ikigaihumano.com, campaña "Seguro de crédito – octubre" en borrador, prueba OK (foto, botones a WhatsApp +57 315 784 0694, Instagram).
 - Dominio ikigaihumano.com AUTENTICADO en Brevo (2026-10-21): en Hostinger se agregaron TXT @ brevo-code, CNAME brevo1/brevo2._domainkey, y se editó el _dmarc existente a `v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com`. NO usar el subdominio `mail.` para Brevo: lo usa Resend (Respira).
 - 2026-10-21: lista "Clientes Lirios" (10 contactos: 8 activos, 2 cancelados, con autorización) importada en Brevo. Campaña PROGRAMADA para jue 22 oct 2026 9:00 (Bogotá). Siguiente: revisar estadísticas (aperturas/clics) y seguimiento por WhatsApp; opcional segundo correo estilo carta.
+- 2026-10-21: la usuaria envió una lista ampliada (25); 14 de los 15 nuevos coinciden con la base de EPS → NO se prepararon para Brevo. Se mantiene la lista de 10. Propuesto: mensaje de WhatsApp para pedir referidos.
 - 2026-10-21: la usuaria compartió una base de afiliados de EPS (datos sensibles, sin autorización para marketing). NO se usó ni se copió al proyecto; se le recomendó borrarla. La lista válida son sus propios clientes (activos/cancelados) y referidos que acepten, solo nombre + correo.
 
 ## Problemas conocidos ⚠️
