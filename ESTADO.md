@@ -721,6 +721,12 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 ## Próximas sesiones 📋
 - Sesión 6: servicios externos (GitHub ya está, falta Supabase real, IA si aplica, Vercel, Resend, dominio, Hotmart) — ahí se reemplazan los placeholders del carrusel de la landing por screenshots reales de la app.
 
+## Proyecto aparte: campaña de Lirios Agencia de Vida (NO es Respira)
+- Archivos en `campanas/lirios-agencia-de-vida/` (correo HTML, mensajes de WhatsApp, guía de seguridad). No se publican con Respira.
+- Brevo: cuenta "Lirios Agencia de Vida", remitente lina.rios@ikigaihumano.com, campaña "Seguro de crédito – octubre" en borrador, prueba OK (foto, botones a WhatsApp +57 315 784 0694, Instagram).
+- Dominio ikigaihumano.com AUTENTICADO en Brevo (2026-10-21): en Hostinger se agregaron TXT @ brevo-code, CNAME brevo1/brevo2._domainkey, y se editó el _dmarc existente a `v=DMARC1; p=none; rua=mailto:rua@dmarc.brevo.com`. NO usar el subdominio `mail.` para Brevo: lo usa Resend (Respira).
+- Pendiente: subir contactos (solo con autorización) y programar el envío.
+
 ## Problemas conocidos ⚠️
 - onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (ver "Puertas de etapa") tras 16 pasadas del revisor-visual. Quedan 5 pendientes conocidos, NO bloqueantes, aceptados así por la usuaria el 2026-09-18 (detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"):
   1. Botón "Salir sin guardar" del aviso de salida no cambia a "Salir" cuando ya te comprometiste — contradice el mensaje de arriba ("tu compromiso ya quedó guardado").
