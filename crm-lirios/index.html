@@ -965,7 +965,12 @@ function vistaEstadisticas() {
   <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
     <section class="card p-5 lg:col-span-2 min-w-0" aria-labelledby="h-graf">
       ${tipo === 'dia' ? `<h2 id="h-graf" class="text-[20px] mb-2">Citas del día</h2>
-        ${s.en.length ? `<ul class="divide-y divide-line">${s.en.sort((a, b) => a.hora.localeCompare(b.hora)).map(x => filaCita(x)).join('')}</ul>` : vacioMini('calendar', 'Sin citas este día', 'Usa las flechas para ver otros días.')}`
+        ${s.en.length ? `<ul class="divide-y divide-line">${s.en.sort((a, b) => a.hora.localeCompare(b.hora)).map(x => filaCita(x)).join('')}</ul>` : movidasDia(ini).length ? '' : vacioMini('calendar', 'Sin citas este día', 'Usa las flechas para ver otros días.')}
+        ${movidasDia(ini).length ? `<h3 class="font-sans! text-[12px] font-medium uppercase tracking-[0.06em] text-warn mt-4 mb-1">Reagendadas para otro día</h3>
+        <ul class="divide-y divide-line">${movidasDia(ini).map(({ x, r }) => `<li><button class="w-full flex items-center gap-3 py-2.5 text-left" data-act="detalle" data-id="${x.contacto.id}">
+          <span class="icon-chip bg-warn-soft text-warn w-9! h-9!">${icon('calendar-clock', 'w-4 h-4')}</span>
+          <span class="min-w-0 flex-1"><span class="block text-[14px] font-medium truncate">${esc(x.contacto.nombre)}</span><span class="block text-[12.5px] text-ink3 truncate">Pasó al ${fFecha(r.a, { day: 'numeric', month: 'short' })}${r.motivo ? ` · ${esc(r.motivo)}` : ''}</span></span>
+          ${tipoTag(x.tipo)}</button></li>`).join('')}</ul>` : ''}`
       : graficoDiario(ini, fin)}
     </section>
     <section class="card p-5 min-w-0" aria-labelledby="h-tipo">
@@ -982,6 +987,8 @@ function vistaEstadisticas() {
     </section>
   </div>`;
 }
+/* Citas que estaban en ese día y se movieron a otra fecha (según su bitácora de reagendas) */
+const movidasDia = d => todasCitas().flatMap(x => (x.bitacora || []).filter(r => r.de === d).map(r => ({ x, r })));
 function graficoDiario(ini, fin) {
   const dias = []; for (let d = ini; d <= fin; d = addDays(d, 1)) dias.push(d);
   const porDia = dias.map(d => { const l = todasCitas().filter(x => x.fecha === d); return { d, ef: l.filter(x => x.status === 'asistio').length, pen: l.filter(x => x.status === 'programada').length, mal: l.filter(x => ['noasistio', 'cancelada'].includes(x.status)).length, re: todasCitas().reduce((s, x) => s + (x.bitacora || []).filter(r => r.de === d).length, 0) }; });
