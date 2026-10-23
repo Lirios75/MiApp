@@ -932,10 +932,10 @@ function vistaEstadisticas() {
   const tiles = [
     ['Agendadas', s.total, 'en estas fechas', 'calendar-days', 'text-ink', 'bg-sunken text-ink2'],
     ['Efectivas', s.ef, 'asistió a la cita', 'circle-check', 'text-ok', 'bg-ok-soft text-ok'],
-    ['Pendientes', s.pen, 'aún sin registrar', 'clock', 'text-brand', 'bg-brand-soft text-brand'],
+    ['Pendientes', s.pen, 'aún sin registrar', 'clock', 'text-ink2', 'bg-sunken text-ink2'],
     ['Reagendadas', s.reag, `1ª: ${s.reag1} · 2ª: ${s.reag2}${s.reag - s.reag1 - s.reag2 ? ` · servicio: ${s.reag - s.reag1 - s.reag2}` : ''}`, 'calendar-clock', 'text-warn', 'bg-warn-soft text-warn'],
     ['No asistió', s.no, 'plantón', 'user-x', 'text-bad', 'bg-bad-soft text-bad'],
-    ['Canceladas', s.can, 'no se realizaron', 'calendar-x', 'text-ink2', 'bg-sunken text-ink2'],
+    ['Canceladas', s.can, 'no se realizaron', 'calendar-x', 'text-bad', 'bg-bad-soft text-bad'],
   ];
   const insight = s.efectividad === null
     ? (s.total ? 'Marca "Asistió" o "Plantón" en tus citas para ver tu efectividad.' : 'No hubo citas en estas fechas.')
@@ -984,20 +984,20 @@ function vistaEstadisticas() {
 }
 function graficoDiario(ini, fin) {
   const dias = []; for (let d = ini; d <= fin; d = addDays(d, 1)) dias.push(d);
-  const porDia = dias.map(d => { const l = todasCitas().filter(x => x.fecha === d); return { d, ef: l.filter(x => x.status === 'asistio').length, pen: l.filter(x => x.status === 'programada').length, mal: l.filter(x => ['noasistio', 'cancelada'].includes(x.status)).length }; });
-  const max = Math.max(1, ...porDia.map(x => x.ef + x.pen + x.mal));
+  const porDia = dias.map(d => { const l = todasCitas().filter(x => x.fecha === d); return { d, ef: l.filter(x => x.status === 'asistio').length, pen: l.filter(x => x.status === 'programada').length, mal: l.filter(x => ['noasistio', 'cancelada'].includes(x.status)).length, re: todasCitas().reduce((s, x) => s + (x.bitacora || []).filter(r => r.de === d).length, 0) }; });
+  const max = Math.max(1, ...porDia.map(x => x.ef + x.pen + x.mal + x.re));
   const muchas = dias.length > 16;
   const seg = (n, cls, ultimo) => n ? `<span class="block w-full max-w-[44px] mx-auto ${cls} ${ultimo ? 'rounded-t-[4px]' : ''}" style="height:${n / max * 100}%"></span>` : '';
   return `<div class="flex items-center justify-between gap-3 flex-wrap mb-4"><h2 id="h-graf" class="text-[20px]">Citas por día</h2>
-    <div class="flex gap-3 text-[12px] text-ink2"><span class="flex items-center gap-1.5"><span class="dot bg-ok"></span>Efectivas</span><span class="flex items-center gap-1.5"><span class="dot bg-brand"></span>Pendientes</span><span class="flex items-center gap-1.5"><span class="dot bg-bad"></span>Plantón o cancelada</span></div></div>
+    <div class="flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-ink2"><span class="flex items-center gap-1.5"><span class="dot bg-ok"></span>Efectivas</span><span class="flex items-center gap-1.5"><span class="dot bg-ink3/45"></span>Pendientes</span><span class="flex items-center gap-1.5"><span class="dot bg-warn"></span>Reagendadas</span><span class="flex items-center gap-1.5"><span class="dot bg-bad"></span>Plantón o cancelada</span></div></div>
     <div class="flex items-end gap-[2px] h-40 border-b border-line" role="img" aria-label="Citas por día del periodo">
       ${porDia.map(x => { const t = x.ef + x.pen + x.mal;
-        const desc = `${fFecha(x.d, { weekday: 'long', day: 'numeric', month: 'short' })}: ${t} ${t === 1 ? 'cita' : 'citas'} (${x.ef} efectivas, ${x.pen} pendientes, ${x.mal} plantón o cancelada)`;
+        const desc = `${fFecha(x.d, { weekday: 'long', day: 'numeric', month: 'short' })}: ${t} ${t === 1 ? 'cita' : 'citas'} (${x.ef} efectivas, ${x.pen} pendientes, ${x.mal} plantón o cancelada)${x.re ? ` · ${x.re} ${x.re === 1 ? 'reagendada' : 'reagendadas'} para otro día` : ''}`;
         return `<button class="flex-1 h-full flex flex-col-reverse gap-[2px] min-w-0 rounded-t-[4px] hover:bg-sunken/70 ${x.d === hoy() ? 'bg-brand-soft/50' : ''}" data-act="stats-dia" data-d="${x.d}" title="${desc}" aria-label="${desc}">
-          ${seg(x.ef, 'bg-ok', !x.pen && !x.mal)}${seg(x.pen, 'bg-brand', !x.mal)}${seg(x.mal, 'bg-bad', true)}</button>`; }).join('')}
+          ${seg(x.ef, 'bg-ok', !x.pen && !x.mal && !x.re)}${seg(x.pen, 'bg-ink3/45', !x.mal && !x.re)}${seg(x.mal, 'bg-bad', !x.re)}${seg(x.re, 'bg-warn', true)}</button>`; }).join('')}
     </div>
     <div class="flex gap-[2px] mt-1.5">${porDia.map((x, i) => `<span class="flex-1 min-w-0 text-center text-[11px] ${x.d === hoy() ? 'text-brand font-semibold' : 'text-ink3'}">${!muchas || i % 5 === 0 ? (dias.length <= 7 ? fFecha(x.d, { weekday: 'short' }).slice(0, 3) + ' ' : '') + parse(x.d).getDate() : ''}</span>`).join('')}</div>
-    <p class="text-[12px] text-ink3 mt-3">Toca una barra para ver las citas de ese día.</p>`;
+    <p class="text-[12px] text-ink3 mt-3">Toca una barra para ver las citas de ese día. Reagendadas: citas de ese día que se movieron para otra fecha.</p>`;
 }
 /* ---------- INFORME SEMANAL (actividad del consultor) ----------
    Cada indicador = lo que el CRM cuenta solo + un ajuste manual por día (db.actividad[fecha][clave]). */
