@@ -1425,6 +1425,41 @@ const cabeceraModal = (titulo, sub = '') => `<div class="sticky top-0 z-10 bg-bg
 const opciones = (arr, sel) => arr.map(o => { const [v, t] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(v)}" ${String(v) === String(sel) ? 'selected' : ''}>${esc(t)}</option>`; }).join('');
 
 /* ---------- Detalle del contacto ---------- */
+/* Beneficiarios: viven en cada póliza (cada una puede tener los suyos) */
+const PARENTESCOS = ['Cónyuge', 'Compañero(a) permanente', 'Hijo(a)', 'Padre', 'Madre', 'Hermano(a)', 'Nieto(a)', 'Herederos de ley', 'Entidad financiera'];
+function bloqueBeneficiarios(p, ids) {
+  const bs = p.beneficiarios || [];
+  const total = bs.reduce((s, x) => s + (Number(x.porcentaje) || 0), 0);
+  return `<div class="mt-4 pt-3 border-t border-line">
+    <div class="flex items-center justify-between gap-2 mb-1"><p class="label flex items-center gap-1.5">${icon('users', 'w-3.5 h-3.5')} Beneficiarios</p>
+      <button class="text-[13px] text-brand font-medium flex items-center gap-1 min-h-9" data-act="beneficiarios" ${ids}>${icon(bs.length ? 'pencil' : 'plus', 'w-3.5 h-3.5')} ${bs.length ? 'Editar' : 'Agregar'}</button></div>
+    ${bs.length ? `<ul class="divide-y divide-line text-[13.5px]">${bs.map(x => `<li class="py-1.5 flex items-center justify-between gap-3"><span class="min-w-0"><span class="block font-medium truncate">${esc(x.nombre)}</span><span class="block text-[12px] text-ink3 truncate">${esc([x.parentesco, x.documento && `Doc. ${x.documento}`, x.nacimiento && `${edadDe(x.nacimiento)} años`].filter(Boolean).join(' · ') || 'Sin parentesco')}</span></span><span class="font-semibold tabular-nums shrink-0">${x.porcentaje ? `${x.porcentaje}%` : '—'}</span></li>`).join('')}</ul>
+      ${total && total !== 100 ? `<p class="text-[12.5px] text-warn mt-1">${icon('alert-triangle', 'w-3.5 h-3.5 inline -mt-0.5')} Los porcentajes suman ${total}%, no 100%.</p>` : ''}`
+    : `<p class="text-[13px] text-ink3">Aún no registras quién recibe el beneficio de esta póliza.</p>`}
+  </div>`;
+}
+const filaBeneficiario = (x = {}) => `<fieldset class="card p-3 flex flex-col gap-2" data-ben>
+    <div class="flex items-center gap-2"><label class="field flex-1 min-w-0"><span>Nombre completo</span><input class="input" name="benNombre" value="${esc(x.nombre || '')}" autocomplete="off"></label>
+      <button type="button" class="grid place-items-center w-10 h-10 mt-5 rounded-lg hover:bg-sunken text-ink3 shrink-0" data-act="ben-quitar" aria-label="Quitar este beneficiario">${icon('x', 'w-4 h-4')}</button></div>
+    <div class="grid grid-cols-2 gap-2">
+      <label class="field"><span>Parentesco</span><input class="input" name="benParentesco" list="lista-parentescos" value="${esc(x.parentesco || '')}" placeholder="Elige o escribe"></label>
+      <label class="field"><span>Porcentaje</span><input class="input" name="benPct" type="number" min="0" max="100" step="any" inputmode="decimal" value="${esc(x.porcentaje ?? '')}" placeholder="%"></label>
+      <label class="field"><span>Documento</span><input class="input" name="benDoc" value="${esc(x.documento || '')}" inputmode="numeric" placeholder="Opcional"></label>
+      <label class="field"><span>Nacimiento</span><input class="input" name="benNac" type="date" value="${esc(x.nacimiento || '')}"></label>
+    </div></fieldset>`;
+function abrirBeneficiarios(cid, pid) {
+  const c = getC(cid), p = c.polizas.find(x => x.id === pid);
+  const bs = p.beneficiarios && p.beneficiarios.length ? p.beneficiarios : [{}];
+  abrirModal(`
+  ${cabeceraModal('Beneficiarios', `${esc(c.nombre)} · ${esc([p.plan || p.ramo, p.numero].filter(Boolean).join(' · '))}`)}
+  <form data-form="beneficiarios" data-id="${cid}" data-pol="${pid}" class="px-5 py-4 flex flex-col gap-3" novalidate>
+    <datalist id="lista-parentescos">${PARENTESCOS.map(x => `<option value="${x}">`).join('')}</datalist>
+    <div class="flex flex-col gap-3" data-ben-lista>${bs.map(filaBeneficiario).join('')}</div>
+    <button type="button" class="btn-soft self-start" data-act="ben-agregar">${icon('user-plus', 'w-4 h-4')} Agregar otro beneficiario</button>
+    <p class="text-[12.5px] text-ink3">Los porcentajes deben sumar 100%. Si son iguales para todos, puedes dejarlos vacíos y los reparto yo.</p>
+    ${pieFormulario('Guardar beneficiarios')}
+  </form>`);
+}
 function bloquePoliza(c, p) {
   const cancelada = !activa(p);
   const b = cancelada ? null : cubeta(p), t = cancelada ? null : semaforo(p);
@@ -1446,6 +1481,7 @@ function bloquePoliza(c, p) {
       ${p.sumaAsegurada ? `<div class="col-span-2"><dt class="label">Suma asegurada</dt><dd class="font-medium">${fDinero(p.sumaAsegurada, p.moneda)}</dd></div>` : ''}
     </dl>
     ${b === 'gracia' ? `<p class="mt-3 text-[13px] text-bad bg-bad-soft rounded-xl px-3 py-2">${icon('alert-triangle', 'w-4 h-4 inline -mt-0.5')} ${lineaGracia(p)}</p>` : ''}
+    ${bloqueBeneficiarios(p, ids)}
     ${cancelada ? '' : `<div class="grid grid-cols-2 gap-2 mt-4">
       <button class="btn-primary btn-sm" data-act="pago" ${ids}>${icon('badge-dollar-sign', 'w-4 h-4')} Registrar pago</button>
       <button class="btn-soft btn-sm" data-act="cita" data-id="${c.id}" data-tipo="anual">${icon('calendar-heart', 'w-4 h-4')} Revisión anual</button>
@@ -2050,6 +2086,9 @@ const acciones = {
     toast('Quedó en "Por reagendar"', { deshacer: true });
   },
   gracia: d => { foto(); getP(d).gracia = true; guardar(); render(); if (ui.detalle) abrirDetalle(ui.detalle, true); toast('Póliza marcada en periodo de gracia', { deshacer: true }); },
+  beneficiarios: d => abrirBeneficiarios(d.id, d.pol),
+  'ben-agregar': (d, el) => { const l = el.form.querySelector('[data-ben-lista]'); l.insertAdjacentHTML('beforeend', filaBeneficiario()); pintarIconos(); l.lastElementChild.querySelector('input').focus(); },
+  'ben-quitar': (d, el) => { const l = el.closest('[data-ben-lista]'); el.closest('[data-ben]').remove(); if (!l.children.length) { l.insertAdjacentHTML('beforeend', filaBeneficiario()); pintarIconos(); } },
   'borrar-pago': async d => {
     const p = getP(d), x = (p.pagos || []).find(y => y.id === d.pago);
     if (!x || !(await confirmar(`¿Borrar el pago del ${fFecha(x.fecha, { day: 'numeric', month: 'long' })}? El recibo del ${fFecha(x.recibo, { day: 'numeric', month: 'long', year: 'numeric' })} vuelve a quedar pendiente.`, { si: 'Borrar pago', peligro: true }))) return;
@@ -2144,6 +2183,18 @@ const formularios = {
     if (!vigentes(c).length && esCliente(c)) { c.etapa = 'cancelada'; c.estado = 'Cancelada'; }
     guardar(); render(); abrirDetalle(c.id);
     toast(p ? 'Póliza actualizada' : `Póliza registrada · ${c.nombre.split(' ')[0]} ya está en posventa`, { deshacer: true });
+  },
+  beneficiarios: (f, fd) => {
+    const c = getC(f.dataset.id), p = c.polizas.find(x => x.id === f.dataset.pol);
+    const n = fd.getAll('benNombre'), par = fd.getAll('benParentesco'), pct = fd.getAll('benPct'), doc = fd.getAll('benDoc'), nac = fd.getAll('benNac');
+    const lista = n.map((nombre, i) => ({ nombre: nombre.trim(), parentesco: par[i].trim(), porcentaje: pct[i] === '' ? null : Number(pct[i]), documento: doc[i].trim(), nacimiento: nac[i] })).filter(x => x.nombre);
+    /* Sin porcentajes escritos: se reparte en partes iguales */
+    if (lista.length && lista.every(x => x.porcentaje === null)) lista.forEach(x => (x.porcentaje = Math.round(100 / lista.length * 100) / 100));
+    foto();
+    p.beneficiarios = lista;
+    guardar(); render(); abrirDetalle(c.id);
+    const total = lista.reduce((s, x) => s + (x.porcentaje || 0), 0);
+    toast(!lista.length ? 'Beneficiarios borrados' : Math.abs(total - 100) > 0.5 ? `Guardado · ojo: los porcentajes suman ${total}%` : 'Beneficiarios guardados', { deshacer: true });
   },
   cita: (f, fd) => {
     const c = getC(fd.get('cid')); if (!c) return;
