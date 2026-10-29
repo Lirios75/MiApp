@@ -124,7 +124,7 @@ const FORMAS = { Anual: 12, Semestral: 6, Trimestral: 3, Mensual: 1 };
 const MONEDAS = [['COP', 'Pesos (COP)'], ['USD', 'Dólares (USD)']];
 const CODIGOS_MONEDA = MONEDAS.map(m => m[0]);
 const TASA_USD_INICIAL = 4000;
-const OBJETIVOS_BASE = { referidos: [10, 50], intentos: [0, 0], efectivos: [7, 35], rechazos: [0, 0], ands: [2, 10], c1ag: [3, 15], c1re: [3, 15], c2ag: [1, 5], c2re: [1, 4], svag: [0, 2], svre: [0, 0], vida: [0, 1], ap: [0, 1], nbs: [0, 0] };
+const OBJETIVOS_BASE = { referidos: [10, 50], intentos: [0, 0], efectivos: [7, 35], rechazos: [0, 0], ands: [2, 10], c1ag: [3, 15], c1re: [3, 15], c2ag: [1, 5], c2re: [1, 4], svag: [0, 2], svre: [0, 0], vida: [0, 1], ap: [0, 1], nbs: [0, 0], nbsUsd: [0, 0] };
 const ALIADAS = ['MetLife', 'Allianz', 'BMI', 'Skandia', 'SURA'];
 const PRIORIDADES = ['Alta','Media','Baja'];
 const EDADES = ['18-25','26-35','36-45','46-55','56-65','65+'];
@@ -1011,7 +1011,7 @@ function graficoDiario(ini, fin) {
 const INFORME = [
   { grupo: 'Prospección', filas: [['referidos', 'Referidos'], ['intentos', 'Intentos de contacto'], ['efectivos', 'Contactos efectivos'], ['rechazos', 'Rechazos'], ['ands', "AND's calificados"]] },
   { grupo: 'Citas', filas: [['c1ag', 'Citas de 1ª agendadas'], ['c1re', 'Citas de 1ª realizadas'], ['c2ag', 'Citas de 2ª agendadas'], ['c2re', 'Citas de 2ª realizadas'], ['svag', 'Citas de servicio agendadas'], ['svre', 'Citas de servicio realizadas']] },
-  { grupo: 'Cierre', filas: [['vida', 'Pólizas de vida vendidas'], ['ap', 'Pólizas de AP vendidas'], ['nbs', 'NBS (millones de pesos)']] },
+  { grupo: 'Cierre', filas: [['vida', 'Pólizas de vida vendidas'], ['ap', 'Pólizas de AP vendidas'], ['nbs', 'NBS en pesos'], ['nbsUsd', 'NBS en dólares']] },
 ];
 const COMO_SE_CUENTA = {
   referidos: 'Contactos nuevos con "Cómo llegó: Referido", creados ese día.',
@@ -1023,7 +1023,8 @@ const COMO_SE_CUENTA = {
   c2ag: 'Citas de 2ª que agendaste ese día.', c2re: 'Citas de 2ª de ese día marcadas "Asistió".',
   svag: 'Revisiones anuales y seguimientos posventa agendados ese día.', svre: 'Revisiones y seguimientos de ese día marcados "Asistió".',
   vida: 'Pólizas registradas ese día (todo menos Accidentes personales y Hogar).', ap: 'Pólizas de Accidentes personales registradas ese día.',
-  nbs: 'Prima anual en pesos de las pólizas registradas ese día. Las pólizas en dólares no se suman.',
+  nbs: 'Prima anual de las pólizas en pesos registradas ese día.',
+  nbsUsd: 'Prima anual de las pólizas en dólares registradas ese día (BMI u otras en USD).',
 };
 const NOMBRE_FILA = Object.fromEntries(INFORME.flatMap(g => g.filas));
 const objetivo = k => (db.objetivos && db.objetivos[k]) || OBJETIVOS_BASE[k];
@@ -1050,13 +1051,16 @@ function autoDia(k, d) {
     case 'svre': return citas().filter(x => esServicio(x) && x.status === 'asistio' && x.fecha === d).length;
     case 'vida': return pols().filter(p => !['Accidentes personales', 'Hogar'].includes(p.ramo)).length;
     case 'ap': return pols().filter(p => p.ramo === 'Accidentes personales').length;
-    case 'nbs': return pols().filter(p => p.moneda !== 'USD').reduce((s, p) => s + (Number(p.prima) || 0), 0) / 1e6;
+    case 'nbs': return pols().filter(p => p.moneda !== 'USD').reduce((s, p) => s + (Number(p.prima) || 0), 0);
+    case 'nbsUsd': return pols().filter(p => p.moneda === 'USD').reduce((s, p) => s + (Number(p.prima) || 0), 0);
     default: return 0;
   }
 }
 const ajusteDia = (k, d) => Number(db.actividad?.[d]?.[k]) || 0;
 const valorDia = (k, d) => Math.round((autoDia(k, d) + ajusteDia(k, d)) * 100) / 100;
-const fNum = (v, k) => k === 'nbs' ? v.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : String(v);
+/* NBS en valores completos: pesos sin decimales, dólares con centavos */
+const MONEDA_FILA = { nbs: 'COP', nbsUsd: 'USD' };
+const fNum = (v, k) => MONEDA_FILA[k] ? (v < 0 ? '−' : '') + fDinero(Math.abs(v), MONEDA_FILA[k]) : String(v);
 
 function vistaInforme() {
   const ini = ui.informeSemana, dias = Array.from({ length: 7 }, (_, i) => addDays(ini, i)), fin = dias[6], T = hoy();
@@ -1083,9 +1087,10 @@ function vistaInforme() {
   <section class="card p-5 mb-4 fade-in" aria-label="Avance de la semana">
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       ${claves.map(([k, n]) => { const meta = metaSemana(k, ini), t = totales[k], pct = meta ? Math.min(100, Math.round(t / meta * 100)) : 0;
-        const pesos = k === 'nbs';
-        return `<div class="min-w-0"><div class="flex items-baseline justify-between gap-2"><p class="text-[13.5px] text-ink2">${n}</p><p class="tabular-nums whitespace-nowrap"><span class="font-display text-[22px]">${pesos ? fDinero(t * 1e6, 'COP') : fNum(t, k)}</span><span class="text-ink3 text-[13px]"> / ${pesos ? (meta ? fDinero(meta * 1e6, 'COP') : 'sin meta') : meta}</span></p></div>
+        const pesos = k === 'nbs', usd = totales.nbsUsd, metaUsd = metaSemana('nbsUsd', ini);
+        return `<div class="min-w-0"><div class="flex items-baseline justify-between gap-2"><p class="text-[13.5px] text-ink2">${n}</p><p class="tabular-nums whitespace-nowrap"><span class="font-display text-[22px]">${fNum(t, k)}</span><span class="text-ink3 text-[13px]"> / ${pesos && !meta ? 'sin meta' : fNum(meta, k)}</span></p></div>
           <div class="h-2.5 rounded-full bg-sunken overflow-hidden mt-1.5"><div class="bar h-full rounded-full ${pct >= 100 ? 'bg-ok' : 'bg-brand'}" style="width:${Math.max(3, pct)}%"></div></div>
+          ${pesos && (usd || metaUsd) ? `<p class="text-[12.5px] text-ink2 mt-1.5 tabular-nums">En dólares: <strong class="font-semibold">${fNum(usd, 'nbsUsd')}</strong>${metaUsd ? ` / ${fNum(metaUsd, 'nbsUsd')}` : ''}</p>` : ''}
           ${pesos ? `<button class="text-[12.5px] text-brand font-medium mt-1.5 min-h-8 flex items-center gap-1" data-act="meta-semana" data-k="nbs" data-l="${ini}">${icon('target', 'w-3.5 h-3.5')} ${metaPropia('nbs', ini) != null ? 'Cambiar la meta de esta semana' : 'Poner meta para esta semana'}</button>` : ''}</div>`; }).join('')}
     </div>
   </section>
@@ -1118,13 +1123,13 @@ function vistaInforme() {
   </section>`;
 }
 function abrirAjuste(k, d) {
-  const auto = autoDia(k, d), aj = ajusteDia(k, d), paso = k === 'nbs' ? 0.1 : 1;
+  const auto = autoDia(k, d), aj = ajusteDia(k, d), paso = k === 'nbs' ? 100000 : k === 'nbsUsd' ? 100 : 1;
   abrirModal(`
   ${cabeceraModal(esc(NOMBRE_FILA[k]), `<span class="capitalize">${fFechaLarga(d)}</span>`)}
   <form data-form="ajuste" data-k="${k}" data-d="${d}" class="px-5 py-4 flex flex-col gap-4" novalidate>
     <div class="card p-4 flex items-center gap-3"><div class="icon-chip bg-brand-soft text-brand">${icon('sparkles', 'w-5 h-5')}</div>
       <div class="min-w-0"><p class="text-[13px] text-ink2">El CRM contó solo</p><p class="font-display text-[24px] leading-tight">${fNum(auto, k)}</p><p class="text-[12px] text-ink3">${COMO_SE_CUENTA[k]}</p></div></div>
-    <label class="field"><span>Suma a mano lo que hiciste por fuera ${k === 'nbs' ? '(en millones)' : ''}</span>
+    <label class="field"><span>Suma a mano lo que hiciste por fuera ${k === 'nbs' ? '(valor completo en pesos)' : k === 'nbsUsd' ? '(en dólares)' : ''}</span>
       <div class="flex items-center gap-2">
         <button type="button" class="btn-soft w-12! px-0!" data-act="paso" data-p="${-paso}" aria-label="Restar">${icon('minus', 'w-4 h-4')}</button>
         <input class="input text-center text-[18px]! font-semibold" type="number" name="ajuste" step="${paso}" value="${aj}" inputmode="decimal" />
@@ -1134,14 +1139,14 @@ function abrirAjuste(k, d) {
   </form>`);
 }
 function abrirMetaSemana(k, lunes) {
-  const actual = metaSemana(k, lunes), propia = metaPropia(k, lunes) != null, pesos = k === 'nbs';
+  const actual = metaSemana(k, lunes), propia = metaPropia(k, lunes) != null, mon = MONEDA_FILA[k];
   abrirModal(`
-  ${cabeceraModal(`Meta de la semana · ${pesos ? 'NBS' : esc(NOMBRE_FILA[k])}`, `${fFecha(lunes)} – ${fFecha(addDays(lunes, 6))}`)}
+  ${cabeceraModal(`Meta de la semana · ${esc(NOMBRE_FILA[k])}`, `${fFecha(lunes)} – ${fFecha(addDays(lunes, 6))}`)}
   <form data-form="meta-semana" data-k="${k}" data-l="${lunes}" class="px-5 py-4 flex flex-col gap-3" novalidate>
-    <label class="field"><span>${pesos ? 'Meta de NBS en pesos' : 'Meta para esta semana'}</span>
-      <input class="input text-[18px]! font-semibold" type="number" min="0" step="any" inputmode="decimal" name="meta" value="${pesos ? Math.round(actual * 1e6) || '' : actual || ''}" ${pesos ? 'placeholder="Ej. 800000" data-meta-pesos' : ''} autofocus>
-      ${pesos ? `<small class="text-[12.5px] text-ink2" data-meta-vista>${actual ? `= ${fDinero(actual * 1e6, 'COP')}` : 'Escribe el valor completo, por ejemplo 800000.'}</small>` : ''}</label>
-    <p class="text-[12.5px] text-ink3">Solo cambia esta semana. Tu objetivo general (${pesos ? (objetivo(k)[1] ? fDinero(objetivo(k)[1] * 1e6, 'COP') : 'sin meta') : objetivo(k)[1]}) sigue igual para las demás.</p>
+    <label class="field"><span>${mon === 'COP' ? 'Meta en pesos (valor completo)' : mon === 'USD' ? 'Meta en dólares' : 'Meta para esta semana'}</span>
+      <input class="input text-[18px]! font-semibold" type="number" min="0" step="any" inputmode="decimal" name="meta" value="${actual || ''}" ${mon ? `placeholder="${mon === 'COP' ? 'Ej. 800000' : 'Ej. 1500'}" data-meta-moneda="${mon}"` : ''} autofocus>
+      ${mon ? `<small class="text-[12.5px] text-ink2" data-meta-vista>${actual ? `= ${fDinero(actual, mon)}` : 'Escribe el valor completo, sin puntos.'}</small>` : ''}</label>
+    <p class="text-[12.5px] text-ink3">Solo cambia esta semana. Tu objetivo general (${objetivo(k)[1] ? fNum(objetivo(k)[1], k) : 'sin meta'}) sigue igual para las demás.</p>
     <div class="flex gap-2 pt-1">${propia ? `<button type="button" class="btn-ghost" data-act="meta-semana-quitar" data-k="${k}" data-l="${lunes}">Usar la general</button>` : `<button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button>`}<button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} Guardar meta</button></div>
   </form>`);
 }
@@ -1150,8 +1155,8 @@ function abrirObjetivos() {
   ${cabeceraModal('Tus objetivos', 'Por día y por semana. La diferencia del informe se mide contra el de la semana.')}
   <form data-form="objetivos" class="px-5 py-4 flex flex-col gap-4" novalidate>
     ${INFORME.map(g => `<fieldset class="flex flex-col gap-2"><legend class="label mb-1">${g.grupo}</legend>
-      <div class="grid grid-cols-[1fr_72px_72px] gap-2 text-[12px] text-ink3"><span></span><span class="text-center">Día</span><span class="text-center">Semana</span></div>
-      ${g.filas.map(([k, n]) => `<div class="grid grid-cols-[1fr_72px_72px] gap-2 items-center"><span class="text-[14px] min-w-0">${n}</span>
+      <div class="grid grid-cols-[1fr_88px_104px] gap-2 text-[12px] text-ink3"><span></span><span class="text-center">Día</span><span class="text-center">Semana</span></div>
+      ${g.filas.map(([k, n]) => `<div class="grid grid-cols-[1fr_88px_104px] gap-2 items-center"><span class="text-[14px] min-w-0">${n}</span>
         <input class="input text-center px-1!" type="number" min="0" step="any" name="${k}-d" value="${objetivo(k)[0]}" inputmode="decimal" aria-label="${n}, objetivo por día" />
         <input class="input text-center px-1!" type="number" min="0" step="any" name="${k}-s" value="${objetivo(k)[1]}" inputmode="decimal" aria-label="${n}, objetivo por semana" /></div>`).join('')}
     </fieldset>`).join('')}
@@ -2248,7 +2253,7 @@ const formularios = {
     toast(esAniv ? '¡Póliza renovada! Cuenta como conservada' : `Pago registrado · siguiente recibo ${fFecha(p.proxVencimiento)}`, { deshacer: true });
   },
   ajuste: (f, fd) => {
-    const k = f.dataset.k, d = f.dataset.d, v = Math.round((Number(fd.get('ajuste')) || 0) * 10) / 10;
+    const k = f.dataset.k, d = f.dataset.d, v = Math.round((Number(fd.get('ajuste')) || 0) * 100) / 100;
     foto();
     db.actividad = db.actividad || {};
     db.actividad[d] = { ...(db.actividad[d] || {}), [k]: v };
@@ -2259,12 +2264,12 @@ const formularios = {
   },
   'meta-semana': (f, fd) => {
     const k = f.dataset.k, l = f.dataset.l, n = Number(fd.get('meta')) || 0;
-    const v = k === 'nbs' ? Math.round(n / 1e4) / 100 : n;
+    const v = n;
     foto();
     db.actividad = db.actividad || {};
     db.actividad['semana:' + l] = { ...(db.actividad['semana:' + l] || {}), [k]: v };
     guardar(); cerrarModal(); render();
-    toast(`Meta de la semana guardada: ${k === 'nbs' ? fDinero(v * 1e6, 'COP') : v}`, { deshacer: true });
+    toast(`Meta de la semana guardada: ${fNum(v, k)}`, { deshacer: true });
   },
   objetivos: (f, fd) => {
     foto();
@@ -2359,7 +2364,7 @@ function sincronizarPrima(f, origen) {
 document.addEventListener('input', e => {
   if (e.target.dataset.prima) sincronizarPrima(e.target.form, e.target.dataset.prima);
   if (['prima', 'recibo'].includes(e.target.name)) refrescarVistaPrima(e.target.form);
-  if ('metaPesos' in e.target.dataset) { const v = Number(e.target.value) || 0; e.target.form.querySelector('[data-meta-vista]').textContent = v ? `= ${fDinero(v, 'COP')}` : 'Escribe el valor completo, por ejemplo 800000.'; }
+  if (e.target.dataset.metaMoneda) { const v = Number(e.target.value) || 0; e.target.form.querySelector('[data-meta-vista]').textContent = v ? `= ${fDinero(v, e.target.dataset.metaMoneda)}` : 'Escribe el valor completo, sin puntos.'; }
   if (e.target.id === 'buscador-clientes') {
     ui.busquedaClientes = e.target.value;
     document.getElementById('lista-clientes').innerHTML = listaClientes();
