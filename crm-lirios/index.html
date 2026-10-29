@@ -1053,7 +1053,7 @@ function autoDia(k, d) {
 }
 const ajusteDia = (k, d) => Number(db.actividad?.[d]?.[k]) || 0;
 const valorDia = (k, d) => Math.round((autoDia(k, d) + ajusteDia(k, d)) * 10) / 10;
-const fNum = (v, k) => k === 'nbs' ? v.toLocaleString('es-CO', { maximumFractionDigits: 1 }) : String(v);
+const fNum = (v, k) => k === 'nbs' ? v.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : String(v);
 
 function vistaInforme() {
   const ini = ui.informeSemana, dias = Array.from({ length: 7 }, (_, i) => addDays(ini, i)), fin = dias[6], T = hoy();
