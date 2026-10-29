@@ -1065,7 +1065,7 @@ const fNum = (v, k) => MONEDA_FILA[k] ? (v < 0 ? '−' : '') + fDinero(Math.abs(
 function vistaInforme() {
   const ini = ui.informeSemana, dias = Array.from({ length: 7 }, (_, i) => addDays(ini, i)), fin = dias[6], T = hoy();
   const totales = Object.fromEntries(INFORME.flatMap(g => g.filas).map(([k]) => [k, Math.round(dias.reduce((s, d) => s + valorDia(k, d), 0) * 100) / 100]));
-  const claves = [['efectivos', 'Contactos efectivos'], ['c1re', 'Citas de 1ª realizadas'], ['vida', 'Pólizas de vida'], ['nbs', 'NBS de la semana']];
+  const claves = [['efectivos', 'Contactos efectivos'], ['c1re', 'Citas de 1ª realizadas'], ['vida', 'Pólizas de vida']];
   const dif = k => { const meta = metaSemana(k, ini), t = totales[k];
     if (!meta && !t) return '<span class="text-ink3">—</span>';
     const v = Math.round((t - meta) * 100) / 100;
@@ -1085,13 +1085,14 @@ function vistaInforme() {
   </div>
 
   <section class="card p-5 mb-4 fade-in" aria-label="Avance de la semana">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      ${claves.map(([k, n]) => { const meta = metaSemana(k, ini), t = totales[k], pct = meta ? Math.min(100, Math.round(t / meta * 100)) : 0;
-        const pesos = k === 'nbs', usd = totales.nbsUsd, metaUsd = metaSemana('nbsUsd', ini);
-        return `<div class="min-w-0"><div class="flex items-baseline justify-between gap-2"><p class="text-[13.5px] text-ink2">${n}</p><p class="tabular-nums whitespace-nowrap"><span class="font-display text-[22px]">${fNum(t, k)}</span><span class="text-ink3 text-[13px]"> / ${pesos && !meta ? 'sin meta' : fNum(meta, k)}</span></p></div>
-          <div class="h-2.5 rounded-full bg-sunken overflow-hidden mt-1.5"><div class="bar h-full rounded-full ${pct >= 100 ? 'bg-ok' : 'bg-brand'}" style="width:${Math.max(3, pct)}%"></div></div>
-          ${pesos && (usd || metaUsd) ? `<p class="text-[12.5px] text-ink2 mt-1.5 tabular-nums">En dólares: <strong class="font-semibold">${fNum(usd, 'nbsUsd')}</strong>${metaUsd ? ` / ${fNum(metaUsd, 'nbsUsd')}` : ''}</p>` : ''}
-          ${pesos ? `<button class="text-[12.5px] text-brand font-medium mt-1.5 min-h-8 flex items-center gap-1" data-act="meta-semana" data-k="nbs" data-l="${ini}">${icon('target', 'w-3.5 h-3.5')} ${metaPropia('nbs', ini) != null ? 'Cambiar la meta de esta semana' : 'Poner meta para esta semana'}</button>` : ''}</div>`; }).join('')}
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 sm:gap-0 sm:divide-x divide-line">
+      ${claves.filter(([k]) => !MONEDA_FILA[k]).map(([k, n]) => tileAvance(k, n, totales[k], metaSemana(k, ini))).join('')}
+    </div>
+    <div class="mt-5 pt-5 border-t border-line">
+      <h2 class="text-[18px] mb-4">NBS de la semana</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-0 sm:divide-x divide-line">
+        ${[['nbs', 'En pesos'], ['nbsUsd', 'En dólares']].map(([k, n]) => tileAvance(k, n, totales[k], metaSemana(k, ini), `<button class="text-[12.5px] text-brand font-medium min-h-8 flex items-center gap-1" data-act="meta-semana" data-k="${k}" data-l="${ini}">${icon('target', 'w-3.5 h-3.5')} ${metaSemana(k, ini) ? 'Cambiar meta' : 'Poner meta'}</button>`)).join('')}
+      </div>
     </div>
   </section>
 
@@ -1121,6 +1122,17 @@ function vistaInforme() {
     </div>
     <p class="text-[12px] text-ink3 px-4 py-3 border-t border-line"><span class="lg:hidden">Desliza la tabla hacia la izquierda para ver cada día. </span>Toca cualquier casilla para ver cómo se contó o sumar a mano lo que hiciste fuera del CRM. <span class="text-warn">*</span> = tiene ajuste manual. Toca un objetivo de la semana para cambiarlo solo para esa semana (queda en <span class="text-brand font-semibold">azul</span>).</p>
   </section>`;
+}
+/* Tarjeta de avance contra la meta de la semana: etiqueta, valor, barra y porcentaje */
+function tileAvance(k, n, t, meta, extra = '') {
+  const pct = meta ? Math.round(t / meta * 100) : null;
+  const nota = pct === null ? 'Sin meta esta semana' : pct >= 100 ? `¡Meta cumplida! ${pct}%` : `${pct}% de la meta`;
+  return `<div class="min-w-0 sm:px-5 sm:first:pl-0 sm:last:pr-0 flex flex-col gap-1.5">
+    <p class="text-[13px] text-ink2">${n}</p>
+    <p class="tabular-nums leading-none"><span class="font-display text-[26px]">${fNum(t, k)}</span>${meta ? `<span class="text-ink3 text-[13px]"> de ${fNum(meta, k)}</span>` : ''}</p>
+    <div class="h-2 rounded-full bg-sunken overflow-hidden mt-1"><div class="bar h-full rounded-full ${pct >= 100 ? 'bg-ok' : 'bg-brand'}" style="width:${pct ? Math.max(3, Math.min(100, pct)) : 0}%"></div></div>
+    <div class="flex items-center justify-between gap-2 min-h-8"><p class="text-[12.5px] ${pct >= 100 ? 'text-ok font-medium' : 'text-ink3'}">${nota}</p>${extra}</div>
+  </div>`;
 }
 function abrirAjuste(k, d) {
   const auto = autoDia(k, d), aj = ajusteDia(k, d), paso = k === 'nbs' ? 100000 : k === 'nbsUsd' ? 100 : 1;
