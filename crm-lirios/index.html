@@ -1027,6 +1027,9 @@ const COMO_SE_CUENTA = {
 };
 const NOMBRE_FILA = Object.fromEntries(INFORME.flatMap(g => g.filas));
 const objetivo = k => (db.objetivos && db.objetivos[k]) || OBJETIVOS_BASE[k];
+/* Meta de una semana concreta: si la fijaste solo para esa semana, manda sobre el objetivo general */
+const metaPropia = (k, lunes) => db.actividad?.['semana:' + lunes]?.[k];
+const metaSemana = (k, lunes) => metaPropia(k, lunes) ?? objetivo(k)[1];
 function autoDia(k, d) {
   const cs = db.contactos;
   const citas = () => todasCitas();
@@ -1052,16 +1055,16 @@ function autoDia(k, d) {
   }
 }
 const ajusteDia = (k, d) => Number(db.actividad?.[d]?.[k]) || 0;
-const valorDia = (k, d) => Math.round((autoDia(k, d) + ajusteDia(k, d)) * 10) / 10;
+const valorDia = (k, d) => Math.round((autoDia(k, d) + ajusteDia(k, d)) * 100) / 100;
 const fNum = (v, k) => k === 'nbs' ? v.toLocaleString('es-CO', { maximumFractionDigits: 2 }) : String(v);
 
 function vistaInforme() {
   const ini = ui.informeSemana, dias = Array.from({ length: 7 }, (_, i) => addDays(ini, i)), fin = dias[6], T = hoy();
-  const totales = Object.fromEntries(INFORME.flatMap(g => g.filas).map(([k]) => [k, Math.round(dias.reduce((s, d) => s + valorDia(k, d), 0) * 10) / 10]));
-  const claves = [['efectivos', 'Contactos efectivos'], ['c1re', 'Citas de 1ª realizadas'], ['vida', 'Pólizas de vida']];
-  const dif = k => { const meta = objetivo(k)[1], t = totales[k];
+  const totales = Object.fromEntries(INFORME.flatMap(g => g.filas).map(([k]) => [k, Math.round(dias.reduce((s, d) => s + valorDia(k, d), 0) * 100) / 100]));
+  const claves = [['efectivos', 'Contactos efectivos'], ['c1re', 'Citas de 1ª realizadas'], ['vida', 'Pólizas de vida'], ['nbs', 'NBS de la semana']];
+  const dif = k => { const meta = metaSemana(k, ini), t = totales[k];
     if (!meta && !t) return '<span class="text-ink3">—</span>';
-    const v = Math.round((t - meta) * 10) / 10;
+    const v = Math.round((t - meta) * 100) / 100;
     return v < 0 ? `<span class="text-bad font-semibold">${fNum(v, k)}</span>` : `<span class="text-ok font-semibold">${v > 0 ? '+' : ''}${fNum(v, k)}</span>`; };
   const numSemana = Math.ceil((parse(ini) - new Date(parse(ini).getFullYear(), 0, 1)) / 6048e5) + 1;
   return `
@@ -1078,10 +1081,12 @@ function vistaInforme() {
   </div>
 
   <section class="card p-5 mb-4 fade-in" aria-label="Avance de la semana">
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      ${claves.map(([k, n]) => { const meta = objetivo(k)[1], t = totales[k], pct = meta ? Math.min(100, Math.round(t / meta * 100)) : 0;
-        return `<div class="min-w-0"><div class="flex items-baseline justify-between gap-2"><p class="text-[13.5px] text-ink2">${n}</p><p class="tabular-nums"><span class="font-display text-[22px]">${fNum(t, k)}</span><span class="text-ink3 text-[13px]"> / ${meta}</span></p></div>
-          <div class="h-2.5 rounded-full bg-sunken overflow-hidden mt-1.5"><div class="bar h-full rounded-full ${pct >= 100 ? 'bg-ok' : 'bg-brand'}" style="width:${Math.max(3, pct)}%"></div></div></div>`; }).join('')}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      ${claves.map(([k, n]) => { const meta = metaSemana(k, ini), t = totales[k], pct = meta ? Math.min(100, Math.round(t / meta * 100)) : 0;
+        const pesos = k === 'nbs';
+        return `<div class="min-w-0"><div class="flex items-baseline justify-between gap-2"><p class="text-[13.5px] text-ink2">${n}</p><p class="tabular-nums whitespace-nowrap"><span class="font-display text-[22px]">${pesos ? fDinero(t * 1e6, 'COP') : fNum(t, k)}</span><span class="text-ink3 text-[13px]"> / ${pesos ? (meta ? fDinero(meta * 1e6, 'COP') : 'sin meta') : meta}</span></p></div>
+          <div class="h-2.5 rounded-full bg-sunken overflow-hidden mt-1.5"><div class="bar h-full rounded-full ${pct >= 100 ? 'bg-ok' : 'bg-brand'}" style="width:${Math.max(3, pct)}%"></div></div>
+          ${pesos ? `<button class="text-[12.5px] text-brand font-medium mt-1.5 min-h-8 flex items-center gap-1" data-act="meta-semana" data-k="nbs" data-l="${ini}">${icon('target', 'w-3.5 h-3.5')} ${metaPropia('nbs', ini) != null ? 'Cambiar la meta de esta semana' : 'Poner meta para esta semana'}</button>` : ''}</div>`; }).join('')}
     </div>
   </section>
 
@@ -1101,7 +1106,7 @@ function vistaInforme() {
           ${INFORME.map(g => `<tr><td colspan="12" class="sticky left-0 bg-sunken px-4 py-1.5 label">${g.grupo}</td></tr>
             ${g.filas.map(([k, n]) => `<tr class="border-t border-line">
               <th scope="row" class="sticky left-0 bg-surface text-left font-normal px-4 py-2">${n}</th>
-              <td class="text-center px-2 text-ink3">${objetivo(k)[0] || '–'}</td><td class="text-center px-2 text-ink3">${objetivo(k)[1] || '–'}</td>
+              <td class="text-center px-2 text-ink3">${objetivo(k)[0] || '–'}</td><td class="p-0.5"><button class="w-full min-h-9 rounded-lg hover:bg-sunken ${metaPropia(k, ini) != null ? 'text-brand font-semibold' : 'text-ink3'}" data-act="meta-semana" data-k="${k}" data-l="${ini}" aria-label="Meta de ${n} para esta semana: ${fNum(metaSemana(k, ini), k)}. Tocar para cambiarla">${metaSemana(k, ini) ? fNum(metaSemana(k, ini), k) : '–'}</button></td>
               ${dias.map(d => { const v = valorDia(k, d), aj = ajusteDia(k, d);
                 return `<td class="p-0.5 ${d === T ? 'bg-brand-soft/40' : ''}"><button class="w-full min-h-9 rounded-lg hover:bg-sunken ${v ? 'text-ink font-medium' : 'text-ink3'}" data-act="ajustar" data-k="${k}" data-d="${d}" aria-label="${n}, ${fFecha(d, { weekday: 'long', day: 'numeric' })}: ${fNum(v, k)}. Tocar para ajustar">${v ? fNum(v, k) : '·'}${aj ? '<span class="text-warn">*</span>' : ''}</button></td>`; }).join('')}
               <td class="text-center px-2 font-semibold">${fNum(totales[k], k)}</td><td class="text-center px-3">${dif(k)}</td>
@@ -1109,7 +1114,7 @@ function vistaInforme() {
         </tbody>
       </table>
     </div>
-    <p class="text-[12px] text-ink3 px-4 py-3 border-t border-line"><span class="lg:hidden">Desliza la tabla hacia la izquierda para ver cada día. </span>Toca cualquier casilla para ver cómo se contó o sumar a mano lo que hiciste fuera del CRM. <span class="text-warn">*</span> = tiene ajuste manual.</p>
+    <p class="text-[12px] text-ink3 px-4 py-3 border-t border-line"><span class="lg:hidden">Desliza la tabla hacia la izquierda para ver cada día. </span>Toca cualquier casilla para ver cómo se contó o sumar a mano lo que hiciste fuera del CRM. <span class="text-warn">*</span> = tiene ajuste manual. Toca un objetivo de la semana para cambiarlo solo para esa semana (queda en <span class="text-brand font-semibold">azul</span>).</p>
   </section>`;
 }
 function abrirAjuste(k, d) {
@@ -1126,6 +1131,18 @@ function abrirAjuste(k, d) {
         <button type="button" class="btn-soft w-12! px-0!" data-act="paso" data-p="${paso}" aria-label="Sumar">${icon('plus', 'w-4 h-4')}</button>
       </div></label>
     <div class="flex gap-2 pt-1"><button type="button" class="btn-ghost" data-act="cerrar">Volver</button><button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} Guardar</button></div>
+  </form>`);
+}
+function abrirMetaSemana(k, lunes) {
+  const actual = metaSemana(k, lunes), propia = metaPropia(k, lunes) != null, pesos = k === 'nbs';
+  abrirModal(`
+  ${cabeceraModal(`Meta de la semana · ${pesos ? 'NBS' : esc(NOMBRE_FILA[k])}`, `${fFecha(lunes)} – ${fFecha(addDays(lunes, 6))}`)}
+  <form data-form="meta-semana" data-k="${k}" data-l="${lunes}" class="px-5 py-4 flex flex-col gap-3" novalidate>
+    <label class="field"><span>${pesos ? 'Meta de NBS en pesos' : 'Meta para esta semana'}</span>
+      <input class="input text-[18px]! font-semibold" type="number" min="0" step="any" inputmode="decimal" name="meta" value="${pesos ? Math.round(actual * 1e6) || '' : actual || ''}" ${pesos ? 'placeholder="Ej. 800000" data-meta-pesos' : ''} autofocus>
+      ${pesos ? `<small class="text-[12.5px] text-ink2" data-meta-vista>${actual ? `= ${fDinero(actual * 1e6, 'COP')}` : 'Escribe el valor completo, por ejemplo 800000.'}</small>` : ''}</label>
+    <p class="text-[12.5px] text-ink3">Solo cambia esta semana. Tu objetivo general (${pesos ? (objetivo(k)[1] ? fDinero(objetivo(k)[1] * 1e6, 'COP') : 'sin meta') : objetivo(k)[1]}) sigue igual para las demás.</p>
+    <div class="flex gap-2 pt-1">${propia ? `<button type="button" class="btn-ghost" data-act="meta-semana-quitar" data-k="${k}" data-l="${lunes}">Usar la general</button>` : `<button type="button" class="btn-ghost" data-act="cerrar">Cancelar</button>`}<button class="btn-primary flex-1">${icon('check', 'w-4 h-4')} Guardar meta</button></div>
   </form>`);
 }
 function abrirObjetivos() {
@@ -2026,6 +2043,8 @@ const acciones = {
   'stats-hoy': () => { ui.statsRef = hoy(); render(); },
   'informe-mover': d => { ui.informeSemana = d.delta === '0' ? lunesDe(hoy()) : addDays(ui.informeSemana, Number(d.delta)); render(); },
   ajustar: d => abrirAjuste(d.k, d.d),
+  'meta-semana': d => abrirMetaSemana(d.k, d.l),
+  'meta-semana-quitar': d => { foto(); const s = db.actividad['semana:' + d.l]; if (s) { delete s[d.k]; if (!Object.keys(s).length) delete db.actividad['semana:' + d.l]; } guardar(); cerrarModal(); render(); toast('Esta semana vuelve a usar tu objetivo general', { deshacer: true }); },
   objetivos: () => abrirObjetivos(),
   paso: (d, el) => { const i = el.closest('form').ajuste; i.value = Math.round(((Number(i.value) || 0) + Number(d.p)) * 10) / 10; },
   llamada: d => {
@@ -2238,6 +2257,15 @@ const formularios = {
     guardar(); cerrarModal(); render();
     toast('Informe actualizado', { deshacer: true });
   },
+  'meta-semana': (f, fd) => {
+    const k = f.dataset.k, l = f.dataset.l, n = Number(fd.get('meta')) || 0;
+    const v = k === 'nbs' ? Math.round(n / 1e4) / 100 : n;
+    foto();
+    db.actividad = db.actividad || {};
+    db.actividad['semana:' + l] = { ...(db.actividad['semana:' + l] || {}), [k]: v };
+    guardar(); cerrarModal(); render();
+    toast(`Meta de la semana guardada: ${k === 'nbs' ? fDinero(v * 1e6, 'COP') : v}`, { deshacer: true });
+  },
   objetivos: (f, fd) => {
     foto();
     db.objetivos = Object.fromEntries(Object.keys(OBJETIVOS_BASE).map(k => [k, [Number(fd.get(k + '-d')) || 0, Number(fd.get(k + '-s')) || 0]]));
@@ -2331,6 +2359,7 @@ function sincronizarPrima(f, origen) {
 document.addEventListener('input', e => {
   if (e.target.dataset.prima) sincronizarPrima(e.target.form, e.target.dataset.prima);
   if (['prima', 'recibo'].includes(e.target.name)) refrescarVistaPrima(e.target.form);
+  if ('metaPesos' in e.target.dataset) { const v = Number(e.target.value) || 0; e.target.form.querySelector('[data-meta-vista]').textContent = v ? `= ${fDinero(v, 'COP')}` : 'Escribe el valor completo, por ejemplo 800000.'; }
   if (e.target.id === 'buscador-clientes') {
     ui.busquedaClientes = e.target.value;
     document.getElementById('lista-clientes').innerHTML = listaClientes();
