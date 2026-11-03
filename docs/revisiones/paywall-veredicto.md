@@ -310,3 +310,15 @@ aprobado por la usuaria en un proceso de decisión aparte, no un rediseño de la
 certificación LISTA de usabilidad/craft/copy (37/40 · 20/20 · 19/20) sigue describiendo la
 estructura real de la pantalla, que no se tocó. Si se vuelve a tocar el paywall por otra razón,
 sí corresponde una pasada nueva del revisor-visual.
+
+## Vigesimoctava re-verificación (2026-11-03 — frase del día, emoción y montos de Hoy/Semana)
+
+El hook marcó `app/app/page.tsx`, `app/app/semana/page.tsx` y `app/app/layout.tsx` como más
+nuevos que este veredicto. Verificado por grep: `app/paywall/page.tsx` no importa ninguno de los
+tres (solo usa `components/landing/ui`, `components/funnel/*` y `components/RespiraMark` — ver
+sus imports). Los 3 cambios de esta sesión (frase del día rediseñada, emoción opcional y
+entradas/gastos opcionales) viven exclusivamente en las pantallas Hoy y Semana de la app interna.
+`app/app/layout.tsx` en particular quedó IDÉNTICO al de antes (se tocó y revirtió durante la
+sesión para una captura de prueba, confirmado sin diff con `git status`) — solo cambió su fecha
+de modificación, no su contenido. Cero impacto en el paywall; la certificación LISTA sigue
+vigente.
