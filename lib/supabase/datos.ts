@@ -25,7 +25,7 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
       .select('fecha_inicio_trial, avatar_url, status, hotmart_plan_name, trial_ends_at, access_until')
       .eq('id', uid)
       .maybeSingle(),
-    supabase.from('checkins').select('fecha, estado, nota').eq('user_id', uid).order('fecha'),
+    supabase.from('checkins').select('fecha, estado, nota, emocion, entradas, gastos').eq('user_id', uid).order('fecha'),
     supabase.from('metas').select('tipo, nombre, modo, objetivo, actual, frecuencia, fecha_limite').eq('user_id', uid).maybeSingle(),
   ]);
   if (errorCheckins) throw errorCheckins;
@@ -39,7 +39,14 @@ export async function obtenerEstadoApp(): Promise<EstadoApp> {
   }
 
   return {
-    checkins: (checkins ?? []).map((c) => ({ fecha: c.fecha, estado: c.estado as EstadoSemaforo, nota: c.nota ?? null })),
+    checkins: (checkins ?? []).map((c) => ({
+      fecha: c.fecha,
+      estado: c.estado as EstadoSemaforo,
+      nota: c.nota ?? null,
+      emocion: c.emocion ?? null,
+      entradas: c.entradas === null || c.entradas === undefined ? null : Number(c.entradas),
+      gastos: c.gastos === null || c.gastos === undefined ? null : Number(c.gastos),
+    })),
     meta: meta
       ? {
           tipo: meta.tipo,
@@ -113,6 +120,34 @@ export async function registrarNotaCheckInSupabase(nota: string): Promise<Estado
   const { error } = await supabase
     .from('checkins')
     .update({ nota: nota.trim() || null })
+    .eq('user_id', uid)
+    .eq('fecha', hoyISO());
+  if (error) throw error;
+  return obtenerEstadoApp();
+}
+
+/** Guarda (o borra, si llega null) la emoción opcional de hoy — se ofrece DESPUÉS de marcar
+ * el Semáforo, nunca lo reemplaza. */
+export async function registrarEmocionCheckInSupabase(emocion: string | null): Promise<EstadoApp> {
+  const supabase = crearClienteSupabase();
+  const uid = await usuarioId();
+  const { error } = await supabase
+    .from('checkins')
+    .update({ emocion })
+    .eq('user_id', uid)
+    .eq('fecha', hoyISO());
+  if (error) throw error;
+  return obtenerEstadoApp();
+}
+
+/** Guarda cuánto entró y cuánto salió hoy — ambos opcionales e independientes entre sí
+ * (dejar uno vacío no borra el otro). */
+export async function registrarMontosDiaSupabase(entradas: number | null, gastos: number | null): Promise<EstadoApp> {
+  const supabase = crearClienteSupabase();
+  const uid = await usuarioId();
+  const { error } = await supabase
+    .from('checkins')
+    .update({ entradas, gastos })
     .eq('user_id', uid)
     .eq('fecha', hoyISO());
   if (error) throw error;

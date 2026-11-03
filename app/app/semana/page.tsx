@@ -7,7 +7,7 @@
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import { diasDeLaSemana, hoyISO, resumenUltimasSemanas, type EstadoApp } from '@/lib/app';
+import { diasDeLaSemana, emocionPorValor, hoyISO, resumenUltimasSemanas, type EstadoApp } from '@/lib/app';
 import { obtenerEstadoApp } from '@/lib/supabase/datos';
 import { ErrorCarga, formatearFechaLarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
 
@@ -55,12 +55,23 @@ export default function Semana() {
   const hoy = hoyISO();
   const dias = fechas.map((iso) => {
     const checkin = estado.checkins.find((c) => c.fecha === iso);
-    return { iso, estadoDia: checkin?.estado ?? null, nota: checkin?.nota ?? null, esFuturo: iso > hoy };
+    return {
+      iso,
+      estadoDia: checkin?.estado ?? null,
+      nota: checkin?.nota ?? null,
+      emocion: checkin?.emocion ?? null,
+      entradas: checkin?.entradas ?? null,
+      gastos: checkin?.gastos ?? null,
+      esFuturo: iso > hoy,
+    };
   });
   const tranquilos = dias.filter((d) => d.estadoDia === 'tranquilo').length;
   const alertas = dias.filter((d) => d.estadoDia === 'alerta').length;
   const marcados = tranquilos + alertas;
   const seleccionado = dias.find((d) => d.iso === diaSeleccionado) ?? null;
+  const totalEntradas = dias.reduce((suma, d) => suma + (d.entradas ?? 0), 0);
+  const totalGastos = dias.reduce((suma, d) => suma + (d.gastos ?? 0), 0);
+  const hayMontos = dias.some((d) => d.entradas !== null || d.gastos !== null);
 
   return (
     <motion.main variants={contenedor} initial="hidden" animate="visible" className="flex flex-1 flex-col gap-6 px-4 pb-8 pt-8">
@@ -169,6 +180,22 @@ export default function Semana() {
             <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-primary)]">
               {seleccionado.nota ?? 'No escribiste en qué se te fue ese día.'}
             </p>
+            {emocionPorValor(seleccionado.emocion) && (
+              <p className="mt-2 inline-flex items-center gap-1.5 text-[13px] font-medium text-[var(--text-secondary)]">
+                <span aria-hidden="true">{emocionPorValor(seleccionado.emocion)?.emoji}</span>
+                {emocionPorValor(seleccionado.emocion)?.label}
+              </p>
+            )}
+            {(seleccionado.entradas !== null || seleccionado.gastos !== null) && (
+              <div className="mt-2 flex gap-4">
+                {seleccionado.entradas !== null && (
+                  <span className="text-[13px] font-semibold text-[var(--accent-2-text)]">+${seleccionado.entradas.toLocaleString('es')}</span>
+                )}
+                {seleccionado.gastos !== null && (
+                  <span className="text-[13px] font-semibold text-[var(--accent-3-text)]">-${seleccionado.gastos.toLocaleString('es')}</span>
+                )}
+              </div>
+            )}
           </div>
         )}
       </motion.section>
@@ -185,6 +212,32 @@ export default function Semana() {
                 : `${tranquilos} días tranquilos y ${alertas} de alerta esta semana. Notar la diferencia ya es la mitad del trabajo.`}
         </p>
       </motion.section>
+
+      {hayMontos && (
+        <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
+          <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Tu semana en números</h2>
+          <div className="mt-3 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Entró</p>
+              <p className="text-[17px] font-bold text-[var(--accent-2-text)] [font-variant-numeric:tabular-nums]">
+                +${totalEntradas.toLocaleString('es')}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Salió</p>
+              <p className="text-[17px] font-bold text-[var(--accent-3-text)] [font-variant-numeric:tabular-nums]">
+                -${totalGastos.toLocaleString('es')}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Neto</p>
+              <p className="text-[17px] font-bold text-[var(--text-primary)] [font-variant-numeric:tabular-nums]">
+                {totalEntradas - totalGastos >= 0 ? '+' : '-'}${Math.abs(totalEntradas - totalGastos).toLocaleString('es')}
+              </p>
+            </div>
+          </div>
+        </motion.section>
+      )}
 
       <motion.section variants={item} className="flex-1 rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
         <TendenciaSemanas estado={estado} />

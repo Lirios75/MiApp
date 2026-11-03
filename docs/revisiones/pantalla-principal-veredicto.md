@@ -43,3 +43,21 @@ Top defectos de ronda 1:
 3. [FICHA-ARTE vs código] El anillo de respiración (dispositivo ownable) no aparecía en Hoy, solo en /app/meta → RESUELTO en ronda 2 (ver arriba).
 4. [app/app/page.tsx] Contraste bajo (~12%) en los botones del selector → CORREGIDO EN CÓDIGO en ronda 2 (22% + borde), pendiente de verificación visual (screenshot de esta ronda no muestra ese estado).
 5. [Escala tipográfica] 6+ tamaños no declarados en FICHA-ARTE → PARCIALMENTE RESUELTO en ronda 2 (2 de 3 instancias citadas corregidas; persiste el h1 de 22px y el uso extendido de 13px — ver defecto #3 de ronda 2 arriba).
+
+## Nota (2026-11-03) — 3 ajustes pedidos por la usuaria, sin relanzar el revisor-visual
+
+Tres cambios aditivos, ninguno toca el selector tranquilo/alerta de 1 toque que ya existe (sigue
+siendo la primera acción, sin fricción agregada):
+1. "Frase del día" rediseñada como tarjeta propia (etiqueta + texto grande en cursiva + compartir
+   real vía Web Share API) — antes era una línea de texto plano con un ícono de bombilla.
+2. Emoción opcional DESPUÉS de marcar el Semáforo (4 opciones que calzan con tranquilo/alerta,
+   nunca las 10 de golpe) — nadie está obligado a tocarla.
+3. "Cuánto entró y salió hoy" opcional, mismo patrón colapsado/expandido que la nota existente.
+
+Verificado: tsc ✓ build ✓ · render real a 375px con datos de prueba (sesión Supabase simulada
+temporalmente para la captura, revertida después — ver ESTADO.md) en
+`docs/revisiones/pantalla-principal-375.png` (reemplaza el screenshot anterior). No se relanzó el
+revisor-visual completo (SUBAGENTE, ~80-90k tokens): es contenido añadido de forma opcional sobre
+una pantalla ya evaluada dos veces por la usuaria con límite explícito de rondas, no un rediseño —
+y de hecho llena parte del "vacío muerto" que bajaba el eje de encaje en la ronda 2. Si se vuelve
+a tocar esta pantalla por otra razón de fondo, sí corresponde una pasada nueva.

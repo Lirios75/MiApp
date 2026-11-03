@@ -9,6 +9,37 @@ export interface CheckIn {
   fecha: string; // YYYY-MM-DD en hora local
   estado: EstadoSemaforo;
   nota: string | null; // en qué se le fue el dinero ese día — opcional, no bloquea el check-in
+  emocion: string | null; // emoción más precisa (ver EMOCIONES_TRANQUILO/EMOCIONES_ALERTA) — opcional
+  entradas: number | null; // cuánto entró hoy — opcional
+  gastos: number | null; // cuánto salió hoy — opcional
+}
+
+export interface Emocion {
+  value: string;
+  label: string;
+  emoji: string;
+}
+
+/** Catálogo de emociones opcionales que se ofrecen DESPUÉS de marcar el Semáforo —
+ * el set depende de si el día fue tranquilo o de alerta (pedido por la usuaria,
+ * Sesión 7), así la lista que ve la persona siempre calza con lo que ya marcó. */
+export const EMOCIONES_TRANQUILO: readonly Emocion[] = [
+  { value: 'gratitud', label: 'Gratitud', emoji: '🙏' },
+  { value: 'alegria', label: 'Alegría', emoji: '😄' },
+  { value: 'paz', label: 'Paz', emoji: '😌' },
+  { value: 'motivacion', label: 'Motivación', emoji: '🤩' },
+];
+
+export const EMOCIONES_ALERTA: readonly Emocion[] = [
+  { value: 'cansancio', label: 'Cansancio', emoji: '😴' },
+  { value: 'ansiedad', label: 'Ansiedad', emoji: '😬' },
+  { value: 'desmotivacion', label: 'Desmotivación', emoji: '😩' },
+  { value: 'distraccion', label: 'Distracción', emoji: '🥴' },
+];
+
+export function emocionPorValor(value: string | null): Emocion | null {
+  if (!value) return null;
+  return [...EMOCIONES_TRANQUILO, ...EMOCIONES_ALERTA].find((e) => e.value === value) ?? null;
 }
 
 export type ModoMeta = 'monto' | 'habito';

@@ -1,5 +1,27 @@
 # ESTADO — Respira
-Última actualización: 2026-10-18 | Sesión actual: 6
+Última actualización: 2026-11-03 | Sesión actual: 7
+
+⏸️ CHECKPOINT (2026-11-03): 3 ajustes pedidos por la usuaria, los 3 tocados con su OK explícito
+(uno de ellos respondido vía pregunta de opciones — eligió en los 2 casos la versión más liviana,
+la recomendada, para no chocar con el posicionamiento "30 segundos, no es otro presupuesto" de
+toda la página de ventas):
+1. "Frase del día" rediseñada como tarjeta propia (etiqueta + texto grande en cursiva + botón de
+   compartir real). Mismo texto de siempre (`reflexionDeHoy()`), solo el vestido visual cambió.
+2. Emoción opcional DESPUÉS de marcar el Semáforo — 4 opciones que calzan con tranquilo/alerta
+   (nunca las 10 de la referencia de un golpe), nadie está obligado a usarla. Columna nueva
+   `emocion` en `checkins`.
+3. "Cuánto entró y cuánto salió hoy" — un numerito simple y opcional por día (NO un presupuesto
+   detallado por categorías), con el total de la semana visible en /app/semana. Columnas nuevas
+   `entradas`/`gastos` en `checkins`.
+Cambiado en: `supabase/migrations/20261103000000_checkin_emocion_montos.sql` (falta que la usuaria
+la ejecute en el SQL Editor), `lib/app.ts` (catálogo de emociones + campos nuevos de `CheckIn`),
+`lib/supabase/datos.ts` (lee/guarda los campos nuevos), `app/app/page.tsx` (Hoy) y
+`app/app/semana/page.tsx`. Verificado: tsc ✓ build ✓ · renderizado real a 375px con datos de
+prueba (sesión de Supabase simulada temporalmente solo para la captura, revertida después —
+`docs/revisiones/pantalla-principal-375.png` y `semana-375.png` actualizados). Nota en
+`docs/revisiones/pantalla-principal-veredicto.md` explicando por qué no se relanzó el
+revisor-visual completo (aditivo, opcional, no toca el selector de 1 toque). Pendiente: que la
+usuaria ejecute la migración SQL y confirme viéndolo en la app real.
 
 ⏸️ CHECKPOINT (2026-10-18, noche): nuevo LOGO implementado — la usuaria vio 3 opciones (anillo
 partido / dos anillos / mitad y mitad) en una comparativa y eligió "dos anillos" (verde afuera,
