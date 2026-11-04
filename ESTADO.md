@@ -1,6 +1,29 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+✅ CHECKPOINT (2026-11-04, noche) — login con CÓDIGO de 6 dígitos, además del enlace. Durante la
+compra de prueba de hoy, a la usuaria le llegaron 3 correos seguidos de "Your sign-in link"
+porque el enlace se "gastaba" antes de que ella lo tocara (algo que ya abre el enlace primero,
+típicamente el previsualizador del cliente de correo) — cada vez tocaba el enlace ya vencido y
+tenía que pedir uno nuevo. Dijo: "me parece muy complicado... podrían pensar que es mentira todo".
+Causa raíz real: el flujo dependía SOLO del enlace mágico, que es justamente el tipo de enlace
+que estos previsualizadores consumen sin querer. Fix de raíz: `/entrar` ahora pide también un
+CÓDIGO de 6 dígitos que la usuaria escribe a mano — un código nunca se "gasta solo" porque nadie
+lo escribe por ella, así que este problema no puede volver a pasar con el código (el enlace se
+deja como alternativa para quien prefiera tocarlo). Cambiado en `app/entrar/page.tsx`:
+`supabase.auth.signInWithOtp()` sigue mandando el mismo correo de siempre (sin tocar Supabase),
+pero ahora se agrega `supabase.auth.verifyOtp({ email, token, type: 'email' })` para validar el
+código. Verificado: tsc ✓ build ✓ · probado en el navegador escribiendo el código letra por letra
+(el filtro deja solo dígitos, máximo 6) — captura en `docs/revisiones/entrar-codigo-375.png` y
+`entrar-codigo-lleno-375.png`. Pantalla secundaria (login) — no requiere revisor-visual completo
+por el checklist del SO, basta esta medición + verificación funcional.
+⚠️ PENDIENTE DE LA USUARIA (no es código, es el panel de Supabase): la plantilla de correo que usa
+Supabase para este envío sigue siendo la que trae POR DEFECTO (en inglés, sin la marca de
+Respira, "Your sign-in link") — eso también contribuye a que el correo se vea poco confiable.
+Para que el correo muestre el código de 6 dígitos de forma clara y con la marca, hay que editar
+la plantilla en Supabase: Authentication → Email Templates → Magic Link, y agregar la variable
+`{{ .Token }}` (el código) al texto, en español. Ofrecido guiarla paso a paso cuando quiera.
+
 ✅ CHECKPOINT (2026-11-04, noche) — píxel de Meta (Facebook/Instagram Ads) conectado, primer
 prerrequisito del GATE de publicidad paga (`docs/sistema/34-ADQUISICION-Y-TRAFICO.md`: "SIN
 PÍXEL VERIFICADO CON UNA COMPRA DE PRUEBA, NO SE LANZA PAID"). La usuaria creó el píxel en Meta

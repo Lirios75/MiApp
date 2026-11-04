@@ -5,7 +5,8 @@
 // Mientras no lo esté, el envío se simula localmente — nunca se le hace creer al usuario
 // que ya tiene una cuenta real creada hasta que la conexión exista de verdad.
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { Lock, Mail, Smartphone } from 'lucide-react';
 import { FunnelButton } from '@/components/funnel/ui';
 import { RespiraMark } from '@/components/RespiraMark';
@@ -17,10 +18,19 @@ const SUPABASE_CONFIGURADO = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 type Estado = 'idle' | 'enviando' | 'enviado' | 'error';
 
 export default function Entrar() {
+  const router = useRouter();
   const [correo, setCorreo] = useState('');
   const [estado, setEstado] = useState<Estado>('idle');
   const [segundos, setSegundos] = useState(0);
   const [googleTocado, setGoogleTocado] = useState(false);
+  // Código de 6 dígitos — alternativa al enlace del correo (50/26: el enlace se "gasta" solo si
+  // algo lo abre antes que la usuaria, ej. el previsualizador de Gmail; el código nunca se gasta
+  // solo, porque nadie lo escribe por ella). Pedido explícito tras ver a una usuaria recibir 3
+  // enlaces seguidos por este motivo (2026-11-04).
+  const [codigo, setCodigo] = useState('');
+  const [verificando, setVerificando] = useState(false);
+  const [errorCodigo, setErrorCodigo] = useState<string | null>(null);
+  const inputCodigoRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (segundos <= 0) return;
@@ -53,6 +63,30 @@ export default function Entrar() {
     }
     setEstado('enviado');
     setSegundos(RATE_LIMIT_S);
+    setCodigo('');
+    setErrorCodigo(null);
+    setTimeout(() => inputCodigoRef.current?.focus(), 100);
+  }
+
+  async function verificarCodigo(e: FormEvent) {
+    e.preventDefault();
+    if (codigo.length !== 6 || verificando) return;
+    setVerificando(true);
+    setErrorCodigo(null);
+
+    if (!SUPABASE_CONFIGURADO) {
+      setTimeout(() => router.push('/app'), 600);
+      return;
+    }
+
+    const supabase = crearClienteSupabase();
+    const { error } = await supabase.auth.verifyOtp({ email: correo, token: codigo, type: 'email' });
+    if (error) {
+      setVerificando(false);
+      setErrorCodigo('Ese código no es válido o ya venció — revisa que esté bien escrito, o pide uno nuevo.');
+      return;
+    }
+    router.push('/app');
   }
 
   if (estado === 'enviado') {
@@ -67,21 +101,46 @@ export default function Entrar() {
         <div>
           <h1 className="text-[24px] font-bold [font-family:var(--font-display)]">Revisa tu correo</h1>
           <p className="mx-auto mt-2 max-w-xs text-[15px] leading-relaxed text-[var(--text-secondary)]">
-            Te enviamos el enlace a <span className="font-semibold text-[var(--text-primary)]">{correo}</span>
+            Te enviamos un código a <span className="font-semibold text-[var(--text-primary)]">{correo}</span>
           </p>
         </div>
+
+        <form onSubmit={verificarCodigo} className="flex w-full max-w-xs flex-col gap-3">
+          <input
+            ref={inputCodigoRef}
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder="— — — — — —"
+            value={codigo}
+            onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            className="h-16 w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--surface)] text-center text-[24px] font-bold tracking-[0.3em] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] [font-variant-numeric:tabular-nums]"
+          />
+          {errorCodigo && (
+            <p className="text-left text-[13px] text-[var(--accent-3)]">{errorCodigo}</p>
+          )}
+          <FunnelButton type="submit" disabled={codigo.length !== 6 || verificando}>
+            {verificando ? 'Entrando…' : 'Confirmar código'}
+          </FunnelButton>
+        </form>
+
+        <p className="text-[13px] text-[var(--text-tertiary)]">
+          También puedes tocar el enlace de ese mismo correo para entrar directo.
+        </p>
+
         <button
           type="button"
           disabled={segundos > 0}
           onClick={enviarEnlace}
           className="text-[14px] font-semibold text-[var(--accent)] disabled:text-[var(--text-tertiary)]"
         >
-          {segundos > 0 ? `Reenviar en ${segundos}s` : 'Reenviar enlace'}
+          {segundos > 0 ? `Reenviar en ${segundos}s` : 'Reenviar código'}
         </button>
 
         <p className="mx-auto flex max-w-xs items-start gap-2 rounded-[var(--radius-button)] bg-[var(--surface)] p-3 text-left text-[13px] leading-relaxed text-[var(--text-secondary)]">
           <Smartphone size={15} strokeWidth={2} color="var(--text-tertiary)" aria-hidden="true" className="mt-0.5 shrink-0" />
-          Si ya tienes el ícono de Respira en tu pantalla de inicio, ábrelo desde ahí en cuanto toques el enlace del correo.
+          Si ya tienes el ícono de Respira en tu pantalla de inicio, escribe el código desde ahí en vez de desde el correo.
         </p>
       </main>
     );
