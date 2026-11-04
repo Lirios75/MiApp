@@ -238,7 +238,7 @@ export default function Onboarding() {
             initial={{ opacity: 0, scale: reduce ? 1 : 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: reduce ? 0.15 : 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="flex flex-1 flex-col items-center justify-center gap-4 text-center"
+            className="flex flex-1 flex-col items-center gap-4 pt-12 text-center"
           >
             <motion.span
               aria-hidden="true"
@@ -258,7 +258,7 @@ export default function Onboarding() {
             </p>
           </motion.div>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center gap-10 text-center">
+          <div className="flex flex-1 flex-col items-center gap-10 pt-12 text-center">
             <div>
               <h2 className="text-balance text-[24px] font-bold leading-[1.2] text-[var(--text-primary)] [font-family:var(--font-display)]">
                 ¿Lista para tu primer Semáforo?

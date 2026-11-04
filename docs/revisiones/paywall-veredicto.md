@@ -391,3 +391,11 @@ El hook marcará `app/page.tsx`, `components/landing/EJEMPLO-page.tsx` y
 (son archivos distintos: la landing vive en `app/page.tsx`, el paywall en `app/paywall/page.tsx`).
 El cambio (reemplazar los emojis a color de "¿Te suena?" por íconos SVG) vive solo en la landing.
 Cero impacto; la certificación LISTA sigue vigente.
+
+## Trigésimo octava re-verificación (2026-11-04, noche — espacio vacío del paso de compromiso en onboarding)
+
+El hook marcará `app/onboarding/page.tsx` como más nuevo que este veredicto. Verificado por grep:
+`app/paywall/page.tsx` no importa ese archivo (son páginas distintas del flujo). El cambio
+(anclar el contenido del paso de compromiso cerca del encabezado en vez de centrarlo, quitando el
+hueco vacío de arriba) vive solo en la pantalla de onboarding. Cero impacto; la certificación
+LISTA sigue vigente.

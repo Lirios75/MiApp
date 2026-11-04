@@ -1,6 +1,24 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche) — espacio vacío del paso de compromiso del onboarding,
+RESUELTO. De los 3 pendientes que la usuaria decidió dejar como estaban hace un rato, volvió
+sobre uno y pidió corregirlo explícitamente ("este me parece importante"): el hueco vacío grande
+arriba del título en las 2 pantallas del paso de compromiso (antes de sostener el botón, y la de
+"¡Listo, quedó registrado!"). Causa raíz: el bloque de contenido se centraba verticalmente en toda
+la altura disponible (`justify-center` en un contenedor alto) — al ser contenido corto, el espacio
+sobrante quedaba repartido arriba y abajo, y el de arriba se sentía "vacío" sin nada que lo
+ancle cerca del encabezado. Fix: se quitó el centrado y se ancló el contenido cerca de arriba con
+aire razonable (`pt-12`, 48px de la escala del proyecto) en los 2 estados — el anillo decorativo
+de fondo (ya existente, `FunnelFondo`) sigue dándole peso visual a la parte baja, que no queda
+vacía tampoco. Cambiado en `app/onboarding/page.tsx` (paso 6, ambos estados). Verificado: tsc ✓
+build ✓ · capturas reales a 375px en `docs/revisiones/onboarding-compromiso-antes-375.png` y
+`onboarding-celebracion-375.png`. Nota agregada en `docs/revisiones/onboarding-veredicto.md`. Los
+otros 4 defectos conocidos de esa pantalla (botón "Salir sin guardar", aviso de punto sin retorno,
+barra de progreso al 100% antes de tiempo, "Seguir aquí" mal etiquetado) y los otros 2 pendientes
+que la usuaria dejó así (anillo del Hero, detalles chicos) siguen sin tocarse — no re-abrir sin
+que ella lo pida. Pendiente: que la usuaria confirme viendo la captura real.
+
 ⏸️ CHECKPOINT (2026-11-04, noche) — revisión de 2 pendientes viejos (landing/onboarding), de la
 sección "Problemas conocidos" que databan de septiembre. La usuaria pidió verlos de nuevo con
 capturas reales (le mostré landing-hero, landing "¿Te suena?", y los 2 pasos de compromiso del
@@ -871,7 +889,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 ## Problemas conocidos ⚠️
 - onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (ver "Puertas de etapa") tras 16 pasadas del revisor-visual. Quedan 5 pendientes conocidos, NO bloqueantes, aceptados así por la usuaria el 2026-09-18 (detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"):
   1. Botón "Salir sin guardar" del aviso de salida no cambia a "Salir" cuando ya te comprometiste — contradice el mensaje de arriba ("tu compromiso ya quedó guardado").
-  2. Las 2 pantallas del compromiso (antes de sostener el botón, y la de "¡Listo, quedó registrado!") tienen casi la mitad de la pantalla vacía arriba del título — confirmado con capturas reales en docs/revisiones/vivo/.
+  2. RESUELTO (2026-11-04) — las 2 pantallas del compromiso tenían casi la mitad de la pantalla vacía arriba del título. Causa: el bloque se centraba verticalmente en toda la altura disponible; al ser contenido corto, dejaba un hueco grande arriba y abajo. Fix: se quitó el centrado vertical y se ancló el contenido cerca del encabezado con aire razonable (48px) — el anillo decorativo de fondo llena la parte baja, así no queda vacía tampoco ahí. Ver nota completa en docs/revisiones/onboarding-veredicto.md.
   3. Sostener el botón para comprometerse es un punto sin retorno a las preguntas anteriores, y nada lo avisa antes de soltar el dedo.
   4. La barra de progreso llega a 100% antes de completar el gesto de sostener — comunica "ya terminaste" cuando falta el paso más importante.
   5. El botón "Seguir aquí" del aviso de salida, cuando ya te comprometiste, en realidad te lleva a la pantalla de planes — el texto no calza con la acción.

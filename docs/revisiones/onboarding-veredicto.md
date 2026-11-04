@@ -87,3 +87,24 @@ a la Sesión 5 dejando estos 5 puntos anotados como pendientes conocidos**, sin 
 iterando esta pantalla ahora. No re-abrir esta pantalla ni volver a lanzar el
 revisor-visual sobre ella sin que la usuaria lo pida — queda **APROBADA POR LA USUARIA EN
 SUSTANCIA**, igual que la landing en la Sesión 3.
+
+## Actualización (2026-11-04) — defecto 2 RESUELTO
+
+La usuaria volvió a ver las capturas reales (Sesión 7) y pidió explícitamente corregir el
+defecto 2 (espacio vacío grande arriba del título, en las 2 pantallas del paso de
+compromiso) — dijo "este me parece importante". Causa raíz: el bloque de contenido de
+ambos estados usaba `justify-center` dentro de un contenedor `flex-1` alto; como el
+contenido (título+botón+preview, o check+título+preview) es corto, centrarlo verticalmente
+en toda la altura disponible dejaba un hueco grande arriba Y abajo — el de arriba se sentía
+"vacío" porque nada lo anclaba cerca del encabezado. Fix: se quitó `justify-center` y se
+agregó `pt-12` (48px, dentro de la escala 4·8·12·16·24·32·48·64) en los dos estados — el
+contenido ahora arranca cerca del encabezado con aire razonable, y el anillo decorativo de
+fondo (`FunnelFondo`, ya existente) sigue llenando visualmente la parte baja, que no queda
+vacía. Cambiado en `app/onboarding/page.tsx` (paso 6, ambos estados `comprometido` y no).
+Verificado: tsc ✓ build ✓ · capturas reales a 375px en
+`docs/revisiones/onboarding-compromiso-antes-375.png` y `onboarding-celebracion-375.png`.
+Los otros 4 defectos de la lista (botón "Salir sin guardar", aviso de punto sin retorno,
+barra de progreso al 100% antes de tiempo, "Seguir aquí" mal etiquetado) NO se tocaron —
+la usuaria solo pidió este. No se relanzó el revisor-visual completo (fix de layout
+puntual, no cambia estructura/copy/flujo). Pendiente: que la usuaria confirme viendo la
+captura real.
