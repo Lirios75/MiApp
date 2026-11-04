@@ -1,6 +1,21 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, tarde): dos ajustes más pedidos por la usuaria tras probar la app real:
+1. El botón y los montos de "Cuánto entró y salió hoy" (Hoy) eran muy chicos — ahora el botón de
+   abrirlo es de ancho completo con ícono, y los montos ya guardados se ven más grandes (19px) en
+   una tarjeta propia. Solo cambio visual, sin tocar datos.
+2. Pidió poder comparar mes a mes (no solo semana a semana). Agregado: pestañas "Semana"/"Mes" en
+   /app/semana. La vista "Mes" (elegida por la usuaria entre esa y una gráfica — prefirió el
+   resumen simple) tiene su propia navegación (← mes →) y muestra "Cómo te fue" + "Tu mes en
+   números" (entró/salió/neto) para el mes que se esté viendo — sin la grilla de días ni la
+   gráfica de 4 semanas, que solo tienen sentido por semana.
+Cambiado en: `app/app/page.tsx` (botón/montos más visibles) y `app/app/semana/page.tsx` (pestañas
++ vista de mes). No tocó la base de datos — no hay migración nueva. Verificado: tsc ✓ build ✓ ·
+renderizado real a 375px con datos de 2 meses distintos, navegando entre ellos — capturas en
+`docs/revisiones/semana-375.png` (pestaña Semana) y `mes-375.png` (pestaña Mes, con cifras reales
+del mes). Pendiente: que la usuaria lo revise en la app real.
+
 ⏸️ CHECKPOINT (2026-11-04): la app ahora admite VARIAS metas de ahorro a la vez (antes solo una
 por usuaria — pedido explícito de la usuaria). La pantalla "Tu meta" ahora es:
 - Con 0 metas: el formulario de siempre, prellenado con la respuesta del onboarding (sin cambios).

@@ -22,10 +22,27 @@ function useVariantes(): { contenedor: Variants; item: Variants } {
   };
 }
 
+const MESES_LARGO = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+/** Año/mes (0-indexado) + etiqueta legible a partir de un desplazamiento en meses desde hoy —
+ * mismo patrón que diasDeLaSemana() pero para meses (vista "Mes" pedida por la usuaria). */
+function mesDesdeOffset(offsetMeses: number): { anio: number; mes: number; etiqueta: string } {
+  const hoy = new Date();
+  const base = new Date(hoy.getFullYear(), hoy.getMonth() + offsetMeses, 1);
+  const anio = base.getFullYear();
+  const mes = base.getMonth();
+  return { anio, mes, etiqueta: `${MESES_LARGO[mes]} ${anio}` };
+}
+
 export default function Semana() {
   const [estado, setEstado] = useState<EstadoApp | null>(null);
   const [error, setError] = useState(false);
+  const [vista, setVista] = useState<'semana' | 'mes'>('semana');
   const [offset, setOffset] = useState(0);
+  const [offsetMes, setOffsetMes] = useState(0);
   const [diaSeleccionado, setDiaSeleccionado] = useState<string | null>(null);
   const { contenedor, item } = useVariantes();
 
@@ -73,32 +90,138 @@ export default function Semana() {
   const totalGastos = dias.reduce((suma, d) => suma + (d.gastos ?? 0), 0);
   const hayMontos = dias.some((d) => d.entradas !== null || d.gastos !== null);
 
+  const { anio: anioMes, mes, etiqueta: etiquetaMes } = mesDesdeOffset(offsetMes);
+  const prefijoMes = `${anioMes}-${String(mes + 1).padStart(2, '0')}`;
+  const checkinsDelMes = estado.checkins.filter((c) => c.fecha.startsWith(prefijoMes));
+  const tranquilosMes = checkinsDelMes.filter((c) => c.estado === 'tranquilo').length;
+  const alertasMes = checkinsDelMes.filter((c) => c.estado === 'alerta').length;
+  const marcadosMes = tranquilosMes + alertasMes;
+  const entradasMes = checkinsDelMes.reduce((suma, c) => suma + (c.entradas ?? 0), 0);
+  const gastosMes = checkinsDelMes.reduce((suma, c) => suma + (c.gastos ?? 0), 0);
+  const hayMontosMes = checkinsDelMes.some((c) => c.entradas !== null || c.gastos !== null);
+
   return (
     <motion.main variants={contenedor} initial="hidden" animate="visible" className="flex flex-1 flex-col gap-6 px-4 pb-8 pt-8">
       <motion.header variants={item}>
         <h1 className="text-[22px] font-bold [font-family:var(--font-display)]">Semana</h1>
-        <div className="mt-2 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setOffset((o) => o - 1)}
-            aria-label="Semana anterior"
-            className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] [touch-action:manipulation]"
-          >
-            <ChevronLeft size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
-          </button>
-          <span className="text-[15px] font-semibold text-[var(--text-secondary)]">{formatearRangoSemana(fechas)}</span>
-          <button
-            type="button"
-            onClick={() => setOffset((o) => Math.min(0, o + 1))}
-            disabled={offset === 0}
-            aria-label="Semana siguiente"
-            className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] disabled:opacity-40 [touch-action:manipulation]"
-          >
-            <ChevronRight size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
-          </button>
+
+        <div className="mt-3 flex gap-2" role="tablist" aria-label="Ver por semana o por mes">
+          {(['semana', 'mes'] as const).map((v) => {
+            const activo = vista === v;
+            return (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={activo}
+                onClick={() => setVista(v)}
+                className="flex h-8 items-center rounded-full px-3 text-[13px] font-semibold [touch-action:manipulation]"
+                style={{
+                  background: activo ? 'var(--accent)' : 'var(--surface-2)',
+                  color: activo ? 'var(--bg)' : 'var(--text-secondary)',
+                }}
+              >
+                {v === 'semana' ? 'Semana' : 'Mes'}
+              </button>
+            );
+          })}
         </div>
+
+        {vista === 'semana' ? (
+          <div className="mt-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setOffset((o) => o - 1)}
+              aria-label="Semana anterior"
+              className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] [touch-action:manipulation]"
+            >
+              <ChevronLeft size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
+            </button>
+            <span className="text-[15px] font-semibold text-[var(--text-secondary)]">{formatearRangoSemana(fechas)}</span>
+            <button
+              type="button"
+              onClick={() => setOffset((o) => Math.min(0, o + 1))}
+              disabled={offset === 0}
+              aria-label="Semana siguiente"
+              className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] disabled:opacity-40 [touch-action:manipulation]"
+            >
+              <ChevronRight size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <div className="mt-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setOffsetMes((o) => o - 1)}
+              aria-label="Mes anterior"
+              className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] [touch-action:manipulation]"
+            >
+              <ChevronLeft size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
+            </button>
+            <span className="text-[15px] font-semibold capitalize text-[var(--text-secondary)]">{etiquetaMes}</span>
+            <button
+              type="button"
+              onClick={() => setOffsetMes((o) => Math.min(0, o + 1))}
+              disabled={offsetMes === 0}
+              aria-label="Mes siguiente"
+              className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] disabled:opacity-40 [touch-action:manipulation]"
+            >
+              <ChevronRight size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
+            </button>
+          </div>
+        )}
       </motion.header>
 
+      {vista === 'mes' ? (
+        <>
+          <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
+            <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Cómo te fue</h2>
+            <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-primary)]">
+              {marcadosMes === 0
+                ? 'Aún no marcaste ningún día de este mes. Hazlo desde Hoy.'
+                : alertasMes === 0
+                  ? `Marcaste ${tranquilosMes} de ${marcadosMes} días como tranquilos este mes. Vas muy bien.`
+                  : tranquilosMes === 0
+                    ? `Marcaste ${alertasMes} de ${marcadosMes} días de alerta este mes — es información, no un juicio.`
+                    : `${tranquilosMes} días tranquilos y ${alertasMes} de alerta este mes. Notar la diferencia ya es la mitad del trabajo.`}
+            </p>
+          </motion.section>
+
+          {hayMontosMes ? (
+            <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
+              <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Tu mes en números</h2>
+              <div className="mt-3 flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Entró</p>
+                  <p className="text-[17px] font-bold text-[var(--accent-2-text)] [font-variant-numeric:tabular-nums]">
+                    +${entradasMes.toLocaleString('es')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Salió</p>
+                  <p className="text-[17px] font-bold text-[var(--accent-3-text)] [font-variant-numeric:tabular-nums]">
+                    -${gastosMes.toLocaleString('es')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Neto</p>
+                  <p className="text-[17px] font-bold text-[var(--text-primary)] [font-variant-numeric:tabular-nums]">
+                    {entradasMes - gastosMes >= 0 ? '+' : '-'}${Math.abs(entradasMes - gastosMes).toLocaleString('es')}
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+          ) : (
+            <motion.section variants={item} className="flex-1 rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
+              <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Tu mes en números</h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-secondary)]">
+                Aquí vas a ver cuánto entró y salió este mes apenas lo anotes un par de veces desde Hoy.
+              </p>
+            </motion.section>
+          )}
+        </>
+      ) : (
+      <>
       <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-5 shadow-[var(--shadow-2)]">
         <div className="flex justify-between">
           {dias.map(({ iso, estadoDia, esFuturo }, i) => {
@@ -242,6 +365,8 @@ export default function Semana() {
       <motion.section variants={item} className="flex-1 rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
         <TendenciaSemanas estado={estado} />
       </motion.section>
+      </>
+      )}
     </motion.main>
   );
 }

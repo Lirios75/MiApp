@@ -331,3 +331,11 @@ ninguno de los cuatro — sigue usando solo `components/landing/ui`, `components
 `components/RespiraMark`. El cambio de esta sesión (varias metas de ahorro a la vez, con su
 lista y su detalle) vive por completo en la pantalla "Tu meta" y en la lógica de datos
 compartida, sin tocar el paywall. Cero impacto; la certificación LISTA sigue vigente.
+
+## Trigésima re-verificación (2026-11-04, tarde — botón de montos más visible + pestañas Semana/Mes)
+
+El hook marcó `app/app/page.tsx` y `app/app/semana/page.tsx` como más nuevos que este veredicto.
+Mismo caso de siempre: `app/paywall/page.tsx` no importa ninguno de los dos. Los dos cambios de
+esta tarde (hacer más visible el botón de entradas/gastos en Hoy, y agregar la pestaña "Mes" en
+Semana) viven solo en esas dos pantallas de la app interna. Cero impacto; la certificación LISTA
+sigue vigente.
