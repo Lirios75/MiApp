@@ -7,7 +7,7 @@
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { AlertTriangle, ArrowRight, Check, Pencil, Smile, AlertCircle, Share2, Target, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, Pencil, Smile, AlertCircle, Share2, Target, Wallet, X } from 'lucide-react';
 import {
   calcularRacha,
   checkInDeHoy,
@@ -681,20 +681,24 @@ function CamposMontosDia({
 
   if (hayDatos) {
     return (
-      <div>
+      <div className="rounded-[var(--radius-button)] bg-[var(--surface-2)] p-4">
         <p className="text-[13px] font-semibold text-[var(--text-secondary)]">Cuánto entró y salió hoy</p>
         <div className="mt-1.5 flex gap-4">
           {entradas !== null && (
-            <span className="text-[15px] font-semibold text-[var(--accent-2-text)]">+${entradas.toLocaleString('es')}</span>
+            <span className="text-[19px] font-bold [font-variant-numeric:tabular-nums] text-[var(--accent-2-text)]">
+              +${entradas.toLocaleString('es')}
+            </span>
           )}
           {gastos !== null && (
-            <span className="text-[15px] font-semibold text-[var(--accent-3-text)]">-${gastos.toLocaleString('es')}</span>
+            <span className="text-[19px] font-bold [font-variant-numeric:tabular-nums] text-[var(--accent-3-text)]">
+              -${gastos.toLocaleString('es')}
+            </span>
           )}
         </div>
         <button
           type="button"
           onClick={() => setEditando(true)}
-          className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)]"
+          className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)] [touch-action:manipulation]"
         >
           <Pencil size={13} strokeWidth={2} aria-hidden="true" /> Editar
         </button>
@@ -703,8 +707,12 @@ function CamposMontosDia({
   }
 
   return (
-    <button type="button" onClick={() => setEditando(true)} className="text-[13px] font-semibold text-[var(--accent)]">
-      + ¿Cuánto entró y salió hoy?
+    <button
+      type="button"
+      onClick={() => setEditando(true)}
+      className="flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] bg-[var(--chip-bg)] text-[14px] font-semibold text-[var(--accent)] [touch-action:manipulation]"
+    >
+      <Wallet size={17} strokeWidth={2} aria-hidden="true" /> ¿Cuánto entró y salió hoy?
     </button>
   );
 }
