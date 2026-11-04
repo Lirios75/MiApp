@@ -451,6 +451,13 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Cuadragésima primera re-verificación (2026-11-04, noche — código de 6 dígitos en /entrar)
+
+El hook marcará `app/entrar/page.tsx` como más nuevo que este veredicto. Verificado por grep:
+`app/paywall/page.tsx` no importa nada de ese archivo (son páginas de rutas distintas, `/entrar`
+y `/paywall`). El cambio (agregar un código de 6 dígitos como alternativa al enlace de login) vive
+solo en la pantalla de login. Cero impacto; la certificación LISTA sigue vigente.
+
 ## Cuadragésima re-verificación (2026-11-04, noche — últimos 2 defectos del onboarding)
 
 El hook marcará `app/onboarding/page.tsx` como más nuevo que este veredicto. Igual que la
