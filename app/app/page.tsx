@@ -15,7 +15,7 @@ import {
   EMOCIONES_ALERTA,
   EMOCIONES_TRANQUILO,
   hoyISO,
-  metaSincronizada,
+  metasSincronizadas,
   reflexionDeHoy,
   type EstadoApp,
   type EstadoSemaforo,
@@ -209,10 +209,13 @@ export default function Hoy() {
   );
 }
 
+/* ── <VistaPreviaMeta> — ahora puede haber varias metas (pedido de la usuaria, Sesión 7):
+   aquí solo se adelanta la que tiene MÁS avance (la más "noticiable"), con un aviso de
+   cuántas más hay — el detalle completo de todas vive en /app/meta. ── */
 function VistaPreviaMeta({ estado }: { estado: EstadoApp }) {
-  const meta = metaSincronizada(estado);
+  const metas = metasSincronizadas(estado);
 
-  if (!meta) {
+  if (metas.length === 0) {
     return (
       <Link
         href="/app/meta"
@@ -232,8 +235,11 @@ function VistaPreviaMeta({ estado }: { estado: EstadoApp }) {
     );
   }
 
-  const porcentaje = Math.min(100, Math.round((meta.actual / meta.objetivo) * 100));
+  const porcentajeDe = (m: (typeof metas)[number]) => Math.min(100, Math.round((m.actual / m.objetivo) * 100));
+  const meta = [...metas].sort((a, b) => porcentajeDe(b) - porcentajeDe(a))[0];
+  const porcentaje = porcentajeDe(meta);
   const unidad = meta.modo === 'habito' ? ' días' : '';
+  const otras = metas.length - 1;
 
   return (
     <Link
@@ -243,7 +249,7 @@ function VistaPreviaMeta({ estado }: { estado: EstadoApp }) {
       <div className="flex items-center justify-between">
         <p className="text-[13px] font-semibold text-[var(--text-secondary)]">{meta.nombre}</p>
         <span className="inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)]">
-          Ver meta <ArrowRight size={13} strokeWidth={2} aria-hidden="true" />
+          {otras > 0 ? `+${otras} más` : 'Ver meta'} <ArrowRight size={13} strokeWidth={2} aria-hidden="true" />
         </span>
       </div>
       <div className="flex items-center gap-3">

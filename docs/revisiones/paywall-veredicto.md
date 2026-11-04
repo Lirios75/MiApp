@@ -322,3 +322,12 @@ entradas/gastos opcionales) viven exclusivamente en las pantallas Hoy y Semana d
 sesión para una captura de prueba, confirmado sin diff con `git status`) — solo cambió su fecha
 de modificación, no su contenido. Cero impacto en el paywall; la certificación LISTA sigue
 vigente.
+
+## Vigesimonovena re-verificación (2026-11-04 — varias metas a la vez)
+
+El hook marcó `app/app/meta/page.tsx`, `app/app/page.tsx`, `lib/app.ts` y `lib/supabase/datos.ts`
+como más nuevos que este veredicto. Verificado por grep: `app/paywall/page.tsx` no importa
+ninguno de los cuatro — sigue usando solo `components/landing/ui`, `components/funnel/*` y
+`components/RespiraMark`. El cambio de esta sesión (varias metas de ahorro a la vez, con su
+lista y su detalle) vive por completo en la pantalla "Tu meta" y en la lógica de datos
+compartida, sin tocar el paywall. Cero impacto; la certificación LISTA sigue vigente.

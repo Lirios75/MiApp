@@ -56,6 +56,7 @@ export const OPCIONES_FRECUENCIA: readonly { value: Frecuencia; label: string }[
 ];
 
 export interface Meta {
+  id: string;
   tipo: string; // value de OPCIONES_META
   nombre: string; // nombre elegido por la usuaria (ej: "Viaje a Cartagena")
   modo: ModoMeta;
@@ -79,7 +80,7 @@ export type EstadoMembresiaApp =
 
 export interface EstadoApp {
   checkins: CheckIn[];
-  meta: Meta | null;
+  metas: Meta[];
   fechaInicioTrial: string | null;
   avatarUrl: string | null;
   estadoMembresia: EstadoMembresiaApp;
@@ -164,6 +165,13 @@ const MODO_POR_TIPO: Record<string, ModoMeta> = {
   entender: 'habito',
 };
 
+/** A qué modo (monto/hábito) corresponde cada tipo de meta — usado al crear una meta
+ * adicional desde cero (la primera sale de metaInicialDesdeOnboarding, las siguientes
+ * piden el tipo a mano en /app/meta). */
+export function modoDeTipo(tipo: string): ModoMeta {
+  return MODO_POR_TIPO[tipo] ?? 'monto';
+}
+
 /** Arma una meta nueva a partir del tipo elegido en el onboarding (o 'ahorrar'
  * por defecto si no respondió). El monto lo confirma el usuario en /app/meta;
  * el modo hábito no pide monto — se mide en días de racha. */
@@ -178,11 +186,15 @@ export function metaInicialDesdeOnboarding(): Pick<Meta, 'tipo' | 'nombre' | 'mo
 }
 
 /** El modo hábito no se "registra a mano": se sincroniza con la racha real
- * cada vez que se lee la meta, para que nunca quede desactualizada. */
-export function metaSincronizada(estado: EstadoApp): Meta | null {
-  if (!estado.meta) return null;
-  if (estado.meta.modo !== 'habito') return estado.meta;
-  return { ...estado.meta, actual: calcularRacha(estado.checkins) };
+ * cada vez que se lee la meta, para que nunca quede desactualizada. Varias metas en modo
+ * hábito comparten la misma racha (hay un solo Semáforo al día, no uno por meta). */
+export function metaSincronizada(meta: Meta, checkins: readonly CheckIn[]): Meta {
+  if (meta.modo !== 'habito') return meta;
+  return { ...meta, actual: calcularRacha(checkins) };
+}
+
+export function metasSincronizadas(estado: EstadoApp): Meta[] {
+  return estado.metas.map((m) => metaSincronizada(m, estado.checkins));
 }
 
 /** Reflexiones cortas del día (feature #4 del MVP) — una por día, estable

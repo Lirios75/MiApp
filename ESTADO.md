@@ -1,5 +1,25 @@
 # ESTADO — Respira
-Última actualización: 2026-11-03 | Sesión actual: 7
+Última actualización: 2026-11-04 | Sesión actual: 7
+
+⏸️ CHECKPOINT (2026-11-04): la app ahora admite VARIAS metas de ahorro a la vez (antes solo una
+por usuaria — pedido explícito de la usuaria). La pantalla "Tu meta" ahora es:
+- Con 0 metas: el formulario de siempre, prellenado con la respuesta del onboarding (sin cambios).
+- Con 1+ metas: una LISTA con el avance de cada una (anillo + monto/días), botón "+ Meta nueva"
+  que primero pregunta el tipo (ahorrar/salir de deuda/dejar impulso/entender) y luego pide
+  nombre+monto+fecha (igual que antes). Tocar una meta abre su detalle: registrar avance, editar,
+  o BORRARLA (con confirmación, "no se puede deshacer").
+- En "Hoy", la tarjeta de meta ahora adelanta la que tiene MÁS avance, con "+N más" si hay varias.
+Decisión técnica (no se le preguntó a la usuaria, es implementación pura): la tabla `metas` tenía
+`user_id` como clave primaria (forzaba una sola fila); la migración le agrega un `id` propio y
+quita esa restricción. Cambiado en: `supabase/migrations/20261104000000_metas_multiples.sql`
+(falta que la usuaria la ejecute), `lib/app.ts` (`Meta.id`, `EstadoApp.metas` ahora es lista,
+`metasSincronizadas`, `modoDeTipo`), `lib/supabase/datos.ts` (todas las funciones de meta ahora
+reciben un `id`; nueva `eliminarMetaSupabase`), `app/app/meta/page.tsx` (reescrita: lista + tipo +
+detalle + borrar) y `app/app/page.tsx` (vista previa adaptada). Verificado: tsc ✓ build ✓ ·
+renderizado real a 375px con 3 metas de prueba (lista, detalle y selector de tipo) — capturas en
+`docs/revisiones/meta-375.png`, `meta-detalle-375.png`, `meta-tipo-375.png`. Re-verificación del
+paywall anotada (sin relación). Pendiente: que la usuaria ejecute la migración SQL y pruebe crear
+una segunda meta en la app real.
 
 ⏸️ CHECKPOINT (2026-11-03): 3 ajustes pedidos por la usuaria, los 3 tocados con su OK explícito
 (uno de ellos respondido vía pregunta de opciones — eligió en los 2 casos la versión más liviana,
