@@ -40,9 +40,10 @@ function mesDesdeOffset(offsetMeses: number): { anio: number; mes: number; etiqu
 export default function Semana() {
   const [estado, setEstado] = useState<EstadoApp | null>(null);
   const [error, setError] = useState(false);
-  const [vista, setVista] = useState<'semana' | 'mes'>('semana');
+  const [vista, setVista] = useState<'semana' | 'mes' | 'año'>('semana');
   const [offset, setOffset] = useState(0);
   const [offsetMes, setOffsetMes] = useState(0);
+  const [offsetAno, setOffsetAno] = useState(0);
   const [diaSeleccionado, setDiaSeleccionado] = useState<string | null>(null);
   const { contenedor, item } = useVariantes();
 
@@ -100,13 +101,23 @@ export default function Semana() {
   const gastosMes = checkinsDelMes.reduce((suma, c) => suma + (c.gastos ?? 0), 0);
   const hayMontosMes = checkinsDelMes.some((c) => c.entradas !== null || c.gastos !== null);
 
+  const anioVista = new Date().getFullYear() + offsetAno;
+  const prefijoAno = `${anioVista}-`;
+  const checkinsDelAno = estado.checkins.filter((c) => c.fecha.startsWith(prefijoAno));
+  const tranquilosAno = checkinsDelAno.filter((c) => c.estado === 'tranquilo').length;
+  const alertasAno = checkinsDelAno.filter((c) => c.estado === 'alerta').length;
+  const marcadosAno = tranquilosAno + alertasAno;
+  const entradasAno = checkinsDelAno.reduce((suma, c) => suma + (c.entradas ?? 0), 0);
+  const gastosAno = checkinsDelAno.reduce((suma, c) => suma + (c.gastos ?? 0), 0);
+  const hayMontosAno = checkinsDelAno.some((c) => c.entradas !== null || c.gastos !== null);
+
   return (
     <motion.main variants={contenedor} initial="hidden" animate="visible" className="flex flex-1 flex-col gap-6 px-4 pb-8 pt-8">
       <motion.header variants={item}>
         <h1 className="text-[22px] font-bold [font-family:var(--font-display)]">Semana</h1>
 
-        <div className="mt-3 flex gap-2" role="tablist" aria-label="Ver por semana o por mes">
-          {(['semana', 'mes'] as const).map((v) => {
+        <div className="mt-3 flex gap-2" role="tablist" aria-label="Ver por semana, mes o año">
+          {(['semana', 'mes', 'año'] as const).map((v) => {
             const activo = vista === v;
             return (
               <button
@@ -121,7 +132,7 @@ export default function Semana() {
                   color: activo ? 'var(--bg)' : 'var(--text-secondary)',
                 }}
               >
-                {v === 'semana' ? 'Semana' : 'Mes'}
+                {v === 'semana' ? 'Semana' : v === 'mes' ? 'Mes' : 'Año'}
               </button>
             );
           })}
@@ -148,7 +159,7 @@ export default function Semana() {
               <ChevronRight size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
             </button>
           </div>
-        ) : (
+        ) : vista === 'mes' ? (
           <div className="mt-3 flex items-center justify-between">
             <button
               type="button"
@@ -164,6 +175,27 @@ export default function Semana() {
               onClick={() => setOffsetMes((o) => Math.min(0, o + 1))}
               disabled={offsetMes === 0}
               aria-label="Mes siguiente"
+              className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] disabled:opacity-40 [touch-action:manipulation]"
+            >
+              <ChevronRight size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <div className="mt-3 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setOffsetAno((o) => o - 1)}
+              aria-label="Año anterior"
+              className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] [touch-action:manipulation]"
+            >
+              <ChevronLeft size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
+            </button>
+            <span className="text-[15px] font-semibold text-[var(--text-secondary)]">{anioVista}</span>
+            <button
+              type="button"
+              onClick={() => setOffsetAno((o) => Math.min(0, o + 1))}
+              disabled={offsetAno === 0}
+              aria-label="Año siguiente"
               className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] disabled:opacity-40 [touch-action:manipulation]"
             >
               <ChevronRight size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
@@ -219,6 +251,57 @@ export default function Semana() {
               <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Tu mes en números</h2>
               <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-secondary)]">
                 Aquí vas a ver cuánto entró y salió este mes apenas lo anotes un par de veces desde Hoy.
+              </p>
+            </motion.section>
+          )}
+        </>
+      ) : vista === 'año' ? (
+        <>
+          <ComoTeFue
+            item={item}
+            marcados={marcadosAno}
+            tranquilos={tranquilosAno}
+            alertas={alertasAno}
+            mensaje={
+              marcadosAno === 0
+                ? 'Aún no marcaste ningún día de este año. Hazlo desde Hoy.'
+                : alertasAno === 0
+                  ? `Marcaste ${tranquilosAno} de ${marcadosAno} días como tranquilos este año.`
+                  : tranquilosAno === 0
+                    ? `Marcaste ${alertasAno} de ${marcadosAno} días de alerta este año — es información, no un juicio.`
+                    : `${tranquilosAno} días tranquilos y ${alertasAno} de alerta este año. Notar la diferencia ya es la mitad del trabajo.`
+            }
+          />
+
+          {hayMontosAno ? (
+            <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
+              <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Tu año en números</h2>
+              <div className="mt-3 flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Entró</p>
+                  <p className="text-[17px] font-bold text-[var(--accent-2-text)] [font-variant-numeric:tabular-nums]">
+                    +${entradasAno.toLocaleString('es')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Salió</p>
+                  <p className="text-[17px] font-bold text-[var(--accent-3-text)] [font-variant-numeric:tabular-nums]">
+                    -${gastosAno.toLocaleString('es')}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Neto</p>
+                  <p className="text-[17px] font-bold text-[var(--text-primary)] [font-variant-numeric:tabular-nums]">
+                    {entradasAno - gastosAno >= 0 ? '+' : '-'}${Math.abs(entradasAno - gastosAno).toLocaleString('es')}
+                  </p>
+                </div>
+              </div>
+            </motion.section>
+          ) : (
+            <motion.section variants={item} className="flex-1 rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
+              <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Tu año en números</h2>
+              <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-secondary)]">
+                Aquí vas a ver cuánto entró y salió este año apenas lo anotes un par de veces desde Hoy.
               </p>
             </motion.section>
           )}

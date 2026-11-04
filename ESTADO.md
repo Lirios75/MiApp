@@ -1,6 +1,23 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche) — pestaña "Año" agregada en Semana: la usuaria pidió un resumen
+por año además de Semana/Mes ("también... es posible el resumen del año también?"). Hecho: tercera
+pestaña "Año" en el mismo toggle de siempre, con su propia navegación (← 2026 →, igual que Semana/
+Mes), mostrando "Cómo te fue" (celebración/alerta/neutral, mismo componente compartido) y "Tu año
+en números" (entró/salió/neto) filtrando los check-ins por año. Cambiado en:
+`app/app/semana/page.tsx` (`offsetAno`, `anioVista`, bloque `vista === 'año'`). No tocó la base de
+datos. Verificado: tsc ✓ build ✓ · renderizado real a 375px con datos de 2 años distintos (2025 y
+2026), navegando entre ellos con ← → — confirmado que cada año solo suma SUS propios días/montos,
+sin mezclar — capturas en `docs/revisiones/semana-ano-375.png` (2026) y
+`semana-ano-anterior-375.png` (2025, con ← ya funcionando). Re-verificación del paywall anotada
+(sin relación). Pendiente: que la usuaria lo revise en la app real.
+Resumen de lo ya cerrado antes en esta misma sesión (Sesión 7), con checkpoints detallados más
+abajo: emoción opcional + montos del día (sumar/restar) en Hoy, metas múltiples (lista/detalle/
+crear/editar/borrar) con navegación quedándose en el detalle al guardar, total de ahorro/deuda
+sumando todas las metas de dinero, "Cómo te fue" rediseñado como celebración/alerta en vez de
+texto plano, y el año agregado a la fecha de Semana.
+
 ⏸️ CHECKPOINT (2026-11-04, noche): la usuaria notó que la fecha de la pestaña "Semana" (ej.
 "2-8 nov") no mostraba el año, a diferencia de "Mes" que sí lo muestra ("Noviembre 2026") — con
 navegación sin límite hacia atrás, dos semanas de distinto año podían verse iguales. Corregido:

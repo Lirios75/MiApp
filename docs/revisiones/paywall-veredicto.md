@@ -374,3 +374,10 @@ El hook marcará `components/app/ui.tsx` como más nuevo que este veredicto. Ver
 `app/paywall/page.tsx` no importa nada de `components/app/ui` (usa `components/landing/ui` y
 `components/funnel/ui`, archivos distintos). El cambio (agregar el año a la fecha de la pestaña
 Semana) solo afecta a la pantalla Semana. Cero impacto; la certificación LISTA sigue vigente.
+
+## Trigésimo sexta re-verificación (2026-11-04, noche — pestaña "Año" en Semana)
+
+El hook marcará `app/app/semana/page.tsx` como más nuevo que este veredicto. Verificado por grep:
+`app/paywall/page.tsx` no importa ese archivo. El cambio (tercera pestaña "Año" junto a Semana/Mes,
+con su propia navegación y resumen anual) vive solo en la pantalla Semana. Cero impacto; la
+certificación LISTA sigue vigente.
