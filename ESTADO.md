@@ -1,6 +1,16 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche): la usuaria pidió un ajuste de navegación en "Tu meta" — al
+guardar una meta (la primera o una nueva), ahora se queda mostrando SU detalle (anillo, registrar
+avance, editar, borrar) en vez de volver a la lista. El botón "←" de arriba sigue llevando al
+resumen de todas las metas cuando quiera volver. Cambiado en: `app/app/meta/page.tsx` (nueva
+función `alCrearMeta`, usada por los dos flujos de creación). No tocó la base de datos. Verificado:
+tsc ✓ build ✓ · probado el flujo completo en el navegador (crear meta → queda en su detalle →
+"←" → vuelve a la lista con las dos metas) — capturas actualizadas en
+`docs/revisiones/meta-detalle-375.png` y `meta-375.png`. Re-verificación del paywall anotada (sin
+relación). Pendiente: que la usuaria lo pruebe en la app real.
+
 ⏸️ CHECKPOINT (2026-11-04, tarde): dos ajustes más pedidos por la usuaria tras probar la app real:
 1. El botón y los montos de "Cuánto entró y salió hoy" (Hoy) eran muy chicos — ahora el botón de
    abrirlo es de ancho completo con ícono, y los montos ya guardados se ven más grandes (19px) en

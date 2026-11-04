@@ -137,6 +137,17 @@ export default function MetaPage() {
     setTipoNuevaMeta(null);
   }
 
+  /** Al guardar una meta (la primera o una nueva), se queda mostrando SU detalle en vez de
+   * volver a la lista — pedido de la usuaria, Sesión 7. El botón "←" de arriba sigue
+   * llevando al resumen de todas las metas cuando quiera volver. */
+  function alCrearMeta(nuevoEstado: EstadoApp) {
+    setEstado(nuevoEstado);
+    setCreandoNueva(false);
+    setTipoNuevaMeta(null);
+    const nueva = nuevoEstado.metas[nuevoEstado.metas.length - 1];
+    if (nueva) setMetaSeleccionadaId(nueva.id);
+  }
+
   const inicial = metaInicialDesdeOnboarding();
 
   return (
@@ -159,7 +170,7 @@ export default function MetaPage() {
 
       <motion.section variants={item}>
         {!hayVarias ? (
-          <ConfigurarMeta tipo={inicial.tipo} nombreHabito={inicial.nombre} checkins={estado.checkins} onCreada={setEstado} />
+          <ConfigurarMeta tipo={inicial.tipo} nombreHabito={inicial.nombre} checkins={estado.checkins} onCreada={alCrearMeta} />
         ) : metaActiva ? (
           <ProgresoMeta
             meta={metaActiva}
@@ -177,11 +188,7 @@ export default function MetaPage() {
               tipo={tipoNuevaMeta}
               nombreHabito={LABEL_META[tipoNuevaMeta] ?? 'Mi meta'}
               checkins={estado.checkins}
-              onCreada={(e) => {
-                setEstado(e);
-                setCreandoNueva(false);
-                setTipoNuevaMeta(null);
-              }}
+              onCreada={alCrearMeta}
             />
           )
         ) : (

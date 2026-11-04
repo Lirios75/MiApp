@@ -339,3 +339,10 @@ Mismo caso de siempre: `app/paywall/page.tsx` no importa ninguno de los dos. Los
 esta tarde (hacer más visible el botón de entradas/gastos en Hoy, y agregar la pestaña "Mes" en
 Semana) viven solo en esas dos pantallas de la app interna. Cero impacto; la certificación LISTA
 sigue vigente.
+
+## Trigésimo primera re-verificación (2026-11-04, noche — navegación al guardar una meta)
+
+El hook marcará `app/app/meta/page.tsx` como más nuevo que este veredicto. Mismo caso de siempre:
+`app/paywall/page.tsx` no importa ese archivo. El cambio (al guardar una meta, se queda en su
+detalle en vez de volver a la lista) vive solo en la pantalla "Tu meta". Cero impacto; la
+certificación LISTA sigue vigente.
