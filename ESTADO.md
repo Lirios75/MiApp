@@ -35,10 +35,19 @@ Siguiente paso exacto (ella, no bloqueado por código):
 3. Confirmar que llegan PageView (en cada pantalla) e InitiateCheckout (al tocar pagar).
 4. Hacer una compra de prueba real completa (como ya hizo 2 veces antes) y confirmar que el
    evento "Purchase" también llega (ese lo manda Hotmart directo, con la integración nativa del
-   panel — PENDIENTE, ver `docs/sistema/34` sección "PÍXEL Y CAPI EN HOTMART": falta que ella
-   pegue el mismo ID del píxel en Hotmart → su producto → Herramientas → Integraciones/Píxeles).
+   panel).
 5. Recién con los 3 eventos confirmados en vivo, anotar aquí "Píxel Meta verificado con compra de
    prueba el [fecha]" — solo ENTONCES se puede prender la primera campaña paga (gate del 34).
+
+✅ ACTUALIZACIÓN (2026-11-04, noche) — Paso 1 de arriba YA HECHO: la usuaria conectó el mismo ID
+del píxel (`1079795125061777`) en Hotmart (Herramientas → Píxel de Seguimiento → Facebook +
+Instagram → Evento vía Web), guiada paso a paso por el panel. Marcó las 3 casillas de eventos
+("Ventas realizadas", "Visitas en la Página de Pago", "Visitas en la Página de Producto Hotmart")
+y guardó — confirmado en pantalla: "ID del Píxel de Facebook: 1079795125061777 · Evento vía Web:
+Configurado". NO se configuró la API de Conversión (CAPI, más avanzada, pide un token aparte) —
+queda como mejora opcional para más adelante, no bloqueante. Con esto, tanto el código (landing/
+onboarding/paywall) como Hotmart (checkout/compra) ya están avisando al mismo píxel. Pendiente:
+pasos 2-5 de arriba (la prueba en vivo con "Probar eventos" de Meta + la compra de prueba final).
 
 🔍 INVESTIGACIÓN (2026-11-04, noche) — reporte de una amiga de la usuaria: "al pagar siempre lo
 lleva a plan anual y si se quiere devolver a mensual no lo deja". Investigado a fondo con prueba
