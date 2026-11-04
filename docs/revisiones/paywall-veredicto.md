@@ -381,3 +381,13 @@ El hook marcará `app/app/semana/page.tsx` como más nuevo que este veredicto. V
 `app/paywall/page.tsx` no importa ese archivo. El cambio (tercera pestaña "Año" junto a Semana/Mes,
 con su propia navegación y resumen anual) vive solo en la pantalla Semana. Cero impacto; la
 certificación LISTA sigue vigente.
+
+## Trigésimo séptima re-verificación (2026-11-04, noche — íconos SVG en "¿Te suena?" de la landing)
+
+El hook marcará `app/page.tsx`, `components/landing/EJEMPLO-page.tsx` y
+`components/landing/Problema.tsx` como más nuevos que este veredicto. Verificado por grep:
+`app/paywall/page.tsx` importa solo `@/components/landing/ui` (CheckCustom, Hairline) — NUNCA
+`@/components/landing/Problema` ni `@/components/landing/EJEMPLO-page`, y no es `app/page.tsx`
+(son archivos distintos: la landing vive en `app/page.tsx`, el paywall en `app/paywall/page.tsx`).
+El cambio (reemplazar los emojis a color de "¿Te suena?" por íconos SVG) vive solo en la landing.
+Cero impacto; la certificación LISTA sigue vigente.
