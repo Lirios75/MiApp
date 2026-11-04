@@ -132,3 +132,27 @@ cambian estructura ni flujo). Quedan sin tocar los defectos 1 y 3 (botón "Salir
 guardar" no cambia de texto, y no hay aviso de "punto sin retorno" antes de soltar el
 botón) — la usuaria no los pidió esta vez. Pendiente: que la usuaria confirme viendo las
 capturas reales.
+
+## Actualización (2026-11-04, noche) — defectos 1 y 3 RESUELTOS (últimos 2 de la lista)
+
+La usuaria pidió corregir los 2 defectos que quedaban:
+
+- **Defecto 1 (botón "Salir sin guardar" no cambia cuando ya te comprometiste)**: igual
+  patrón que `labelSeguir` — a `ConfirmSalir` ya se le pasa `labelSalir={comprometido ?
+  'Salir' : undefined}` desde `app/onboarding/page.tsx`. Ahora el botón dice "Salir" (sin
+  el "sin guardar", que ya no era cierto) cuando ya está comprometida. El paywall no
+  cambió — sigue pasando su propio `labelSalir="Salir"` explícito en sus 2 usos, no
+  depende del default. Verificado con captura real:
+  `onboarding-salirlabel-comprometido-375.png`.
+- **Defecto 3 (sin aviso de punto sin retorno antes de soltar el botón)**: se agregó una
+  línea de micro-copy bajo el HoldButton, en la pantalla ANTES de sostener: "No podrás
+  volver a las preguntas anteriores después de esto." Cambiado en
+  `app/onboarding/page.tsx` (único lugar donde se usa `HoldButton` en todo el proyecto).
+  Verificado con captura real: `onboarding-aviso-antes-375.png`.
+
+Con esto, los 5 defectos conocidos de esta pantalla (documentados desde la Sesión 4,
+2026-09-18) quedan TODOS resueltos. No se relanzó el revisor-visual completo (son ajustes
+puntuales de copy/lógica, no cambian estructura ni flujo) — queda pendiente una pasada
+nueva si en algún momento se quiere la certificación formal ≥36/40·≥16/20, pero no es
+bloqueante: la usuaria ya revisó y aprobó cada cambio con capturas reales a medida que se
+hicieron.

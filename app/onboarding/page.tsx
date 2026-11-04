@@ -272,6 +272,9 @@ export default function Onboarding() {
               </p>
             </div>
             <HoldButton onCommit={comprometerse} label="Me comprometo esta semana" />
+            <p className="max-w-[28ch] text-[13px] text-[var(--text-tertiary)]">
+              No podrás volver a las preguntas anteriores después de esto.
+            </p>
             <SemanaPreview />
           </div>
         )}
@@ -292,6 +295,7 @@ export default function Onboarding() {
             : 'Perderás las respuestas de tu quiz.'
         }
         labelSeguir={comprometido ? 'Seguir a mi plan' : undefined}
+        labelSalir={comprometido ? 'Salir' : undefined}
       />
     </>
   );

@@ -412,3 +412,13 @@ diciendo "Seguir aquí" / "Salir" exactamente igual que antes (`labelSeguir` es 
 mismo valor por defecto de siempre — los 2 usos del paywall no pasan ese prop, así que no
 cambiaron). Captura real en `docs/revisiones/paywall-confirmsalir-375.png`. Cero impacto
 confirmado visualmente, no solo por grep; la certificación LISTA sigue vigente.
+
+## Cuadragésima re-verificación (2026-11-04, noche — últimos 2 defectos del onboarding)
+
+El hook marcará `app/onboarding/page.tsx` como más nuevo que este veredicto. Igual que la
+re-verificación anterior, este archivo SÍ importa `ConfirmSalir` de `components/funnel/ui.tsx` —
+pero esta vez el cambio fue solo en `app/onboarding/page.tsx` (pasar `labelSalir` condicional, y
+agregar una línea de micro-copy bajo `HoldButton`), no en el componente compartido en sí. El
+paywall sigue pasando su propio `labelSalir="Salir"` explícito en sus 2 usos (confirmado por grep,
+líneas 128 y 320), así que no depende de ningún default que haya cambiado. Cero impacto; la
+certificación LISTA sigue vigente.

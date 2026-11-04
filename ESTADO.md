@@ -1,6 +1,20 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+✅ CHECKPOINT (2026-11-04, noche) — últimos 2 defectos del onboarding, RESUELTOS: los 5
+pendientes conocidos de esa pantalla quedan todos corregidos.
+1. El botón "Salir sin guardar" del aviso de salida decía eso aunque ya te hubieras comprometido
+   (y tu compromiso ya estaba guardado). Fix: mismo patrón que el botón "Seguir aquí" ya
+   corregido antes — `ConfirmSalir` recibe `labelSalir={comprometido ? 'Salir' : undefined}` desde
+   `app/onboarding/page.tsx`. El paywall no se vio afectado (pasa su propio texto siempre).
+2. Sostener el botón para comprometerse era un punto sin retorno a las preguntas anteriores, sin
+   ningún aviso antes de soltar. Fix: se agregó una línea bajo el botón — "No podrás volver a las
+   preguntas anteriores después de esto."
+Verificado: tsc ✓ build ✓ · 2 capturas reales a 375px: `docs/revisiones/onboarding-aviso-antes-375.png`
+(el aviso nuevo) y `onboarding-salirlabel-comprometido-375.png` (el botón ya dice "Salir", no
+"Salir sin guardar"). Nota agregada en `docs/revisiones/onboarding-veredicto.md`. Pendiente: que
+la usuaria confirme viendo las capturas.
+
 ⏸️ CHECKPOINT (2026-11-04, noche) — últimos 2 "detalles chicos" del paso de compromiso del
 onboarding, RESUELTOS. La usuaria pidió corregir los 2 puntos que quedaban de los 5 defectos
 conocidos de esa pantalla:
@@ -907,12 +921,12 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 
 ## Problemas conocidos ⚠️
 - onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (ver "Puertas de etapa") tras 16 pasadas del revisor-visual. Quedan 5 pendientes conocidos, NO bloqueantes, aceptados así por la usuaria el 2026-09-18 (detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"):
-  1. Botón "Salir sin guardar" del aviso de salida no cambia a "Salir" cuando ya te comprometiste — contradice el mensaje de arriba ("tu compromiso ya quedó guardado").
+  1. RESUELTO (2026-11-04) — el botón "Salir sin guardar" no cambiaba a "Salir" cuando ya te comprometiste. Fix: mismo patrón que el punto 5, `labelSalir={comprometido ? 'Salir' : undefined}`. El paywall no cambió (pasa su propio label explícito). Ver nota en docs/revisiones/onboarding-veredicto.md.
   2. RESUELTO (2026-11-04) — las 2 pantallas del compromiso tenían casi la mitad de la pantalla vacía arriba del título. Causa: el bloque se centraba verticalmente en toda la altura disponible; al ser contenido corto, dejaba un hueco grande arriba y abajo. Fix: se quitó el centrado vertical y se ancló el contenido cerca del encabezado con aire razonable (48px) — el anillo decorativo de fondo llena la parte baja, así no queda vacía tampoco ahí. Ver nota completa en docs/revisiones/onboarding-veredicto.md.
-  3. Sostener el botón para comprometerse es un punto sin retorno a las preguntas anteriores, y nada lo avisa antes de soltar el dedo.
+  3. RESUELTO (2026-11-04) — sostener el botón para comprometerse era un punto sin retorno a las preguntas anteriores, y nada lo avisaba antes de soltar el dedo. Fix: micro-copy agregado bajo el HoldButton ("No podrás volver a las preguntas anteriores después de esto"). Ver nota en docs/revisiones/onboarding-veredicto.md.
   4. RESUELTO (2026-11-04) — la barra de progreso llegaba a 100% antes de completar el gesto de sostener. Fix: `progresoDePaso()` reserva el 100% para después del gesto (92% mientras tanto). Ver nota en docs/revisiones/onboarding-veredicto.md.
   5. RESUELTO (2026-11-04) — el botón "Seguir aquí" del aviso de salida, cuando ya te comprometiste, en realidad llevaba a la pantalla de planes pero el texto no lo decía. Fix: `ConfirmSalir` ahora acepta un `labelSeguir` opcional; en este caso dice "Seguir a mi plan". El paywall (que sí te deja en la misma pantalla) no cambió — sigue diciendo "Seguir aquí". Ver nota en docs/revisiones/onboarding-veredicto.md.
-  No re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
+  **LOS 5 DEFECTOS CONOCIDOS DE ESTA PANTALLA QUEDAN RESUELTOS (2026-11-04).** No re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
 - veredicto paywall: CERTIFICADO ✅ — ver "Puertas de etapa". Ya no es un problema pendiente.
 - veredicto pantalla-principal ("Hoy", app interna): APROBADO POR LA USUARIA (2026-09-18) tras 2 rondas del revisor-visual (32/40·12/20 → 27/40·14/20 — nunca alcanzó el gate ≥36/40, ≥16/20). Detalle completo en docs/revisiones/pantalla-principal-veredicto.md. Se corrigieron los 5 defectos concretos de la ronda 2 (aviso de guardado impreciso, tarjeta de reflexión sin tratamiento visual, hueco vacío bajo la meta, sin forma de cancelar al editar el día, tipografía fuera de la escala documentada) y la usuaria decidió avanzar a Sesión 6 sin pedir una 3ª ronda — no re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
 - veredicto landing PENDIENTE de certificación formal (7ª pasada del revisor-visual: usabilidad 31/40, craft 15/20 — gate exige ≥36/40 y ≥16/20; copy 19/20 sí pasa) — DECISIÓN FINAL DEL USUARIO (2026-09-17): se le presentó la disyuntiva completa (mantener "check-in diario" en Oferta + emojis a color en "¿Te suena?" vs. revertirlos para subir la nota) y respondió "dejar todo como está". Landing queda APROBADA POR EL USUARIO EN SUSTANCIA, la certificación formal queda PENDIENTE hasta la Sesión 5. Detalle de por qué el techo es estructural (para no repetir el análisis si se vuelve a tocar esta pantalla):
