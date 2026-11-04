@@ -1,6 +1,23 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+🔍 INVESTIGACIÓN (2026-11-04, noche) — reporte de una amiga de la usuaria: "al pagar siempre lo
+lleva a plan anual y si se quiere devolver a mensual no lo deja". Investigado a fondo con prueba
+real en navegador (no solo lectura de código): el selector de plan en `/paywall` SÍ funciona bien
+— tocar "Mensual" cambia la selección correctamente (capturado con aria-checked) y el botón de
+pago manda al link de checkout de Hotmart CORRECTO para ese plan (confirmado interceptando la
+request real: `...?off=aarlhwza`, el mensual, no el anual). NO es un bug de nuestro código.
+Explicación más probable de lo que vio la amiga: (1) el plan "Anual" viene PRESELECCIONADO al
+entrar (decisión de diseño, no bug — resalta el plan con descuento) — si no se toca "Mensual" antes
+de pagar, se va al anual; y/o (2) una vez en la página de pago de Hotmart (ya no es nuestra app,
+es el sitio externo de Hotmart), esa página queda fija al plan elegido — Hotmart no ofrece ahí un
+botón para cambiar de plan; hay que volver atrás en el navegador a nuestra app y elegir el otro
+plan antes de pagar de nuevo. Capturas de evidencia:
+`docs/revisiones/paywall-plan-mensual-seleccionado-375.png` (Mensual queda bien marcado al
+tocarlo). Pendiente: la usuaria está decidiendo si quiere quitar la preselección del plan anual
+(para forzar una elección activa) o dejarlo como está (ya funciona correctamente, solo falta que
+la gente sepa tocar "Mensual" antes de pagar si lo quiere).
+
 ✅ CHECKPOINT (2026-11-04, noche) — últimos 2 defectos del onboarding, RESUELTOS: los 5
 pendientes conocidos de esa pantalla quedan todos corregidos.
 1. El botón "Salir sin guardar" del aviso de salida decía eso aunque ya te hubieras comprometido
