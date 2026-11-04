@@ -1,6 +1,45 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+✅ CHECKPOINT (2026-11-04, noche) — píxel de Meta (Facebook/Instagram Ads) conectado, primer
+prerrequisito del GATE de publicidad paga (`docs/sistema/34-ADQUISICION-Y-TRAFICO.md`: "SIN
+PÍXEL VERIFICADO CON UNA COMPRA DE PRUEBA, NO SE LANZA PAID"). La usuaria creó el píxel en Meta
+Business Suite (ID `1079795125061777`, la guie paso a paso por el panel) y yo lo conecté en el
+código:
+- `lib/pixel.ts` (NUEVO): el ID del píxel (no es secreto, va embebido en cualquier página que lo
+  use) + `pixelPageview()` y `pixelTrack(evento, parametros)`.
+- `components/MetaPixel.tsx` (NUEVO): carga el script base del píxel UNA sola vez en el layout
+  raíz y dispara "PageView" en cada cambio de pantalla (usa `usePathname` — sin esto, Meta solo
+  vería la primera pantalla que alguien visita, no el resto del camino hasta pagar).
+- `app/layout.tsx`: agregado `<MetaPixel />` al `<body>` — cubre TODA la app (landing, onboarding,
+  paywall, y también la app interna).
+- `app/paywall/page.tsx`: `empezarPrueba()` ahora dispara el evento `InitiateCheckout` (con el
+  monto y moneda del plan elegido) justo ANTES de salir hacia el checkout real de Hotmart — así
+  Meta ve el momento en que alguien decide pagar, no solo cuando ya pagó (eso lo reporta Hotmart
+  por su cuenta, aparte).
+Verificado: tsc ✓ build ✓ · probado en vivo contra la versión de PRODUCCIÓN (no solo dev, para
+evitar el doble-disparo que hace React a propósito en desarrollo): confirmé con un navegador real
+que el píxel carga con el ID correcto y el evento "PageView" se dispara una sola vez, limpio.
+⚠️ Lo que NO pude verificar desde este entorno (sin acceso a internet real hacia
+connect.facebook.net/pay.hotmart.com): que el evento "InitiateCheckout" efectivamente LLEGUE a
+Meta al hacer clic en pagar — el código está escrito de forma idéntica y comprobada a como ya
+funciona "PageView" (mismo mecanismo, una sola línea antes de la redirección), pero la
+confirmación final de que el evento REALMENTE llega es, de todas formas, el mismo paso que pide
+el sistema (34) antes de prender cualquier campaña: una compra de prueba real mirando el
+Administrador de eventos de Meta en vivo (Meta → Administrador de eventos → "Probar eventos").
+Siguiente paso exacto (ella, no bloqueado por código):
+1. Abrir Meta → Administrador de eventos → pestaña "Probar eventos" (o "Test events"), copiar el
+   código de prueba que ahí aparece.
+2. Visitar su página real (`respira.ikigaihumano.com`) y navegar landing → onboarding → paywall
+   → elegir un plan → "Empezar mis 7 días gratis", mirando esa pestaña en tiempo real.
+3. Confirmar que llegan PageView (en cada pantalla) e InitiateCheckout (al tocar pagar).
+4. Hacer una compra de prueba real completa (como ya hizo 2 veces antes) y confirmar que el
+   evento "Purchase" también llega (ese lo manda Hotmart directo, con la integración nativa del
+   panel — PENDIENTE, ver `docs/sistema/34` sección "PÍXEL Y CAPI EN HOTMART": falta que ella
+   pegue el mismo ID del píxel en Hotmart → su producto → Herramientas → Integraciones/Píxeles).
+5. Recién con los 3 eventos confirmados en vivo, anotar aquí "Píxel Meta verificado con compra de
+   prueba el [fecha]" — solo ENTONCES se puede prender la primera campaña paga (gate del 34).
+
 🔍 INVESTIGACIÓN (2026-11-04, noche) — reporte de una amiga de la usuaria: "al pagar siempre lo
 lleva a plan anual y si se quiere devolver a mensual no lo deja". Investigado a fondo con prueba
 real en navegador (no solo lectura de código): el selector de plan en `/paywall` SÍ funciona bien

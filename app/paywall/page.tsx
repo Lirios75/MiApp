@@ -16,6 +16,7 @@ import { RespiraMark } from '@/components/RespiraMark';
 import { LABEL_DOLOR, LABEL_META, LABEL_META_HEADLINE, LABEL_MOMENTO, leerRespuestas, type RespuestasOnboarding } from '@/lib/onboarding';
 import { GARANTIA_DIAS, PLAN_ANUAL, PLAN_MENSUAL, TRIAL_DIAS } from '@/lib/pricing';
 import { HOTMART_CHECKOUT_ANUAL, HOTMART_CHECKOUT_MENSUAL } from '@/lib/hotmart';
+import { pixelTrack } from '@/lib/pixel';
 
 function formatearFecha(fecha: Date): string {
   return fecha.toLocaleDateString('es', { day: 'numeric', month: 'short' });
@@ -77,6 +78,9 @@ export default function Paywall() {
     }
     const checkoutUrl = plan === 'anual' ? HOTMART_CHECKOUT_ANUAL : HOTMART_CHECKOUT_MENSUAL;
     if (checkoutUrl) {
+      // Avisa al píxel de Meta ANTES de salir de la app — es el momento en que alguien decide
+      // pagar, separado de la compra real (esa la confirma Hotmart desde su propio checkout).
+      pixelTrack('InitiateCheckout', { value: plan === 'anual' ? 49.99 : 6.99, currency: 'USD' });
       window.location.href = checkoutUrl; // sale de la app al checkout real de Hotmart
       return;
     }

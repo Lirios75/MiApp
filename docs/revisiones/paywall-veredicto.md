@@ -439,6 +439,18 @@ la certificación 37/40·20/20·19/20 queda marcada como PRE-cambio. Recomendado
 relanzar el revisor-visual en esta pantalla la próxima vez que se trabaje en ella, para confirmar
 que el nuevo botón deshabilitado no introduce un defecto de usabilidad nuevo.
 
+## Cambio real a la pantalla certificada (2026-11-04, noche — píxel de Meta: evento InitiateCheckout)
+
+Segundo cambio real dentro de `app/paywall/page.tsx` en esta sesión (el primero fue quitar la
+preselección del plan, arriba). `empezarPrueba()` ahora dispara el evento `InitiateCheckout` del
+píxel de Meta justo antes de redirigir a Hotmart — es solo una llamada de analítica
+(`pixelTrack(...)`), NO cambia nada visible ni el flujo de la pantalla (mismos botones, mismo
+texto, misma redirección). También se agregó `<MetaPixel />` al layout raíz (`app/layout.tsx`),
+que envuelve esta pantalla pero no renderiza nada visible (solo carga un script y un `<noscript>`
+de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que el píxel carga y el
+PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
+describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
+
 ## Cuadragésima re-verificación (2026-11-04, noche — últimos 2 defectos del onboarding)
 
 El hook marcará `app/onboarding/page.tsx` como más nuevo que este veredicto. Igual que la
