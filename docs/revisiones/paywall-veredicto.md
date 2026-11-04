@@ -353,3 +353,10 @@ El hook marcará `app/app/page.tsx` y `lib/supabase/datos.ts` como más nuevos q
 Mismo caso de siempre: `app/paywall/page.tsx` no importa ninguno de los dos. El cambio (botones
 de "+" para sumar al total del día sin reemplazarlo) vive solo en Hoy y en la lógica de datos
 compartida. Cero impacto; la certificación LISTA sigue vigente.
+
+## Trigésimo tercera re-verificación (2026-11-04, noche — total de todas las metas)
+
+El hook marcará `app/app/meta/page.tsx` como más nuevo que este veredicto. Mismo caso de siempre:
+`app/paywall/page.tsx` no lo importa. El cambio (tarjeta de "Llevas en total" / "Te falta en
+total" sumando todas las metas de dinero) vive solo en la pantalla "Tu meta". Cero impacto; la
+certificación LISTA sigue vigente.

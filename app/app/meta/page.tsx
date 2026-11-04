@@ -243,8 +243,33 @@ function ListaMetas({
   onSeleccionar: (id: string) => void;
   onNueva: () => void;
 }) {
+  const metasDinero = metas.filter((m) => m.modo === 'monto');
+  const totalLlevas = metasDinero.reduce((suma, m) => suma + m.actual, 0);
+  const totalFalta = metasDinero.reduce((suma, m) => suma + Math.max(0, m.objetivo - m.actual), 0);
+
   return (
     <div className="flex flex-col gap-3">
+      {metasDinero.length > 0 && (
+        <div className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-1)]">
+          <p className="text-[13px] font-semibold text-[var(--text-secondary)]">
+            Entre tus {metasDinero.length === 1 ? 'meta' : `${metasDinero.length} metas`}
+          </p>
+          <div className="mt-2 flex items-center justify-between">
+            <div>
+              <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Llevas en total</p>
+              <p className="text-[19px] font-bold [font-variant-numeric:tabular-nums] text-[var(--accent)]">
+                ${totalLlevas.toLocaleString('es')}
+              </p>
+            </div>
+            <div>
+              <p className="text-[11px] font-medium text-[var(--text-tertiary)]">Te falta en total</p>
+              <p className="text-[19px] font-bold [font-variant-numeric:tabular-nums] text-[var(--text-primary)]">
+                ${totalFalta.toLocaleString('es')}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       {metas.map((meta) => {
         const porcentaje = Math.min(100, Math.round((meta.actual / meta.objetivo) * 100));
         const unidad = meta.modo === 'habito' ? ' días' : '';

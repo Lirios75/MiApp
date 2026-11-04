@@ -1,6 +1,14 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche): en "Tus metas" ahora hay una tarjeta de totales arriba de la
+lista — "Llevas en total" y "Te falta en total", sumando TODAS las metas de dinero (ahorro y
+salir de deuda juntas; las metas en modo hábito, que no tienen monto, no entran en la suma). Solo
+aparece si hay al menos una meta de dinero. Cambiado en: `app/app/meta/page.tsx` (dentro de
+`ListaMetas`). No tocó la base de datos. Verificado: tsc ✓ build ✓ · probado con 2 metas de dinero
+($650k/$2M y $300k/$800k) → mostró correctamente $950.000 llevado y $1.850.000 por faltar.
+Captura en `docs/revisiones/meta-375.png`. Pendiente: que la usuaria lo revise en la app real.
+
 ⏸️ CHECKPOINT (2026-11-04, noche): la usuaria notó que "cuánto entró y salió hoy" (REEMPLAZABA el
 número del día) la obligaba a sumar a mano si tenía varios gastos/entradas en el mismo día. Pedido
 explícito: que la app sume/reste sola, SIN pedir motivo ni categoría ("algo básico" — decisión
