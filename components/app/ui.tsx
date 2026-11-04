@@ -231,9 +231,10 @@ export function formatearRangoSemana(fechas: readonly string[]): string {
   const [inicio] = fechas;
   const fin = fechas[fechas.length - 1];
   if (!inicio || !fin) return '';
-  const [, mi, di] = inicio.split('-').map(Number);
-  const [, mf, df] = fin.split('-').map(Number);
+  const [ai, mi, di] = inicio.split('-').map(Number);
+  const [af, mf, df] = fin.split('-').map(Number);
   const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  if (mi === mf) return `${di}-${df} ${meses[mi - 1]}`;
-  return `${di} ${meses[mi - 1]} - ${df} ${meses[mf - 1]}`;
+  if (ai !== af) return `${di} ${meses[mi - 1]} ${ai} - ${df} ${meses[mf - 1]} ${af}`;
+  if (mi === mf) return `${di}-${df} ${meses[mi - 1]} ${ai}`;
+  return `${di} ${meses[mi - 1]} - ${df} ${meses[mf - 1]} ${ai}`;
 }

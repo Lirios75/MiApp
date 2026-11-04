@@ -1,6 +1,13 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche): la usuaria notó que la fecha de la pestaña "Semana" (ej.
+"2-8 nov") no mostraba el año, a diferencia de "Mes" que sí lo muestra ("Noviembre 2026") — con
+navegación sin límite hacia atrás, dos semanas de distinto año podían verse iguales. Corregido:
+`formatearRangoSemana` (`components/app/ui.tsx`) ahora siempre incluye el año ("2-8 nov 2026").
+No tocó la base de datos. Verificado: tsc ✓ build ✓ · probado en el navegador. Captura en
+`docs/revisiones/semana-375.png`. Pendiente: que la usuaria lo revise en la app real.
+
 ⏸️ CHECKPOINT (2026-11-04, noche): la usuaria dijo que "Cómo te fue" (Semana y Mes) se sentía muy
 simple, como texto plano — pidió algo tipo alerta y/o felicitación. Nuevo componente `ComoTeFue`
 (compartido por las dos vistas): cuando la semana/mes fue TODA tranquila, tarjeta verde con ícono

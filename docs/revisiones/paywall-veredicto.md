@@ -367,3 +367,10 @@ El hook marcará `app/app/semana/page.tsx` como más nuevo que este veredicto. M
 siempre: `app/paywall/page.tsx` no lo importa. El cambio (tarjeta "Cómo te fue" con ícono y color
 según cómo fue la semana/mes) vive solo en la pantalla Semana. Cero impacto; la certificación
 LISTA sigue vigente.
+
+## Trigésimo quinta re-verificación (2026-11-04, noche — año en la fecha de la pestaña Semana)
+
+El hook marcará `components/app/ui.tsx` como más nuevo que este veredicto. Verificado por grep:
+`app/paywall/page.tsx` no importa nada de `components/app/ui` (usa `components/landing/ui` y
+`components/funnel/ui`, archivos distintos). El cambio (agregar el año a la fecha de la pestaña
+Semana) solo afecta a la pantalla Semana. Cero impacto; la certificación LISTA sigue vigente.
