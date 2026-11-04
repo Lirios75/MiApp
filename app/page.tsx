@@ -1,5 +1,6 @@
 'use client';
 
+import { EyeOff, Frown, RotateCcw, Wallet } from "lucide-react";
 import { Hero } from "@/components/landing/Hero";
 import { Problema } from "@/components/landing/Problema";
 import { Agitacion } from "@/components/landing/Agitacion";
@@ -53,10 +54,10 @@ export default function LandingRespira() {
       <Problema
         titulo="¿Te suena?"
         preguntas={[
-          { emoji: "💸", textoMarked: "¿Gastas y después no sabes en qué se te fue la plata?" },
-          { emoji: "😰", textoMarked: "¿Revisar tu cuenta te da ansiedad, así que mejor no miras?" },
-          { emoji: "🔁", textoMarked: "¿Ya empezaste un presupuesto y lo dejaste antes de la semana?" },
-          { emoji: "😔", textoMarked: "¿Sientes que no tienes control sobre ti misma con el dinero?" },
+          { icon: Wallet, textoMarked: "¿Gastas y después no sabes en qué se te fue la plata?" },
+          { icon: EyeOff, textoMarked: "¿Revisar tu cuenta te da ansiedad, así que mejor no miras?" },
+          { icon: RotateCcw, textoMarked: "¿Ya empezaste un presupuesto y lo dejaste antes de la semana?" },
+          { icon: Frown, textoMarked: "¿Sientes que no tienes control sobre ti misma con el dinero?" },
         ]}
       />
 

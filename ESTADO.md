@@ -1,6 +1,28 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche) — revisión de 2 pendientes viejos (landing/onboarding), de la
+sección "Problemas conocidos" que databan de septiembre. La usuaria pidió verlos de nuevo con
+capturas reales (le mostré landing-hero, landing "¿Te suena?", y los 2 pasos de compromiso del
+onboarding). De los 4 puntos que le mostré, eligió corregir SOLO 1:
+- **Emojis a color de "¿Te suena?" en la landing → RESUELTO.** Reemplazados por íconos SVG de
+  línea (`IconChip` del mismo kit, `tone="muted"`, ya usado en Garantía/Hero — no se inventó nada
+  nuevo). Cambiado en `components/landing/Problema.tsx` (la interfaz `PreguntaProblema` ahora pide
+  `icon: LucideIcon` en vez de `emoji: string`), `app/page.tsx` (Wallet/EyeOff/RotateCcw/Frown
+  para las 4 preguntas reales) y `components/landing/EJEMPLO-page.tsx` (la plantilla del kit,
+  actualizada igual para que siga compilando — no es parte de esta app, es referencia para
+  próximos proyectos). Verificado: tsc ✓ build ✓ · captura real a 375px en
+  `docs/revisiones/landing-te-suena-iconos-375.png`. Nota agregada en
+  `docs/revisiones/landing-veredicto.md` (no se relanzó el revisor-visual completo — swap puntual
+  de ícono dentro de un chip ya certificado). Pendiente: que la usuaria confirme viendo la captura.
+- Los otros 3 (anillo decorativo del Hero, espacio vacío en los pasos de compromiso del
+  onboarding, detalles chicos de esos mismos pasos) — la usuaria decidió DEJARLOS COMO ESTÁN por
+  ahora. Re-verifiqué el del anillo con una captura real en navegador (no solo headless) para
+  descartar que fuera un problema del renderizador: sigue sin verse con claridad, confirmado que
+  es un pendiente real, no un falso positivo — anotado en Problemas conocidos. Los otros 2 quedan
+  exactamente como estaban documentados desde septiembre. No re-abrir ninguno de los 3 sin que la
+  usuaria lo pida de nuevo.
+
 ⏸️ CHECKPOINT (2026-11-04, noche) — pestaña "Año" agregada en Semana: la usuaria pidió un resumen
 por año además de Semana/Mes ("también... es posible el resumen del año también?"). Hecho: tercera
 pestaña "Año" en el mismo toggle de siempre, con su propia navegación (← 2026 →, igual que Semana/
@@ -858,12 +880,12 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - veredicto pantalla-principal ("Hoy", app interna): APROBADO POR LA USUARIA (2026-09-18) tras 2 rondas del revisor-visual (32/40·12/20 → 27/40·14/20 — nunca alcanzó el gate ≥36/40, ≥16/20). Detalle completo en docs/revisiones/pantalla-principal-veredicto.md. Se corrigieron los 5 defectos concretos de la ronda 2 (aviso de guardado impreciso, tarjeta de reflexión sin tratamiento visual, hueco vacío bajo la meta, sin forma de cancelar al editar el día, tipografía fuera de la escala documentada) y la usuaria decidió avanzar a Sesión 6 sin pedir una 3ª ronda — no re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
 - veredicto landing PENDIENTE de certificación formal (7ª pasada del revisor-visual: usabilidad 31/40, craft 15/20 — gate exige ≥36/40 y ≥16/20; copy 19/20 sí pasa) — DECISIÓN FINAL DEL USUARIO (2026-09-17): se le presentó la disyuntiva completa (mantener "check-in diario" en Oferta + emojis a color en "¿Te suena?" vs. revertirlos para subir la nota) y respondió "dejar todo como está". Landing queda APROBADA POR EL USUARIO EN SUSTANCIA, la certificación formal queda PENDIENTE hasta la Sesión 5. Detalle de por qué el techo es estructural (para no repetir el análisis si se vuelve a tocar esta pantalla):
   - "Check-in diario" (excepción del usuario en Oferta) le cuesta a USABILIDAD ~2 puntos (heurística de lenguaje consistente).
-  - Los emojis a color de "¿Te suena?" (excepción del usuario) le cuestan a CRAFT el punto exacto que separa 15/20 de 16/20 (el umbral) — es la única razón por la que craft no pasa.
+  - Los emojis a color de "¿Te suena?" (excepción del usuario) le costaban a CRAFT el punto exacto que separaba 15/20 de 16/20 (el umbral) — ACTUALIZACIÓN (2026-11-04): la usuaria pidió explícitamente quitarlos → reemplazados por íconos SVG de línea (`IconChip`, igual al resto del kit). Ver nota completa más abajo.
   - Los placeholders de "la app por dentro" (Hero + carrusel, sin app real — Sesión 5 no empezada) le cuestan a USABILIDAD ~2-3 puntos más — esto no depende de esta pantalla, es scope de Sesión 5.
   - Aun revirtiendo las 2 excepciones, usabilidad solo llegaría a ~33/40 (sigue sin pasar) hasta que exista la app real — por eso no tiene sentido seguir iterando esta pantalla ahora.
   - NO re-abrir esta decisión ni volver a proponer revertir "check-in"/emojis sin que el usuario lo pida — ya se le explicó el costo exacto y eligió mantenerlos.
   - ACTUALIZACIÓN (2026-10-17): la usuaria pidió explícitamente revertir la excepción de "Check-in diario" → ahora dice "Registro diario" en ambas tarjetas de Oferta (y en `docs/copy/landing.md`). La nota de "~2 puntos de usabilidad" de la línea de arriba ya NO aplica a esa excepción puntual (sigue vigente solo para los emojis a color, que la usuaria no pidió tocar). No se ha relanzado el revisor-visual tras este cambio — pendiente, no bloqueante (la usuaria ya aprobó el cambio viéndolo en producción).
-  - Anillo del Hero (18% de opacidad en código, confirmado): no se logró verificar visualmente en el PNG headless de este sandbox (posible limitación del renderer con z-index negativo bajo software rendering, no del valor en sí) — pendiente de re-verificar con navegador real si se vuelve a tocar esta pantalla. No bloqueante por sí solo.
+  - Anillo del Hero (18% de opacidad en código, confirmado): no se logró verificar visualmente en el PNG headless de este sandbox (posible limitación del renderer con z-index negativo bajo software rendering, no del valor en sí) — pendiente de re-verificar con navegador real si se vuelve a tocar esta pantalla. No bloqueante por sí solo. ACTUALIZACIÓN (2026-11-04): vuelto a capturar con Playwright en navegador real (Chromium) a 375px — el anillo SIGUE sin distinguirse con claridad en `docs/revisiones/vivo/landing-hero-2026-11-04.png`, detrás del mockup del teléfono. Confirma que NO era limitación del renderer — sigue siendo un pendiente real. La usuaria revisó este punto el 2026-11-04 y decidió NO tocarlo por ahora (solo pidió el fix de los emojis, ver abajo).
 - carrusel "La app por dentro" y visual del Hero: AMBOS RESUELTOS (2026-09-21) — los 4 placeholders del carrusel y el placeholder dashed del Hero se reemplazaron por capturas reales de la app en `public/images/app-por-dentro/` (registro-diario.png = Hoy sin marcar, metas.png = Tu meta con el anillo, pantalla-principal.png = Hoy confirmado con racha [reusada en el Hero], reporte-semanal.png = Semana). Verificado en el navegador (docs/revisiones/vivo/landing-carrusel-app.png y landing-hero-visual.png). El Hero reutiliza el mismo marco de teléfono (`w-[250px] rounded-[30px] border-[5px]`) ya establecido en `AppPorDentro.tsx` en vez de inventar medidas nuevas — el linter mecánico de diseño lo marca como "fuera de escala" pero es un falso positivo conocido (esa escala rige espaciado, no las medidas fijas de un dispositivo ya aprobado).
 - FICHA-MERCADO.md tiene varios campos "NO ENCONTRADO" — los precios/plazos que dio el usuario en el RESUMEN no traen fuente+fecha propia; se usan como punto de partida pero se marcan para verificación antes de fijar precio final en Hotmart.
 - Garantía (footer/reembolsos): el piso legal dice "política de reembolso de Hotmart" SIN número de días porque Hotmart aún no está configurado (Sesión 6) — no prometer un plazo exacto hasta configurarlo.
