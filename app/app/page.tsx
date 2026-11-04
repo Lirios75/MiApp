@@ -7,7 +7,7 @@
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { AlertTriangle, ArrowRight, Check, Pencil, Smile, AlertCircle, Share2, Target, Wallet, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, Pencil, Plus, Smile, AlertCircle, Share2, Target, Wallet, X } from 'lucide-react';
 import {
   calcularRacha,
   checkInDeHoy,
@@ -21,6 +21,7 @@ import {
   type EstadoSemaforo,
 } from '@/lib/app';
 import {
+  agregarMontosDiaSupabase,
   obtenerEstadoApp,
   registrarCheckInSupabase,
   registrarEmocionCheckInSupabase,
@@ -93,6 +94,15 @@ export default function Hoy() {
     }
   }
 
+  async function agregarMontos(deltaEntradas: number, deltaGastos: number) {
+    try {
+      setEstado(await agregarMontosDiaSupabase(deltaEntradas, deltaGastos));
+      setAvisoGuardado(false);
+    } catch {
+      setAvisoGuardado(true);
+    }
+  }
+
   if (errorCarga) {
     return <ErrorCarga />;
   }
@@ -157,6 +167,7 @@ export default function Hoy() {
             onGuardarNota={guardarNota}
             onGuardarEmocion={guardarEmocion}
             onGuardarMontos={guardarMontos}
+            onAgregarMontos={agregarMontos}
           />
         )}
       </motion.section>
@@ -359,6 +370,7 @@ function ConfirmacionDia({
   onGuardarNota,
   onGuardarEmocion,
   onGuardarMontos,
+  onAgregarMontos,
 }: {
   estado: EstadoSemaforo;
   racha: number;
@@ -370,6 +382,7 @@ function ConfirmacionDia({
   onGuardarNota: (nota: string) => Promise<void>;
   onGuardarEmocion: (emocion: string | null) => Promise<void>;
   onGuardarMontos: (entradas: number | null, gastos: number | null) => Promise<void>;
+  onAgregarMontos: (deltaEntradas: number, deltaGastos: number) => Promise<void>;
 }) {
   const tranquilo = estado === 'tranquilo';
   const [editandoNota, setEditandoNota] = useState(false);
@@ -477,7 +490,7 @@ function ConfirmacionDia({
       </div>
 
       <div className="mt-4 border-t border-[color-mix(in_oklab,var(--text-tertiary)_14%,transparent)] pt-4">
-        <CamposMontosDia entradas={entradas} gastos={gastos} onGuardar={onGuardarMontos} />
+        <CamposMontosDia entradas={entradas} gastos={gastos} onGuardar={onGuardarMontos} onAgregar={onAgregarMontos} />
       </div>
     </div>
   );
@@ -596,10 +609,12 @@ function CamposMontosDia({
   entradas,
   gastos,
   onGuardar,
+  onAgregar,
 }: {
   entradas: number | null;
   gastos: number | null;
   onGuardar: (entradas: number | null, gastos: number | null) => Promise<void>;
+  onAgregar: (deltaEntradas: number, deltaGastos: number) => Promise<void>;
 }) {
   const [editando, setEditando] = useState(false);
   const [textoEntradas, setTextoEntradas] = useState(entradas !== null ? String(entradas) : '');
@@ -695,10 +710,14 @@ function CamposMontosDia({
             </span>
           )}
         </div>
+        <div className="mt-3 flex gap-2">
+          <AgregarMonto color="verde" placeholder="+ Entrada" onAgregar={(monto) => onAgregar(monto, 0)} />
+          <AgregarMonto color="naranja" placeholder="+ Gasto" onAgregar={(monto) => onAgregar(0, monto)} />
+        </div>
         <button
           type="button"
           onClick={() => setEditando(true)}
-          className="mt-2 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)] [touch-action:manipulation]"
+          className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-[var(--accent)] [touch-action:manipulation]"
         >
           <Pencil size={13} strokeWidth={2} aria-hidden="true" /> Editar
         </button>
@@ -714,5 +733,60 @@ function CamposMontosDia({
     >
       <Wallet size={17} strokeWidth={2} aria-hidden="true" /> ¿Cuánto entró y salió hoy?
     </button>
+  );
+}
+
+/* ── <AgregarMonto> — suma al total del día sin que la usuaria calcule nada (pedido explícito,
+   Sesión 7: "varias entradas/gastos en el día... que la app lo haga"). Mismo gesto que
+   "Registrar avance" de Tu meta: un número + "+", nunca un motivo o categoría (se mantiene
+   básico, a propósito — ver nota de la usuaria en ESTADO.md). ── */
+function AgregarMonto({
+  color,
+  placeholder,
+  onAgregar,
+}: {
+  color: 'verde' | 'naranja';
+  placeholder: string;
+  onAgregar: (monto: number) => Promise<void>;
+}) {
+  const [texto, setTexto] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const accent = color === 'verde' ? 'var(--accent-2)' : 'var(--accent-3)';
+
+  async function agregar(e: FormEvent) {
+    e.preventDefault();
+    const monto = Number(texto);
+    if (!monto || monto <= 0 || guardando) return;
+    setGuardando(true);
+    try {
+      await onAgregar(monto);
+      setTexto('');
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  return (
+    <form onSubmit={agregar} className="flex min-w-0 flex-1 gap-1.5">
+      <input
+        type="text"
+        inputMode="numeric"
+        placeholder={placeholder}
+        value={formatearMiles(texto)}
+        onChange={(e) => setTexto(soloDigitos(e.target.value))}
+        aria-label={placeholder}
+        className="h-10 min-w-0 flex-1 rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--bg)] px-2.5 text-[14px] text-[var(--text-primary)] outline-none focus:border-[var(--accent)]"
+      />
+      <motion.button
+        type="submit"
+        disabled={guardando}
+        whileTap={{ scale: 0.95 }}
+        aria-label={`Sumar a ${placeholder.toLowerCase()}`}
+        className="flex size-10 shrink-0 items-center justify-center rounded-[var(--radius-button)] disabled:opacity-60 [touch-action:manipulation]"
+        style={{ background: accent }}
+      >
+        <Plus size={16} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
+      </motion.button>
+    </form>
   );
 }

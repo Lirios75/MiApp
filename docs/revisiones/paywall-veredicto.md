@@ -346,3 +346,10 @@ El hook marcará `app/app/meta/page.tsx` como más nuevo que este veredicto. Mis
 `app/paywall/page.tsx` no importa ese archivo. El cambio (al guardar una meta, se queda en su
 detalle en vez de volver a la lista) vive solo en la pantalla "Tu meta". Cero impacto; la
 certificación LISTA sigue vigente.
+
+## Trigésimo segunda re-verificación (2026-11-04, noche — sumar/restar entradas y gastos del día)
+
+El hook marcará `app/app/page.tsx` y `lib/supabase/datos.ts` como más nuevos que este veredicto.
+Mismo caso de siempre: `app/paywall/page.tsx` no importa ninguno de los dos. El cambio (botones
+de "+" para sumar al total del día sin reemplazarlo) vive solo en Hoy y en la lógica de datos
+compartida. Cero impacto; la certificación LISTA sigue vigente.

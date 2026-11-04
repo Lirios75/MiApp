@@ -1,6 +1,20 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche): la usuaria notó que "cuánto entró y salió hoy" (REEMPLAZABA el
+número del día) la obligaba a sumar a mano si tenía varios gastos/entradas en el mismo día. Pedido
+explícito: que la app sume/reste sola, SIN pedir motivo ni categoría ("algo básico" — decisión
+confirmada: no agregar un campo de motivo, mantiene la diferencia con un presupuesto tradicional
+que la usuaria ya había elegido antes). Agregados dos controles rápidos de "+" (uno verde para
+sumar a lo que entró, uno naranja para sumar a lo que salió) junto a los totales del día — mismo
+gesto que "Registrar avance" de Tu meta. "Editar" sigue existiendo para corregir un error a mano
+(reemplaza el número exacto). Cambiado en: `lib/supabase/datos.ts` (nueva
+`agregarMontosDiaSupabase`, suma sobre lo que ya había) y `app/app/page.tsx` (nuevo componente
+`AgregarMonto`). No tocó la base de datos — no hay migración nueva. Verificado: tsc ✓ build ✓ ·
+probado en el navegador sumando $10.000 a entradas y $5.000 a gastos sobre un día que ya tenía
+$50.000/$18.000 — quedó en $60.000/$23.000 correctamente. Captura en
+`docs/revisiones/pantalla-principal-375.png`. Pendiente: que la usuaria lo pruebe en la app real.
+
 ⏸️ CHECKPOINT (2026-11-04, noche): la usuaria pidió un ajuste de navegación en "Tu meta" — al
 guardar una meta (la primera o una nueva), ahora se queda mostrando SU detalle (anillo, registrar
 avance, editar, borrar) en vez de volver a la lista. El botón "←" de arriba sigue llevando al

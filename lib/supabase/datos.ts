@@ -157,6 +157,29 @@ export async function registrarMontosDiaSupabase(entradas: number | null, gastos
   return obtenerEstadoApp();
 }
 
+/** Suma (o resta, con delta negativo) a lo que ya llevaba hoy — para cuando hay varias entradas
+ * o gastos en el mismo día y la usuaria no quiere calcular el total a mano cada vez. */
+export async function agregarMontosDiaSupabase(deltaEntradas: number, deltaGastos: number): Promise<EstadoApp> {
+  const supabase = crearClienteSupabase();
+  const uid = await usuarioId();
+  const { data: actual, error: errorLectura } = await supabase
+    .from('checkins')
+    .select('entradas, gastos')
+    .eq('user_id', uid)
+    .eq('fecha', hoyISO())
+    .maybeSingle();
+  if (errorLectura) throw errorLectura;
+  const nuevasEntradas = Math.max(0, Number(actual?.entradas ?? 0) + deltaEntradas);
+  const nuevosGastos = Math.max(0, Number(actual?.gastos ?? 0) + deltaGastos);
+  const { error } = await supabase
+    .from('checkins')
+    .update({ entradas: nuevasEntradas, gastos: nuevosGastos })
+    .eq('user_id', uid)
+    .eq('fecha', hoyISO());
+  if (error) throw error;
+  return obtenerEstadoApp();
+}
+
 /** Crea una meta nueva en modo "monto" (ahorrar / salir de deuda) — ahora INSERTA una fila
  * más, no reemplaza la existente: la usuaria puede tener varias metas a la vez. */
 export async function crearMetaMontoSupabase(
