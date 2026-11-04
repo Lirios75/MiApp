@@ -39,6 +39,25 @@ Siguiente paso exacto (ella, no bloqueado por código):
 5. Recién con los 3 eventos confirmados en vivo, anotar aquí "Píxel Meta verificado con compra de
    prueba el [fecha]" — solo ENTONCES se puede prender la primera campaña paga (gate del 34).
 
+✅ ACTUALIZACIÓN (2026-11-04, noche) — Pasos 2-3 de arriba YA HECHOS: prueba en vivo con el
+Administrador de eventos de Meta (pestaña "Probar eventos" del píxel "Respira"). La usuaria
+recorrió landing → onboarding → paywall → eligió un plan → tocó "Empezar mis 7 días gratis" con
+esa pestaña abierta, y confirmamos juntas lo que llegó:
+- "Recibiendo actividad: pay.hotmart.com y respira.ikigaihumano.com" — ambos lados (el código y
+  Hotmart) están mandando datos al mismo píxel.
+- "PageView" llegó varias veces (una por pantalla visitada), método "Configuración manual" — es
+  el código de `components/MetaPixel.tsx`, confirmado funcionando en vivo.
+- "Iniciar pago" (= InitiateCheckout) llegó DOS veces al tocar pagar: una vía "Configuración
+  manual" (nuestro código, `app/paywall/page.tsx`) y otra vía "Integración con socios" (el checkout
+  de Hotmart, que también tiene el mismo ID configurado) — las dos reportando es lo esperado, no
+  un duplicado problemático.
+- También aparecieron varios eventos "Subscribed..." (clics detectados automáticamente por el
+  píxel de Meta en cualquier botón de la página) — normales, no son parte de lo que programamos,
+  no afectan nada.
+**PageView e InitiateCheckout quedan VERIFICADOS EN VIVO.** Solo falta el paso 4 (compra de
+prueba real completa, para confirmar que el evento "Purchase" también llega desde Hotmart) antes
+de poder anotar el cierre final del gate y prender la primera campaña paga.
+
 ✅ ACTUALIZACIÓN (2026-11-04, noche) — Paso 1 de arriba YA HECHO: la usuaria conectó el mismo ID
 del píxel (`1079795125061777`) en Hotmart (Herramientas → Píxel de Seguimiento → Facebook +
 Instagram → Evento vía Web), guiada paso a paso por el panel. Marcó las 3 casillas de eventos
