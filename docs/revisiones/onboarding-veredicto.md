@@ -108,3 +108,27 @@ barra de progreso al 100% antes de tiempo, "Seguir aquí" mal etiquetado) NO se 
 la usuaria solo pidió este. No se relanzó el revisor-visual completo (fix de layout
 puntual, no cambia estructura/copy/flujo). Pendiente: que la usuaria confirme viendo la
 captura real.
+
+## Actualización (2026-11-04, noche) — defectos 4 y 5 RESUELTOS
+
+La usuaria pidió corregir los 2 "detalles chicos" que quedaban del paso de compromiso:
+
+- **Defecto 4 (barra de progreso al 100% antes de tiempo)**: `progresoDePaso()` en
+  `app/onboarding/page.tsx` ahora recibe también `comprometido` — mientras el paso de
+  compromiso NO se completó, la barra se queda en 92% (reservando el 100% final para
+  cuando el gesto de sostener el botón termina). Verificado con captura real: antes de
+  sostener, la barra se ve con un resto gris al final (`onboarding-progreso-antes-375.png`);
+  después de sostener, llega a 100% (`onboarding-progreso-despues-375.png`).
+- **Defecto 5 ("Seguir aquí" mal etiquetado)**: `ConfirmSalir` (`components/funnel/ui.tsx`)
+  ahora acepta un `labelSeguir` opcional (por defecto sigue siendo "Seguir aquí", así que
+  el paywall —que SÍ te deja en la misma pantalla— no cambia). En onboarding, cuando ya
+  estás comprometida, se le pasa `labelSeguir="Seguir a mi plan"`, que describe con
+  precisión lo que el botón realmente hace (ir al paywall). Verificado con captura real:
+  `onboarding-confirmsalir-comprometido-375.png`.
+
+Cambiado en: `app/onboarding/page.tsx`, `components/funnel/ui.tsx`. Verificado: tsc ✓
+build ✓. No se relanzó el revisor-visual completo (2 fixes puntuales de lógica/copy, no
+cambian estructura ni flujo). Quedan sin tocar los defectos 1 y 3 (botón "Salir sin
+guardar" no cambia de texto, y no hay aviso de "punto sin retorno" antes de soltar el
+botón) — la usuaria no los pidió esta vez. Pendiente: que la usuaria confirme viendo las
+capturas reales.

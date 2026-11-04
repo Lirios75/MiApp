@@ -1,6 +1,25 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche) — últimos 2 "detalles chicos" del paso de compromiso del
+onboarding, RESUELTOS. La usuaria pidió corregir los 2 puntos que quedaban de los 5 defectos
+conocidos de esa pantalla:
+1. La barra de progreso de arriba se veía 100% llena ANTES de sostener el botón. Fix:
+   `progresoDePaso()` en `app/onboarding/page.tsx` ahora recibe también `comprometido` — se queda
+   en 92% hasta que el gesto de sostener termina, recién ahí salta a 100%.
+2. El botón "Seguir aquí" del aviso de salida, ya comprometida, en realidad te sacaba a la
+   pantalla de planes (no te dejaba "aquí"). Fix: `ConfirmSalir` (`components/funnel/ui.tsx`)
+   ahora acepta un `labelSeguir` opcional (por defecto sigue diciendo "Seguir aquí" — el paywall,
+   que sí te deja en la misma pantalla, no cambió). En onboarding, ya comprometida, dice "Seguir a
+   mi plan", que sí describe lo que hace.
+Verificado: tsc ✓ build ✓ · 3 capturas reales a 375px:
+`docs/revisiones/onboarding-progreso-antes-375.png` (barra con resto gris, NO 100%),
+`onboarding-progreso-despues-375.png` (barra 100% tras el gesto),
+`onboarding-confirmsalir-comprometido-375.png` (botón dice "Seguir a mi plan"). Nota agregada en
+`docs/revisiones/onboarding-veredicto.md`. Quedan sin tocar los defectos 1 (botón "Salir sin
+guardar" no cambia de texto) y 3 (sin aviso de "punto sin retorno") — la usuaria no los pidió esta
+vez; no re-abrir sin que ella lo pida. Pendiente: que la usuaria confirme viendo las capturas.
+
 ⏸️ CHECKPOINT (2026-11-04, noche) — espacio vacío del paso de compromiso del onboarding,
 RESUELTO. De los 3 pendientes que la usuaria decidió dejar como estaban hace un rato, volvió
 sobre uno y pidió corregirlo explícitamente ("este me parece importante"): el hueco vacío grande
@@ -891,8 +910,8 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
   1. Botón "Salir sin guardar" del aviso de salida no cambia a "Salir" cuando ya te comprometiste — contradice el mensaje de arriba ("tu compromiso ya quedó guardado").
   2. RESUELTO (2026-11-04) — las 2 pantallas del compromiso tenían casi la mitad de la pantalla vacía arriba del título. Causa: el bloque se centraba verticalmente en toda la altura disponible; al ser contenido corto, dejaba un hueco grande arriba y abajo. Fix: se quitó el centrado vertical y se ancló el contenido cerca del encabezado con aire razonable (48px) — el anillo decorativo de fondo llena la parte baja, así no queda vacía tampoco ahí. Ver nota completa en docs/revisiones/onboarding-veredicto.md.
   3. Sostener el botón para comprometerse es un punto sin retorno a las preguntas anteriores, y nada lo avisa antes de soltar el dedo.
-  4. La barra de progreso llega a 100% antes de completar el gesto de sostener — comunica "ya terminaste" cuando falta el paso más importante.
-  5. El botón "Seguir aquí" del aviso de salida, cuando ya te comprometiste, en realidad te lleva a la pantalla de planes — el texto no calza con la acción.
+  4. RESUELTO (2026-11-04) — la barra de progreso llegaba a 100% antes de completar el gesto de sostener. Fix: `progresoDePaso()` reserva el 100% para después del gesto (92% mientras tanto). Ver nota en docs/revisiones/onboarding-veredicto.md.
+  5. RESUELTO (2026-11-04) — el botón "Seguir aquí" del aviso de salida, cuando ya te comprometiste, en realidad llevaba a la pantalla de planes pero el texto no lo decía. Fix: `ConfirmSalir` ahora acepta un `labelSeguir` opcional; en este caso dice "Seguir a mi plan". El paywall (que sí te deja en la misma pantalla) no cambió — sigue diciendo "Seguir aquí". Ver nota en docs/revisiones/onboarding-veredicto.md.
   No re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.
 - veredicto paywall: CERTIFICADO ✅ — ver "Puertas de etapa". Ya no es un problema pendiente.
 - veredicto pantalla-principal ("Hoy", app interna): APROBADO POR LA USUARIA (2026-09-18) tras 2 rondas del revisor-visual (32/40·12/20 → 27/40·14/20 — nunca alcanzó el gate ≥36/40, ≥16/20). Detalle completo en docs/revisiones/pantalla-principal-veredicto.md. Se corrigieron los 5 defectos concretos de la ronda 2 (aviso de guardado impreciso, tarjeta de reflexión sin tratamiento visual, hueco vacío bajo la meta, sin forma de cancelar al editar el día, tipografía fuera de la escala documentada) y la usuaria decidió avanzar a Sesión 6 sin pedir una 3ª ronda — no re-abrir esta pantalla ni relanzar el revisor sobre ella sin que la usuaria lo pida.

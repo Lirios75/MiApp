@@ -384,6 +384,7 @@ export function ConfirmSalir({
   onSalir,
   mensaje = 'Perderás las respuestas de tu quiz.',
   labelSalir = 'Salir sin guardar',
+  labelSeguir = 'Seguir aquí',
 }: {
   abierto: boolean;
   onSeguir: () => void;
@@ -394,6 +395,10 @@ export function ConfirmSalir({
    * afirma una pérdida de datos que no ocurre. */
   mensaje?: string;
   labelSalir?: string;
+  /** El texto por defecto ("Seguir aquí") solo es preciso cuando onSeguir te deja
+   * en la misma pantalla. En onboarding, tras comprometerse, "seguir" en realidad
+   * navega al paywall — ahí se pasa un label que describe esa acción real. */
+  labelSeguir?: string;
 }) {
   const reduce = useReducedMotion();
   const botonSeguirRef = useRef<HTMLButtonElement>(null);
@@ -445,7 +450,7 @@ export function ConfirmSalir({
             <p className="mt-2 text-[15px] leading-snug text-[var(--text-secondary)]">{mensaje}</p>
             <div className="mt-5 flex flex-col gap-2">
               <FunnelButton ref={botonSeguirRef} onClick={onSeguir}>
-                Seguir aquí
+                {labelSeguir}
               </FunnelButton>
               <FunnelButton ref={botonSalirRef} onClick={onSalir} variant="outline">
                 {labelSalir}

@@ -15,7 +15,11 @@ import { OPCIONES_DOLOR, OPCIONES_INTENTO, OPCIONES_META, OPCIONES_MOMENTO, guar
 const TOTAL_PASOS = 6; // 0-indexado: 6 pasos entre el inicio (8%) y el compromiso (100%)
 const PROGRESO_INICIAL = 8; // endowed progress — nunca arranca en 0 (Nunes & Drèze 2006)
 
-function progresoDePaso(paso: number): number {
+function progresoDePaso(paso: number, comprometido: boolean): number {
+  // El paso de compromiso (el último) reserva el 100% para cuando el gesto de
+  // sostener el botón ya se completó — mostrarlo lleno antes comunica "ya
+  // terminaste" cuando todavía falta el paso más importante.
+  if (paso === TOTAL_PASOS && !comprometido) return 92;
   return PROGRESO_INICIAL + (paso / TOTAL_PASOS) * (100 - PROGRESO_INICIAL);
 }
 
@@ -77,7 +81,7 @@ export default function Onboarding() {
     if (comprometido) router.push('/paywall');
   }
 
-  const progreso = progresoDePaso(paso);
+  const progreso = progresoDePaso(paso, comprometido);
   let pantalla: ReactNode;
 
   // ── Paso 0: pregunta del dolor (eco de la landing) ──
@@ -287,6 +291,7 @@ export default function Onboarding() {
             ? 'Tu compromiso ya quedó guardado — puedes seguir a tu plan cuando quieras.'
             : 'Perderás las respuestas de tu quiz.'
         }
+        labelSeguir={comprometido ? 'Seguir a mi plan' : undefined}
       />
     </>
   );

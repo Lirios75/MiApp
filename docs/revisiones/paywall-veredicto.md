@@ -399,3 +399,16 @@ El hook marcará `app/onboarding/page.tsx` como más nuevo que este veredicto. V
 (anclar el contenido del paso de compromiso cerca del encabezado en vez de centrarlo, quitando el
 hueco vacío de arriba) vive solo en la pantalla de onboarding. Cero impacto; la certificación
 LISTA sigue vigente.
+
+## Trigésimo novena re-verificación (2026-11-04, noche — ConfirmSalir con label configurable)
+
+El hook marcará `app/onboarding/page.tsx` y `components/funnel/ui.tsx` como más nuevos que este
+veredicto. A diferencia de las re-verificaciones anteriores, esta vez SÍ hay relación directa:
+`app/paywall/page.tsx` importa `ConfirmSalir` de `components/funnel/ui.tsx` (líneas 124 y 316),
+el mismo componente que cambié para agregar la barra de progreso correcta y el nuevo prop
+`labelSeguir`. Por eso no bastaba con grep — lo verifiqué EN VIVO: abrí `/paywall` con datos
+sembrados en localStorage, toqué "Cerrar" para abrir su modal "¿Salir?", y confirmó seguir
+diciendo "Seguir aquí" / "Salir" exactamente igual que antes (`labelSeguir` es opcional con el
+mismo valor por defecto de siempre — los 2 usos del paywall no pasan ese prop, así que no
+cambiaron). Captura real en `docs/revisiones/paywall-confirmsalir-375.png`. Cero impacto
+confirmado visualmente, no solo por grep; la certificación LISTA sigue vigente.
