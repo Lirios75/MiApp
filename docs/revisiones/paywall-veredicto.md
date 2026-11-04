@@ -360,3 +360,10 @@ El hook marcará `app/app/meta/page.tsx` como más nuevo que este veredicto. Mis
 `app/paywall/page.tsx` no lo importa. El cambio (tarjeta de "Llevas en total" / "Te falta en
 total" sumando todas las metas de dinero) vive solo en la pantalla "Tu meta". Cero impacto; la
 certificación LISTA sigue vigente.
+
+## Trigésimo cuarta re-verificación (2026-11-04, noche — "Cómo te fue" con celebración/alerta)
+
+El hook marcará `app/app/semana/page.tsx` como más nuevo que este veredicto. Mismo caso de
+siempre: `app/paywall/page.tsx` no lo importa. El cambio (tarjeta "Cómo te fue" con ícono y color
+según cómo fue la semana/mes) vive solo en la pantalla Semana. Cero impacto; la certificación
+LISTA sigue vigente.

@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { AlertTriangle, ChevronLeft, ChevronRight, PartyPopper, Scale, X } from 'lucide-react';
 import { diasDeLaSemana, emocionPorValor, hoyISO, resumenUltimasSemanas, type EstadoApp } from '@/lib/app';
 import { obtenerEstadoApp } from '@/lib/supabase/datos';
 import { ErrorCarga, formatearFechaLarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
@@ -174,18 +174,21 @@ export default function Semana() {
 
       {vista === 'mes' ? (
         <>
-          <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
-            <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Cómo te fue</h2>
-            <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-primary)]">
-              {marcadosMes === 0
+          <ComoTeFue
+            item={item}
+            marcados={marcadosMes}
+            tranquilos={tranquilosMes}
+            alertas={alertasMes}
+            mensaje={
+              marcadosMes === 0
                 ? 'Aún no marcaste ningún día de este mes. Hazlo desde Hoy.'
                 : alertasMes === 0
-                  ? `Marcaste ${tranquilosMes} de ${marcadosMes} días como tranquilos este mes. Vas muy bien.`
+                  ? `Marcaste ${tranquilosMes} de ${marcadosMes} días como tranquilos este mes.`
                   : tranquilosMes === 0
                     ? `Marcaste ${alertasMes} de ${marcadosMes} días de alerta este mes — es información, no un juicio.`
-                    : `${tranquilosMes} días tranquilos y ${alertasMes} de alerta este mes. Notar la diferencia ya es la mitad del trabajo.`}
-            </p>
-          </motion.section>
+                    : `${tranquilosMes} días tranquilos y ${alertasMes} de alerta este mes. Notar la diferencia ya es la mitad del trabajo.`
+            }
+          />
 
           {hayMontosMes ? (
             <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
@@ -323,18 +326,21 @@ export default function Semana() {
         )}
       </motion.section>
 
-      <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
-        <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Cómo te fue</h2>
-        <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-primary)]">
-          {marcados === 0
+      <ComoTeFue
+        item={item}
+        marcados={marcados}
+        tranquilos={tranquilos}
+        alertas={alertas}
+        mensaje={
+          marcados === 0
             ? 'Aún no marcaste ningún día de esta semana. Hazlo desde Hoy.'
             : alertas === 0
-              ? `Marcaste ${tranquilos} de ${marcados} días como tranquilos. Vas muy bien.`
+              ? `Marcaste ${tranquilos} de ${marcados} días como tranquilos.`
               : tranquilos === 0
                 ? `Marcaste ${alertas} de ${marcados} días de alerta esta semana — es información, no un juicio.`
-                : `${tranquilos} días tranquilos y ${alertas} de alerta esta semana. Notar la diferencia ya es la mitad del trabajo.`}
-        </p>
-      </motion.section>
+                : `${tranquilos} días tranquilos y ${alertas} de alerta esta semana. Notar la diferencia ya es la mitad del trabajo.`
+        }
+      />
 
       {hayMontos && (
         <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
@@ -406,5 +412,62 @@ function TendenciaSemanas({ estado }: { estado: EstadoApp }) {
         </div>
       )}
     </>
+  );
+}
+
+/* ── <ComoTeFue> — pedido de la usuaria (Sesión 7): se sentía "muy simple" como texto plano.
+   Ahora es una celebración chica cuando la semana/mes fue toda tranquila, una alerta cuando fue
+   toda de alerta, y queda neutral (sin ícono de sentimiento) cuando está mezclado o aún no hay
+   datos — nunca un veredicto sobre el usuario, solo el tono que ya tenía el mensaje de texto. ── */
+function ComoTeFue({
+  item,
+  marcados,
+  tranquilos,
+  alertas,
+  mensaje,
+}: {
+  item: Variants;
+  marcados: number;
+  tranquilos: number;
+  alertas: number;
+  mensaje: string;
+}) {
+  if (marcados === 0) {
+    return (
+      <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4">
+        <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Cómo te fue</h2>
+        <p className="mt-2 text-[15px] leading-relaxed text-[var(--text-primary)]">{mensaje}</p>
+      </motion.section>
+    );
+  }
+
+  const bien = alertas === 0;
+  const alerta = tranquilos === 0;
+  const Icono = bien ? PartyPopper : alerta ? AlertTriangle : Scale;
+  const accent = bien ? 'var(--accent-2)' : alerta ? 'var(--accent-3)' : 'var(--accent)';
+  const accentTexto = bien ? 'var(--accent-2-text)' : alerta ? 'var(--accent-3-text)' : 'var(--text-primary)';
+  const titulo = bien ? '¡Vas muy bien!' : alerta ? 'Semana de cuidado' : 'Cómo te fue';
+
+  return (
+    <motion.section
+      variants={item}
+      className="rounded-[var(--radius-card)] p-4"
+      style={{ background: `color-mix(in oklab, ${accent} 12%, var(--surface))` }}
+    >
+      <div className="flex items-start gap-3">
+        <span
+          aria-hidden="true"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface)] shadow-[var(--shadow-1)]"
+        >
+          <Icono size={18} strokeWidth={2} color={accent} aria-hidden="true" />
+        </span>
+        <div className="min-w-0">
+          <p className="text-[15px] font-bold [font-family:var(--font-display)]" style={{ color: accentTexto }}>
+            {titulo}
+          </p>
+          <p className="mt-1 text-[14px] leading-relaxed text-[var(--text-primary)]">{mensaje}</p>
+        </div>
+      </div>
+    </motion.section>
   );
 }

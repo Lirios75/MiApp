@@ -1,6 +1,16 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+⏸️ CHECKPOINT (2026-11-04, noche): la usuaria dijo que "Cómo te fue" (Semana y Mes) se sentía muy
+simple, como texto plano — pidió algo tipo alerta y/o felicitación. Nuevo componente `ComoTeFue`
+(compartido por las dos vistas): cuando la semana/mes fue TODA tranquila, tarjeta verde con ícono
+de celebración ("¡Vas muy bien!"); cuando fue TODA de alerta, tarjeta naranja con ícono de alerta
+("Semana de cuidado"); cuando está mezclado o no hay datos aún, se queda neutral (sin veredicto —
+nunca un juicio sobre la persona, solo el tono que ya tenía el mensaje de texto). Cambiado en:
+`app/app/semana/page.tsx`. No tocó la base de datos. Verificado: tsc ✓ build ✓ · probados los 3
+estados navegando entre semanas reales en el navegador (captura del estado "bien" en
+`docs/revisiones/semana-375.png`). Pendiente: que la usuaria lo revise en la app real.
+
 ⏸️ CHECKPOINT (2026-11-04, noche): en "Tus metas" ahora hay una tarjeta de totales arriba de la
 lista — "Llevas en total" y "Te falta en total", sumando TODAS las metas de dinero (ahorro y
 salir de deuda juntas; las metas en modo hábito, que no tienen monto, no entran en la suma). Solo
