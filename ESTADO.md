@@ -14,9 +14,26 @@ es el sitio externo de Hotmart), esa página queda fija al plan elegido — Hotm
 botón para cambiar de plan; hay que volver atrás en el navegador a nuestra app y elegir el otro
 plan antes de pagar de nuevo. Capturas de evidencia:
 `docs/revisiones/paywall-plan-mensual-seleccionado-375.png` (Mensual queda bien marcado al
-tocarlo). Pendiente: la usuaria está decidiendo si quiere quitar la preselección del plan anual
-(para forzar una elección activa) o dejarlo como está (ya funciona correctamente, solo falta que
-la gente sepa tocar "Mensual" antes de pagar si lo quiere).
+tocarlo). **DECISIÓN (2026-11-04): la usuaria pidió quitar la preselección** — "ya dos personas me
+dicen lo mismo". Implementado, ver checkpoint más abajo.
+
+✅ CHECKPOINT (2026-11-04, noche) — quitada la preselección del plan en el paywall. El plan Anual
+ya NO viene marcado por defecto al entrar a `/paywall` — ahora hay que tocar "Anual" o "Mensual" a
+propósito antes de poder pagar (el botón de abajo dice "Elige un plan para continuar" y queda
+deshabilitado hasta entonces). Pedido explícito de la usuaria al mismo tiempo: el badge "5 MESES
+GRATIS" y el texto "Ahorras ~40% vs. mensual" del plan Anual se mantienen SIEMPRE visibles (no
+dependen de la selección) — sigue quedando claro cuál conviene más, solo que ya no se elige sola.
+Cambiado en `app/paywall/page.tsx`: `plan` ahora es `'anual' | 'mensual' | null` (arranca en
+`null`), `montoCobro` y el texto del timeline del día 7 manejan el caso sin elegir, y
+`empezarPrueba()` no hace nada si no hay plan elegido (guard, aunque el botón ya está
+deshabilitado). Verificado: tsc ✓ build ✓ · capturas reales a 375px:
+`docs/revisiones/paywall-sin-elegir-375.png` (nadie marcado, botón deshabilitado) y
+`paywall-mensual-elegido-375.png` (tras tocar Mensual). Nota agregada en
+`docs/revisiones/paywall-veredicto.md` (cambio real a la pantalla certificada, no solo
+re-verificación — certificación 37/40·20/20·19/20 queda marcada como PRE-cambio, recomendado
+relanzar el revisor-visual la próxima vez que se trabaje en esta pantalla). Pendiente: que la
+usuaria confirme viendo las capturas, y que pruebe en la app real para ver si esto reduce los
+reportes de "me llevó al plan que no quería".
 
 ✅ CHECKPOINT (2026-11-04, noche) — últimos 2 defectos del onboarding, RESUELTOS: los 5
 pendientes conocidos de esa pantalla quedan todos corregidos.

@@ -413,6 +413,32 @@ mismo valor por defecto de siempre — los 2 usos del paywall no pasan ese prop,
 cambiaron). Captura real en `docs/revisiones/paywall-confirmsalir-375.png`. Cero impacto
 confirmado visualmente, no solo por grep; la certificación LISTA sigue vigente.
 
+## Cambio real a la pantalla certificada (2026-11-04, noche — sin preselección de plan)
+
+A diferencia de las re-verificaciones anteriores (todas sobre archivos COMPARTIDOS que el paywall
+no usa), este SÍ es un cambio real dentro de `app/paywall/page.tsx`, la pantalla certificada. Dos
+personas le reportaron a la usuaria que el checkout "siempre las llevaba al plan anual y no las
+dejaba volver al mensual" — investigado (ver nota en ESTADO.md): el selector SÍ funcionaba bien al
+tocarlo, pero el plan Anual venía PRESELECCIONADO por defecto (`plan` arrancaba en `'anual'`), así
+que quien no tocaba explícitamente "Mensual" terminaba en el checkout anual sin haberlo elegido a
+propósito. La usuaria pidió quitar la preselección para que sea una elección activa.
+
+Cambiado: `plan` ahora arranca en `null` (ningún plan marcado al entrar); el botón de pago queda
+deshabilitado con el texto "Elige un plan para continuar" hasta que se toque una de las 2 tarjetas;
+al elegir, pasa a "Empezar mis 7 días gratis" normal. El badge "5 MESES GRATIS" y el texto "Ahorras
+~40% vs. mensual" del plan Anual NO se tocaron — siguen visibles siempre (pedido explícito de la
+usuaria: mantener resaltado el ahorro del anual aunque ya no venga preseleccionado). Verificado:
+tsc ✓ build ✓ · capturas reales a 375px: `docs/revisiones/paywall-sin-elegir-375.png` (estado
+inicial, botón deshabilitado, ningún plan marcado) y `paywall-mensual-elegido-375.png` (tras tocar
+Mensual, queda marcado y el botón se activa).
+
+**Impacto en la certificación**: este cambio pudo mover el puntaje (menos fricción al reducir
+confusión, pero un paso extra obligatorio antes de pagar) — no se relanzó el revisor-visual
+completo todavía porque es records de un reporte de usuarias reales, no una iteración de diseño;
+la certificación 37/40·20/20·19/20 queda marcada como PRE-cambio. Recomendado (no bloqueante):
+relanzar el revisor-visual en esta pantalla la próxima vez que se trabaje en ella, para confirmar
+que el nuevo botón deshabilitado no introduce un defecto de usabilidad nuevo.
+
 ## Cuadragésima re-verificación (2026-11-04, noche — últimos 2 defectos del onboarding)
 
 El hook marcará `app/onboarding/page.tsx` como más nuevo que este veredicto. Igual que la

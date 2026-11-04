@@ -50,7 +50,9 @@ export default function Paywall() {
   const router = useRouter();
   const [fase, setFase] = useState<'cargando' | 'listo'>('cargando');
   const [respuestas, setRespuestas] = useState<RespuestasOnboarding>({});
-  const [plan, setPlan] = useState<'anual' | 'mensual'>('anual');
+  // Sin preselección (pedido de la usuaria, 2026-11-04: dos personas reportaron llegar al pago
+  // anual sin haberlo elegido a propósito) — obliga a tocar un plan antes de poder pagar.
+  const [plan, setPlan] = useState<'anual' | 'mensual' | null>(null);
   const [avanzando, setAvanzando] = useState(false);
   const [errorAvance, setErrorAvance] = useState(false);
   const [confirmandoSalida, setConfirmandoSalida] = useState(false);
@@ -65,7 +67,7 @@ export default function Paywall() {
     router.push('/');
   }
   function empezarPrueba() {
-    if (avanzando) return;
+    if (avanzando || !plan) return;
     setAvanzando(true);
     setErrorAvance(false);
     try {
@@ -111,7 +113,7 @@ export default function Paywall() {
   const hoy = useMemo(() => new Date(), []);
   const dia5 = useMemo(() => new Date(hoy.getTime() + 5 * 86400000), [hoy]);
   const dia7 = useMemo(() => new Date(hoy.getTime() + TRIAL_DIAS * 86400000), [hoy]);
-  const montoCobro = plan === 'anual' ? PLAN_ANUAL.montoCobro : PLAN_MENSUAL.montoCobro;
+  const montoCobro = plan === 'anual' ? PLAN_ANUAL.montoCobro : plan === 'mensual' ? PLAN_MENSUAL.montoCobro : null;
 
   if (fase === 'cargando') {
     return (
@@ -255,7 +257,11 @@ export default function Paywall() {
               {[
                 { activo: true, titulo: 'Hoy — acceso completo', detalle: 'Todo tu Semáforo, sin límites' },
                 { activo: true, titulo: `Día 5 — ${formatearFecha(dia5)}, te avisamos`, detalle: 'Correo antes de cualquier cobro' },
-                { activo: false, titulo: `Día 7 — ${formatearFecha(dia7)}, 1er cobro: ${montoCobro}`, detalle: 'Cancela antes sin costo' },
+                {
+                  activo: false,
+                  titulo: montoCobro ? `Día 7 — ${formatearFecha(dia7)}, 1er cobro: ${montoCobro}` : `Día 7 — ${formatearFecha(dia7)}, primer cobro`,
+                  detalle: montoCobro ? 'Cancela antes sin costo' : 'Elige un plan arriba para ver el monto',
+                },
               ].map((nodo, i) => (
                 <div key={i} className="flex gap-3">
                   <div className="flex flex-col items-center">
@@ -303,8 +309,8 @@ export default function Paywall() {
           llegue hasta el final. */}
       <div className="fixed inset-x-0 bottom-0 z-30 border-t border-[color-mix(in_oklab,var(--text-tertiary)_15%,transparent)] bg-[var(--bg)] px-4 pb-[max(16px,env(safe-area-inset-bottom))] pt-4 shadow-[var(--shadow-2)]">
         <div className="mx-auto w-full max-w-[500px]">
-          <FunnelButton onClick={empezarPrueba} disabled={avanzando} cargando={avanzando}>
-            {avanzando ? 'Un momento…' : `Empezar mis ${TRIAL_DIAS} días gratis`}
+          <FunnelButton onClick={empezarPrueba} disabled={avanzando || !plan} cargando={avanzando}>
+            {avanzando ? 'Un momento…' : plan ? `Empezar mis ${TRIAL_DIAS} días gratis` : 'Elige un plan para continuar'}
           </FunnelButton>
           {errorAvance && (
             <p role="status" aria-live="polite" className="mt-2 text-center text-[13px] text-[var(--text-secondary)]">
