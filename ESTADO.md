@@ -1,6 +1,16 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+✅ CHECKPOINT (2026-11-04, noche) — texto del Área de Miembros de Hotmart actualizado (acción de
+la usuaria, no código). Tras la confusión de la compra de prueba (pensó que tenía que "descargar"
+algo desde el área genérica de cursos de Hotmart, cuando la app real se abre por otro lado), la
+usuaria editó el contenido "Calendario de cursos" en Hotmart → RESPIRA → Área de Miembros →
+Contenido, explicando con claridad: la app no se descarga ahí, hay que revisar el correo (y spam)
+por el mensaje de "Respira" con el código de 6 dígitos + enlace, entrar a
+`respira.ikigaihumano.com/entrar`, y qué hacer si el correo no llega (escribir a
+lina.rios@ikigaihumano.com). Guardado y publicado. Esto reduce la confusión para la próxima
+clienta real que compre y llegue a esta pantalla de Hotmart antes de encontrar el correo real.
+
 ✅ CHECKPOINT (2026-11-04, noche) — login con CÓDIGO de 6 dígitos, además del enlace. Durante la
 compra de prueba de hoy, a la usuaria le llegaron 3 correos seguidos de "Your sign-in link"
 porque el enlace se "gastaba" antes de que ella lo tocara (algo que ya abre el enlace primero,
