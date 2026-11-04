@@ -13,15 +13,17 @@ toda la página de ventas):
 3. "Cuánto entró y cuánto salió hoy" — un numerito simple y opcional por día (NO un presupuesto
    detallado por categorías), con el total de la semana visible en /app/semana. Columnas nuevas
    `entradas`/`gastos` en `checkins`.
-Cambiado en: `supabase/migrations/20261103000000_checkin_emocion_montos.sql` (falta que la usuaria
-la ejecute en el SQL Editor), `lib/app.ts` (catálogo de emociones + campos nuevos de `CheckIn`),
+Cambiado en: `supabase/migrations/20261103000000_checkin_emocion_montos.sql` (YA EJECUTADA por la
+usuaria en el SQL Editor, 2026-11-04 — "Success. No rows returned"), `lib/app.ts` (catálogo de
+emociones + campos nuevos de `CheckIn`),
 `lib/supabase/datos.ts` (lee/guarda los campos nuevos), `app/app/page.tsx` (Hoy) y
 `app/app/semana/page.tsx`. Verificado: tsc ✓ build ✓ · renderizado real a 375px con datos de
 prueba (sesión de Supabase simulada temporalmente solo para la captura, revertida después —
 `docs/revisiones/pantalla-principal-375.png` y `semana-375.png` actualizados). Nota en
 `docs/revisiones/pantalla-principal-veredicto.md` explicando por qué no se relanzó el
 revisor-visual completo (aditivo, opcional, no toca el selector de 1 toque). Pendiente: que la
-usuaria ejecute la migración SQL y confirme viéndolo en la app real.
+usuaria lo pruebe en la app real (marcar su día, ver si aparece la emoción y el campo de montos)
+y confirme.
 
 ⏸️ CHECKPOINT (2026-10-18, noche): nuevo LOGO implementado — la usuaria vio 3 opciones (anillo
 partido / dos anillos / mitad y mitad) en una comparativa y eligió "dos anillos" (verde afuera,
