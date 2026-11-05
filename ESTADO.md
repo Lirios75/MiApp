@@ -110,6 +110,18 @@ esa pestaña abierta, y confirmamos juntas lo que llegó:
 prueba real completa, para confirmar que el evento "Purchase" también llega desde Hotmart) antes
 de poder anotar el cierre final del gate y prender la primera campaña paga.
 
+✅ CHECKPOINT (2026-11-04, noche) — PASO 4 CERRADO: el evento "Comprar" (Purchase) también llegó,
+confirmado en la pestaña **"Resumen"** del píxel (no en "Probar eventos" — hallazgo de la propia
+usuaria: Hotmart manda este aviso desde su servidor, sin el código de prueba de Meta pegado, así
+que no aparece en la vista filtrada de pruebas, solo en el resumen general de actividad real del
+píxel). Se vio: "Comprar · Activo · Navegador · 2 · Última recepción: hace una hora" — coincide
+con las 2 compras de prueba hechas hoy. **LOS 3 EVENTOS DEL GATE DE PUBLICIDAD QUEDAN VERIFICADOS
+EN VIVO: PageView, InitiateCheckout ("Iniciar pago") y Purchase ("Comprar").** Con esto, el píxel
+de Meta (`docs/sistema/34-ADQUISICION-Y-TRAFICO.md`, gate "SIN PÍXEL VERIFICADO CON UNA COMPRA DE
+PRUEBA, NO SE LANZA PAID") queda 100% cerrado. **La usuaria ya puede encender su primera campaña
+paga en Meta/Instagram** — pendiente solo de que ella decida el presupuesto y la segmentación
+(fuera del alcance de este checkpoint, decisión de negocio suya).
+
 ✅ ACTUALIZACIÓN (2026-11-04, noche) — Paso 1 de arriba YA HECHO: la usuaria conectó el mismo ID
 del píxel (`1079795125061777`) en Hotmart (Herramientas → Píxel de Seguimiento → Facebook +
 Instagram → Evento vía Web), guiada paso a paso por el panel. Marcó las 3 casillas de eventos
