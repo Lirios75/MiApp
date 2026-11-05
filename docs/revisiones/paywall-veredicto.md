@@ -451,6 +451,15 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Cuadragésima tercera re-verificación (2026-11-04, noche — aviso de instalar el ícono en Hoy)
+
+El hook marcará `app/app/page.tsx`, `app/app/layout.tsx` y `components/app/ui.tsx` como más
+nuevos que este veredicto. Verificado por grep: `app/paywall/page.tsx` no importa nada de
+`components/app/ui` (usa `components/landing/ui` y `components/funnel/ui`, archivos distintos) ni
+de `app/app/page.tsx`. El cambio (aviso para instalar el ícono en pantalla de inicio, detecta
+iOS/Android) vive solo en la pantalla "Hoy" de la app interna. Cero impacto; la certificación
+LISTA sigue vigente.
+
 ## Cuadragésima segunda re-verificación (2026-11-04, noche — corrección de longitud del código)
 
 El hook marcará `app/entrar/page.tsx` como más nuevo que este veredicto otra vez. Mismo caso que
