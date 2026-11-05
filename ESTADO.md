@@ -14,9 +14,11 @@ en todos los lugares que antes tenían el 6 fijo (el límite del campo, la valid
 guiones del placeholder). De paso se redujo el espaciado entre los números del código en la
 plantilla de correo de Supabase (estaba demasiado ancho, dificultando leerlo bien — otra causa de
 que el primer intento fallara). Verificado: tsc ✓ build ✓ · probado en el navegador escribiendo
-los 8 dígitos completos — captura en `docs/revisiones/entrar-codigo8-375.png`. Pendiente: que la
-usuaria pruebe de nuevo con un código fresco (copiándolo del correo) para confirmar que ahora sí
-entra.
+los 8 dígitos completos — captura en `docs/revisiones/entrar-codigo8-375.png`. **CONFIRMADO POR
+LA USUARIA EN VIVO**: pidió un código nuevo, lo copió directo del correo (en vez de escribirlo a
+mano) y entró correctamente a `/app`. De paso se redujo el `letter-spacing` del código en la
+plantilla de Supabase de 8px a 4px, para que se lea más fácil. **El login con código de un solo
+uso queda 100% cerrado y funcionando de punta a punta.**
 
 ✅ CHECKPOINT (2026-11-04, noche) — texto del Área de Miembros de Hotmart actualizado (acción de
 la usuaria, no código). Tras la confusión de la compra de prueba (pensó que tenía que "descargar"
