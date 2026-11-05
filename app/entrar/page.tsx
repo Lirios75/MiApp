@@ -13,6 +13,7 @@ import { RespiraMark } from '@/components/RespiraMark';
 import { crearClienteSupabase } from '@/lib/supabase/client';
 
 const RATE_LIMIT_S = 60;
+const LONGITUD_CODIGO = 8;
 const SUPABASE_CONFIGURADO = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
 
 type Estado = 'idle' | 'enviando' | 'enviado' | 'error';
@@ -23,10 +24,13 @@ export default function Entrar() {
   const [estado, setEstado] = useState<Estado>('idle');
   const [segundos, setSegundos] = useState(0);
   const [googleTocado, setGoogleTocado] = useState(false);
-  // Código de 6 dígitos — alternativa al enlace del correo (50/26: el enlace se "gasta" solo si
+  // Código de un solo uso — alternativa al enlace del correo (50/26: el enlace se "gasta" solo si
   // algo lo abre antes que la usuaria, ej. el previsualizador de Gmail; el código nunca se gasta
   // solo, porque nadie lo escribe por ella). Pedido explícito tras ver a una usuaria recibir 3
-  // enlaces seguidos por este motivo (2026-11-04).
+  // enlaces seguidos por este motivo (2026-11-04). LONGITUD_CODIGO = 8: la real que genera este
+  // proyecto de Supabase (confirmado en vivo — NO es el default de 6 que trae Supabase de fábrica,
+  // probablemente cambiado antes en la config del proyecto; ver Authentication → Sign In /
+  // Providers → Email OTP si se quiere verificar o volver a cambiar).
   const [codigo, setCodigo] = useState('');
   const [verificando, setVerificando] = useState(false);
   const [errorCodigo, setErrorCodigo] = useState<string | null>(null);
@@ -70,7 +74,7 @@ export default function Entrar() {
 
   async function verificarCodigo(e: FormEvent) {
     e.preventDefault();
-    if (codigo.length !== 6 || verificando) return;
+    if (codigo.length !== LONGITUD_CODIGO || verificando) return;
     setVerificando(true);
     setErrorCodigo(null);
 
@@ -111,16 +115,16 @@ export default function Entrar() {
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            maxLength={6}
-            placeholder="— — — — — —"
+            maxLength={LONGITUD_CODIGO}
+            placeholder="— — — — — — — —"
             value={codigo}
-            onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            className="h-16 w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--surface)] text-center text-[24px] font-bold tracking-[0.3em] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] [font-variant-numeric:tabular-nums]"
+            onChange={(e) => setCodigo(e.target.value.replace(/\D/g, '').slice(0, LONGITUD_CODIGO))}
+            className="h-16 w-full rounded-[var(--radius-button)] border border-[color-mix(in_oklab,var(--text-tertiary)_28%,transparent)] bg-[var(--surface)] text-center text-[20px] font-bold tracking-[0.2em] text-[var(--text-primary)] outline-none focus:border-[var(--accent)] [font-variant-numeric:tabular-nums]"
           />
           {errorCodigo && (
             <p className="text-left text-[13px] text-[var(--accent-3)]">{errorCodigo}</p>
           )}
-          <FunnelButton type="submit" disabled={codigo.length !== 6 || verificando}>
+          <FunnelButton type="submit" disabled={codigo.length !== LONGITUD_CODIGO || verificando}>
             {verificando ? 'Entrando…' : 'Confirmar código'}
           </FunnelButton>
         </form>

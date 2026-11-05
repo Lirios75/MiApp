@@ -1,6 +1,23 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+🐛 CHECKPOINT (2026-11-04, noche) — BUG REAL encontrado y corregido antes de que afectara a una
+clienta de verdad: el campo de código en `/entrar` estaba limitado a 6 dígitos (`maxLength={6}`),
+pero el código que este proyecto de Supabase genera en realidad tiene **8 dígitos** — confirmado
+en vivo, la usuaria no podía ni terminar de escribirlo (el campo se cortaba a los 6). Con esto,
+NADIE habría podido entrar nunca usando el código nuevo (el enlace seguía funcionando aparte, así
+que no bloqueaba del todo, pero el código — la pieza que se armó esta misma noche para resolver
+el problema del enlace — habría estado rota desde el primer día). Causa: asumí 6 dígitos (el
+default de fábrica de Supabase) sin verificar la longitud real del proyecto, que ya estaba
+configurado distinto. Fix: nueva constante `LONGITUD_CODIGO = 8` en `app/entrar/page.tsx`, usada
+en todos los lugares que antes tenían el 6 fijo (el límite del campo, la validación del botón, los
+guiones del placeholder). De paso se redujo el espaciado entre los números del código en la
+plantilla de correo de Supabase (estaba demasiado ancho, dificultando leerlo bien — otra causa de
+que el primer intento fallara). Verificado: tsc ✓ build ✓ · probado en el navegador escribiendo
+los 8 dígitos completos — captura en `docs/revisiones/entrar-codigo8-375.png`. Pendiente: que la
+usuaria pruebe de nuevo con un código fresco (copiándolo del correo) para confirmar que ahora sí
+entra.
+
 ✅ CHECKPOINT (2026-11-04, noche) — texto del Área de Miembros de Hotmart actualizado (acción de
 la usuaria, no código). Tras la confusión de la compra de prueba (pensó que tenía que "descargar"
 algo desde el área genérica de cursos de Hotmart, cuando la app real se abre por otro lado), la
