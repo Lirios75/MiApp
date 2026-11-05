@@ -61,3 +61,20 @@ revisor-visual completo (SUBAGENTE, ~80-90k tokens): es contenido añadido de fo
 una pantalla ya evaluada dos veces por la usuaria con límite explícito de rondas, no un rediseño —
 y de hecho llena parte del "vacío muerto" que bajaba el eje de encaje en la ronda 2. Si se vuelve
 a tocar esta pantalla por otra razón de fondo, sí corresponde una pasada nueva.
+
+## Actualización (2026-11-04, noche) — aviso de "instalar en pantalla de inicio"
+
+Nuevo componente `InstalarAppAviso` (`components/app/ui.tsx`), agregado justo debajo del header de
+"Hoy" (`app/app/page.tsx`). Pedido real de la usuaria tras ver que su hija SÍ supo instalar el
+ícono (porque la ayudó su mamá) pero una clienta sin ayuda directa no tendría cómo saberlo — riesgo
+real de reembolsos por "esto no es una app de verdad". Detecta iOS vs Android por user-agent y
+muestra el gesto correcto de cada uno (iOS: ícono de compartir → "Agregar a inicio"; Android: menú
+de 3 puntos → "Agregar a pantalla de inicio"); no aparece en computador ni si la PWA ya está
+instalada (`display-mode: standalone`); se cierra con una X y queda recordado en localStorage para
+no insistir. No toca el selector tranquilo/alerta de 1 toque ni ningún otro flujo existente —
+aparece ARRIBA de todo lo demás, sin empujar el contenido importante fuera de la vista inicial.
+Verificado: tsc ✓ build ✓ · capturas reales emulando iPhone y Android (Playwright, dispositivos
+`iPhone 14` y `Pixel 7`) en `docs/revisiones/hoy-instalar-ios-375.png` y
+`hoy-instalar-android-375.png` · probado que el botón de cerrar funciona y que no vuelve a
+aparecer tras recargar la página. No se relanzó el revisor-visual completo (mismo criterio que la
+actualización anterior: contenido aditivo y dismissible, no un rediseño).

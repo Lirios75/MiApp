@@ -28,7 +28,16 @@ import {
   registrarMontosDiaSupabase,
   registrarNotaCheckInSupabase,
 } from '@/lib/supabase/datos';
-import { AnilloProgreso, ErrorCarga, formatearFechaLarga, formatearMiles, inicialDia, RachaBadge, soloDigitos } from '@/components/app/ui';
+import {
+  AnilloProgreso,
+  ErrorCarga,
+  formatearFechaLarga,
+  formatearMiles,
+  inicialDia,
+  InstalarAppAviso,
+  RachaBadge,
+  soloDigitos,
+} from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -134,6 +143,8 @@ export default function Hoy() {
         </div>
         <RachaBadge dias={racha} />
       </motion.header>
+
+      <InstalarAppAviso />
 
       {avisoGuardado && (
         <motion.div

@@ -1,6 +1,27 @@
 # ESTADO — Respira
 Última actualización: 2026-11-04 | Sesión actual: 7
 
+✅ CHECKPOINT (2026-11-04, noche) — aviso de "instala el ícono en tu pantalla de inicio" dentro de
+la app. La usuaria notó un riesgo real: su hija supo instalar el ícono porque ella la ayudó a mano
+(el mismo truco de siempre), pero una clienta real sin esa ayuda recibe el enlace/código, entra a
+la app en el navegador, y no tiene forma de saber que puede (y conviene) guardarla como un ícono
+en su pantalla de inicio — "por eso a lo mejor pueden solicitar reembolso" (preocupación válida:
+si no "se siente como una app", pierde credibilidad).
+Fix: nuevo componente `InstalarAppAviso` (`components/app/ui.tsx`), agregado en "Hoy"
+(`app/app/page.tsx`) justo debajo del encabezado. Detecta sola si el celular es iPhone o Android
+(el gesto es distinto en cada uno) y muestra el paso correcto:
+- iPhone: ícono de compartir → "Agregar a inicio".
+- Android: menú de 3 puntos → "Agregar a pantalla de inicio".
+No aparece en computador, ni si la app ya está instalada (se detecta el modo standalone). Se
+cierra con una X y no vuelve a insistir (recordado en localStorage, igual que otras preferencias
+de la app). No empuja el selector de Semáforo fuera de la vista ni toca ningún flujo existente.
+Verificado: tsc ✓ build ✓ · capturas reales simulando iPhone y Android con Playwright en
+`docs/revisiones/hoy-instalar-ios-375.png` y `hoy-instalar-android-375.png` · probado que cerrar
+funciona y que no reaparece al recargar. Nota agregada en
+`docs/revisiones/pantalla-principal-veredicto.md` (cambio aditivo sobre pantalla ya certificada,
+no amerita relanzar el revisor-visual completo). Pendiente: que la usuaria lo revise en la app
+real, idealmente desde un celular que todavía no tenga el ícono instalado.
+
 🐛 CHECKPOINT (2026-11-04, noche) — BUG REAL encontrado y corregido antes de que afectara a una
 clienta de verdad: el campo de código en `/entrar` estaba limitado a 6 dígitos (`maxLength={6}`),
 pero el código que este proyecto de Supabase genera en realidad tiene **8 dígitos** — confirmado

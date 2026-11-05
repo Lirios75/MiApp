@@ -8,7 +8,20 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { CalendarDays, Flame, Home, Target, CircleUserRound, RefreshCw, WifiOff, type LucideIcon } from 'lucide-react';
+import {
+  CalendarDays,
+  Flame,
+  Home,
+  Target,
+  CircleUserRound,
+  RefreshCw,
+  WifiOff,
+  Share,
+  MoreVertical,
+  Smartphone,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 
 /* ── <AppFondo> — mesh sutil compartido, más calmo que el del funnel (esta es
    una pantalla que se abre varias veces al día: nada que "llame la atención"
@@ -237,4 +250,82 @@ export function formatearRangoSemana(fechas: readonly string[]): string {
   if (ai !== af) return `${di} ${meses[mi - 1]} ${ai} - ${df} ${meses[mf - 1]} ${af}`;
   if (mi === mf) return `${di}-${df} ${meses[mi - 1]} ${ai}`;
   return `${di} ${meses[mi - 1]} - ${df} ${meses[mf - 1]} ${ai}`;
+}
+
+const CLAVE_INSTALAR_CERRADO = 'respira_instalar_cerrado';
+
+/* ── <InstalarAppAviso> — pedido de la usuaria (Sesión 7): sin esto, solo quien recibe ayuda
+   directa sabe cómo dejar el ícono guardado en su celular — cualquier otra clienta se queda con
+   el link suelto, no "parece una app", y eso ya generó dudas de "¿esto es real?". Aparece UNA
+   vez en Hoy tras entrar (se detecta iOS vs Android porque el gesto es distinto en cada uno; en
+   computador o si ya está instalada —modo standalone— no se muestra), se cierra sola y queda
+   recordado en localStorage para no volver a aparecer. ── */
+export function InstalarAppAviso() {
+  const [plataforma, setPlataforma] = useState<'ios' | 'android' | null>(null);
+
+  useEffect(() => {
+    try {
+      if (window.localStorage.getItem(CLAVE_INSTALAR_CERRADO)) return;
+    } catch {
+      // localStorage no disponible — mejor no insistir que mostrarlo en cada carga.
+      return;
+    }
+    const yaInstalada =
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
+    if (yaInstalada) return;
+    const ua = window.navigator.userAgent;
+    if (/iPhone|iPad|iPod/.test(ua)) setPlataforma('ios');
+    else if (/Android/.test(ua)) setPlataforma('android');
+  }, []);
+
+  function cerrar() {
+    setPlataforma(null);
+    try {
+      window.localStorage.setItem(CLAVE_INSTALAR_CERRADO, '1');
+    } catch {
+      // no hay dónde recordarlo — reaparecerá la próxima vez, no es grave.
+    }
+  }
+
+  if (!plataforma) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="relative flex items-start gap-3 rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-1)]"
+    >
+      <span
+        aria-hidden="true"
+        className="flex size-9 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent)_12%,transparent)]"
+      >
+        <Smartphone size={18} strokeWidth={2} color="var(--accent)" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[14px] font-semibold text-[var(--text-primary)]">Guarda Respira en tu pantalla de inicio</p>
+        <p className="mt-1 text-[13px] leading-relaxed text-[var(--text-secondary)]">
+          {plataforma === 'ios' ? (
+            <>
+              Toca <Share size={14} strokeWidth={2} className="inline-block align-middle" aria-hidden="true" /> (compartir)
+              y elige &quot;Agregar a inicio&quot;.
+            </>
+          ) : (
+            <>
+              Toca <MoreVertical size={14} strokeWidth={2} className="inline-block align-middle" aria-hidden="true" />{' '}
+              (arriba a la derecha) y elige &quot;Agregar a pantalla de inicio&quot;.
+            </>
+          )}
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={cerrar}
+        aria-label="Cerrar este aviso"
+        className="shrink-0 rounded-full p-1 text-[var(--text-tertiary)] [touch-action:manipulation]"
+      >
+        <X size={16} strokeWidth={2} aria-hidden="true" />
+      </button>
+    </motion.div>
+  );
 }
