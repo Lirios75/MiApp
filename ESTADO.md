@@ -1,6 +1,36 @@
 # ESTADO — Respira
 Última actualización: 2026-11-16 | Sesión actual: 8
 
+✅ CHECKPOINT (2026-11-16) — Fase 2 (Planeador Semanal, 5to ícono "Plan") CERRADA — la usuaria
+decidió dejarla así tras 4 rondas de revisor-visual: "Ya déjala así y continúa". Construida:
+objetivos (3 líneas), agua por día, hábitos personalizados con checklist L-D, tareas por día con
+"Deshacer" al borrar, gratitud y notas — todo en tarjetas colapsables (solo Agua y Tareas abren
+por defecto). Header con el anillo de la marca (doble aro, abertura de 270° real de
+`components/RespiraMark.tsx`) mostrando datos reales: verde = % de hábitos cumplidos, naranja =
+% de tareas hechas, con leyenda. Nueva tabla `planificador_semanas` (RLS + grants incluidos en la
+misma migración, lección aprendida del bug de grants de octubre) en
+`supabase/migrations/20261116000000_planificador_semanal.sql`.
+Historial del revisor-visual (primera pantalla de este tipo → obligatorio): ronda 1 → NO LISTA
+27/40·12/20 (sin feedback de error, sin confirmación consistente al borrar, sin feedback de tap,
+6 tarjetas abiertas a la vez sin acción primaria, sin dispositivo ownable) → ronda 2 → NO LISTA
+33/40·13/20 (los 5 anteriores resueltos; quedó pendiente: aviso de error poco visible al hacer
+scroll, anillo genérico de un solo color) → ronda 3 → NO LISTA 30/40·15/20 (craft subió a
+sobresaliente en movimiento 4/4; 2 fixes de esa ronda introdujeron defectos nuevos: contraste
+blanco-sobre-naranja y contradicción de color entre el anillo y el check de tarea) → ronda 4:
+corregidos ambos (texto oscuro sobre naranja, check de tarea pasa a naranja, anillo con la
+abertura real de 270°, títulos dentro de la escala catalogada 19px, degradé de scroll en los
+chips de día) — **la 4ª pasada del revisor no alcanzó a terminar (se reinició el contenedor) y la
+usuaria pidió parar ahí antes de relanzarla.** Queda SIN certificación formal (nunca llegó a
+"Veredicto: LISTA"), aceptada por decisión explícita de la usuaria — mismo patrón que landing/
+onboarding (ver Problemas conocidos). Verificado lo que si se puede verificar sin el revisor:
+tsc ✓ build ✓ · captura real a 375px en `docs/revisiones/planeador-375.png` · veredicto completo
+de las 4 rondas en `docs/revisiones/planeador-veredicto.md`. No re-abrir esta pantalla ni
+relanzar el revisor sobre ella sin que la usuaria lo pida.
+⚠️ PENDIENTE DE LA USUARIA (acción real, no solo aviso): para que esta pantalla funcione en la
+app real necesita ejecutar la migración nueva en el SQL Editor de Supabase (mismo procedimiento
+de siempre) — sin eso, al tocar el ícono "Plan" le va a fallar. Aún no se le ha pedido explícitamente
+en el chat — hacerlo antes de dar la Fase 2 por "lista para usar".
+
 ⏸️ CHECKPOINT (2026-11-16) — construyendo "Mi año en píxeles" dentro de Semana → pestaña Año. La
 usuaria mostró fotos de un planeador físico de papel ("Mi año en píxeles" + "Planeador Semanal") y
 pidió adaptar eso a la app, ya cerrando el año. Se le presentó el filtro de feature: "Mi año en
@@ -1125,6 +1155,13 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 6: servicios externos (GitHub ya está, falta Supabase real, IA si aplica, Vercel, Resend, dominio, Hotmart) — ahí se reemplazan los placeholders del carrusel de la landing por screenshots reales de la app.
 
 ## Problemas conocidos ⚠️
+- planeador (Planeador Semanal, 5to ícono "Plan"): SIN veredicto "LISTA" del revisor-visual —
+  4 rondas (27/40·12/20 → 33/40·13/20 → 30/40·15/20 → ronda 4 con fixes de contraste/identidad
+  aplicados pero sin re-puntuar, el contenedor se reinició a mitad de esa pasada). La usuaria
+  pidió parar ahí ("Ya déjala así y continúa") — ACEPTADA POR DECISIÓN EXPLÍCITA, mismo patrón
+  que landing/onboarding de abajo. Detalle completo de las 4 rondas en
+  docs/revisiones/planeador-veredicto.md. No re-abrir ni relanzar el revisor sin que la usuaria
+  lo pida.
 - onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (ver "Puertas de etapa") tras 16 pasadas del revisor-visual. Quedan 5 pendientes conocidos, NO bloqueantes, aceptados así por la usuaria el 2026-09-18 (detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"):
   1. RESUELTO (2026-11-04) — el botón "Salir sin guardar" no cambiaba a "Salir" cuando ya te comprometiste. Fix: mismo patrón que el punto 5, `labelSalir={comprometido ? 'Salir' : undefined}`. El paywall no cambió (pasa su propio label explícito). Ver nota en docs/revisiones/onboarding-veredicto.md.
   2. RESUELTO (2026-11-04) — las 2 pantallas del compromiso tenían casi la mitad de la pantalla vacía arriba del título. Causa: el bloque se centraba verticalmente en toda la altura disponible; al ser contenido corto, dejaba un hueco grande arriba y abajo. Fix: se quitó el centrado vertical y se ancló el contenido cerca del encabezado con aire razonable (48px) — el anillo decorativo de fondo llena la parte baja, así no queda vacía tampoco ahí. Ver nota completa en docs/revisiones/onboarding-veredicto.md.
