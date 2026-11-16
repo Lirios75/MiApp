@@ -77,11 +77,20 @@ function useVariantes(): { contenedor: Variants; item: Variants } {
   };
 }
 
+// Mismas constantes EXACTAS de components/RespiraMark.tsx — ronda 3 del revisor-visual marcó
+// que un barrido 0-360° se lee como un "Activity Ring" genérico, no como el logo real (que
+// SIEMPRE tiene una abertura de 270°, nunca un círculo cerrado). Reusar los mismos números hace
+// que este anillo sea reconociblemente "el mismo dispositivo", solo con datos en vez de decorar.
+const BARRIDO_ANILLO = 0.75;
+const OFFSET_EXTERIOR_ANILLO = 0.375;
+const OFFSET_INTERIOR_ANILLO = 0.875;
+
 /* ── <AnilloSemana> — el dispositivo ownable de FICHA-ARTE (el doble anillo de RespiraMark:
-   verde afuera, naranja adentro) llevado a un indicador de progreso real, no decorativo: el
-   anillo EXTERIOR verde es el % de hábitos marcados esta semana, el INTERIOR naranja el % de
-   tareas hechas — mismos 2 colores y mismo anidado que el logo, ahora cargando datos reales en
-   vez de ser un círculo de progreso genérico de un solo color. ── */
+   verde afuera, naranja adentro), con la MISMA abertura de 270° que el logo real, llevado a un
+   indicador de progreso: el anillo EXTERIOR verde es el % de hábitos marcados esta semana, el
+   INTERIOR naranja el % de tareas hechas — el check de "tarea hecha" en <TareasCard> usa el
+   mismo naranja, para que el color no contradiga lo que mide. Una leyenda chica debajo aclara
+   qué mide cada color (antes no había ninguna). ── */
 function AnilloSemana({
   porcentajeHabitos,
   porcentajeTareas,
@@ -97,16 +106,38 @@ function AnilloSemana({
   const grosor = 5;
   const rExterior = centro - grosor / 2 - 1;
   const rInterior = rExterior - grosor - 2;
-  const circExterior = 2 * Math.PI * rExterior;
-  const circInterior = 2 * Math.PI * rInterior;
-  const avanceExterior = (Math.min(100, Math.max(0, porcentajeHabitos)) / 100) * circExterior;
-  const avanceInterior = (Math.min(100, Math.max(0, porcentajeTareas)) / 100) * circInterior;
+  const avanceExterior = BARRIDO_ANILLO * (Math.min(100, Math.max(0, porcentajeHabitos)) / 100);
+  const avanceInterior = BARRIDO_ANILLO * (Math.min(100, Math.max(0, porcentajeTareas)) / 100);
 
   return (
-    <div className="relative shrink-0" style={{ width: tamano, height: tamano }} role="img" aria-label={`${porcentajeTotal}% de tu semana cumplido`}>
+    <div className="relative shrink-0" style={{ width: tamano, height: tamano }} role="img" aria-label={`${porcentajeTotal}% de tu semana — ${porcentajeHabitos}% de hábitos, ${porcentajeTareas}% de tareas`}>
       <svg width={tamano} height={tamano} viewBox={`0 0 ${tamano} ${tamano}`} aria-hidden="true">
-        <circle cx={centro} cy={centro} r={rExterior} stroke="color-mix(in oklab, var(--accent-2) 14%, transparent)" strokeWidth={grosor} fill="none" />
-        <circle cx={centro} cy={centro} r={rInterior} stroke="color-mix(in oklab, var(--accent-3) 14%, transparent)" strokeWidth={grosor} fill="none" />
+        {/* pistas (el resto de la abertura de 270°, en tono tenue) */}
+        <circle
+          cx={centro}
+          cy={centro}
+          r={rExterior}
+          stroke="color-mix(in oklab, var(--accent-2) 16%, transparent)"
+          strokeWidth={grosor}
+          strokeLinecap="round"
+          fill="none"
+          pathLength={1}
+          strokeDasharray={`${BARRIDO_ANILLO} ${1 - BARRIDO_ANILLO}`}
+          strokeDashoffset={-OFFSET_EXTERIOR_ANILLO}
+        />
+        <circle
+          cx={centro}
+          cy={centro}
+          r={rInterior}
+          stroke="color-mix(in oklab, var(--accent-3) 16%, transparent)"
+          strokeWidth={grosor}
+          strokeLinecap="round"
+          fill="none"
+          pathLength={1}
+          strokeDasharray={`${BARRIDO_ANILLO} ${1 - BARRIDO_ANILLO}`}
+          strokeDashoffset={-OFFSET_INTERIOR_ANILLO}
+        />
+        {/* progreso real, mismo punto de partida que el logo */}
         <motion.circle
           cx={centro}
           cy={centro}
@@ -115,10 +146,9 @@ function AnilloSemana({
           strokeWidth={grosor}
           strokeLinecap="round"
           fill="none"
-          strokeDasharray={circExterior}
-          transform={`rotate(-90 ${centro} ${centro})`}
-          initial={{ strokeDashoffset: circExterior }}
-          animate={{ strokeDashoffset: circExterior - avanceExterior }}
+          style={{ pathOffset: OFFSET_EXTERIOR_ANILLO, pathSpacing: 1 - BARRIDO_ANILLO }}
+          initial={{ pathLength: reduce ? avanceExterior : 0 }}
+          animate={{ pathLength: avanceExterior }}
           transition={{ duration: reduce ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] }}
         />
         <motion.circle
@@ -129,10 +159,9 @@ function AnilloSemana({
           strokeWidth={grosor}
           strokeLinecap="round"
           fill="none"
-          strokeDasharray={circInterior}
-          transform={`rotate(-90 ${centro} ${centro})`}
-          initial={{ strokeDashoffset: circInterior }}
-          animate={{ strokeDashoffset: circInterior - avanceInterior }}
+          style={{ pathOffset: OFFSET_INTERIOR_ANILLO, pathSpacing: 1 - BARRIDO_ANILLO }}
+          initial={{ pathLength: reduce ? avanceInterior : 0 }}
+          animate={{ pathLength: avanceInterior }}
           transition={{ duration: reduce ? 0 : 0.7, delay: reduce ? 0 : 0.08, ease: [0.16, 1, 0.3, 1] }}
         />
       </svg>
@@ -282,14 +311,26 @@ export default function PlaneadorPage() {
       <motion.header variants={item}>
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-[22px] font-bold [font-family:var(--font-display)]">Tu semana</h1>
-          <AnilloSemana porcentajeHabitos={porcentajeHabitos} porcentajeTareas={porcentajeTareas} porcentajeTotal={porcentajeSemana} />
+          <div className="flex flex-col items-end gap-1">
+            <AnilloSemana porcentajeHabitos={porcentajeHabitos} porcentajeTareas={porcentajeTareas} porcentajeTotal={porcentajeSemana} />
+            <div className="flex gap-2 text-[11px] text-[var(--text-tertiary)]">
+              <span className="flex items-center gap-1">
+                <span aria-hidden="true" className="size-2 rounded-full" style={{ background: 'var(--accent-2)' }} />
+                Hábitos
+              </span>
+              <span className="flex items-center gap-1">
+                <span aria-hidden="true" className="size-2 rounded-full" style={{ background: 'var(--accent-3)' }} />
+                Tareas
+              </span>
+            </div>
+          </div>
         </div>
         <AnimatePresence>
           {porcentajeSemana === 100 && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8, height: 0 }}
               animate={{ opacity: 1, scale: 1, height: 'auto' }}
-              transition={{ type: 'spring', duration: 0.5, bounce: 0.4 }}
+              transition={{ type: 'spring', duration: 0.5, bounce: 0.1 }}
               className="mt-2 flex items-center gap-2 overflow-hidden rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-2)_12%,transparent)] px-3 py-2"
             >
               <PartyPopper size={15} strokeWidth={2} color="var(--accent-2-text)" aria-hidden="true" />
@@ -339,8 +380,8 @@ export default function PlaneadorPage() {
                 transition={{ duration: 0.2 }}
                 className="pointer-events-auto flex items-center gap-2 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-3 py-2.5 shadow-[var(--shadow-2)]"
               >
-                <WifiOff size={15} strokeWidth={2} color="var(--bg)" aria-hidden="true" />
-                <span className="text-[13px] font-semibold text-[var(--bg)]">No se pudo guardar. Revisa tu conexión e intenta de nuevo.</span>
+                <WifiOff size={15} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
+                <span className="text-[13px] font-semibold text-[var(--text-primary)]">No se pudo guardar. Revisa tu conexión e intenta de nuevo.</span>
               </motion.div>
             )}
           </AnimatePresence>
@@ -348,7 +389,7 @@ export default function PlaneadorPage() {
       </div>
 
       <ObjetivosCard
-        titulo="Objetivos de la semana"
+        titulo="Objetivos"
         icono={Flag}
         colorVar="var(--accent)"
         placeholder={(i) => `Objetivo ${i + 1}`}
@@ -422,7 +463,7 @@ function Tarjeta({
       >
         <span className="flex min-w-0 items-center gap-2">
           <Icono size={16} strokeWidth={2} color={colorVar} aria-hidden="true" />
-          <span className="truncate text-[16px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">{titulo}</span>
+          <span className="truncate text-[19px] font-semibold text-[var(--text-primary)] [font-family:var(--font-display)]">{titulo}</span>
         </span>
         <span className="flex shrink-0 items-center gap-2">
           <span className="text-[12px] text-[var(--text-tertiary)]">{resumen}</span>
@@ -709,7 +750,7 @@ function HabitosCard({
                     whileTap={TAP}
                     transition={TAP_TRANSICION}
                     onClick={() => borrarHabito(h.id)}
-                    className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-2 text-[12px] font-semibold text-[var(--bg)] [touch-action:manipulation]"
+                    className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-2 text-[12px] font-semibold text-[var(--text-primary)] [touch-action:manipulation]"
                   >
                     Borrar
                   </motion.button>
@@ -855,25 +896,32 @@ function TareasCard({
       abiertaInicial
       item={item}
     >
-      <div role="tablist" aria-label="Elegir día" className="flex gap-1.5 overflow-x-auto pb-1">
-        {fechas.map((iso, i) => {
-          const activo = i === diaIndex;
-          return (
-            <motion.button
-              key={iso}
-              type="button"
-              whileTap={TAP}
-              transition={TAP_TRANSICION}
-              role="tab"
-              aria-selected={activo}
-              onClick={() => onCambiarDia(i)}
-              className="flex h-8 shrink-0 items-center rounded-full px-3 text-[12px] font-semibold [touch-action:manipulation]"
-              style={{ background: activo ? 'var(--accent)' : 'var(--surface-2)', color: activo ? 'var(--bg)' : 'var(--text-secondary)' }}
-            >
-              {inicialDia(i)} {Number(iso.slice(8, 10))}
-            </motion.button>
-          );
-        })}
+      <div className="relative">
+        <div role="tablist" aria-label="Elegir día" className="flex gap-1.5 overflow-x-auto pb-1">
+          {fechas.map((iso, i) => {
+            const activo = i === diaIndex;
+            return (
+              <motion.button
+                key={iso}
+                type="button"
+                whileTap={TAP}
+                transition={TAP_TRANSICION}
+                role="tab"
+                aria-selected={activo}
+                onClick={() => onCambiarDia(i)}
+                className="flex h-8 shrink-0 items-center rounded-full px-3 text-[12px] font-semibold [touch-action:manipulation]"
+                style={{ background: activo ? 'var(--accent)' : 'var(--surface-2)', color: activo ? 'var(--bg)' : 'var(--text-secondary)' }}
+              >
+                {inicialDia(i)} {Number(iso.slice(8, 10))}
+              </motion.button>
+            );
+          })}
+        </div>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 w-8"
+          style={{ background: 'linear-gradient(to right, transparent, var(--surface))' }}
+        />
       </div>
 
       <AnimatePresence mode="wait">
@@ -910,7 +958,7 @@ function TareasCard({
                         whileTap={TAP}
                         transition={TAP_TRANSICION}
                         onClick={() => borrar(t.id)}
-                        className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-2 text-[12px] font-semibold text-[var(--bg)] [touch-action:manipulation]"
+                        className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-2 text-[12px] font-semibold text-[var(--text-primary)] [touch-action:manipulation]"
                       >
                         Borrar
                       </motion.button>
@@ -927,11 +975,11 @@ function TareasCard({
                       aria-label={t.hecho ? `Marcar "${t.texto}" como pendiente` : `Marcar "${t.texto}" como hecha`}
                       className="flex size-7 shrink-0 items-center justify-center rounded-full [touch-action:manipulation]"
                       style={{
-                        background: t.hecho ? 'var(--accent-2)' : 'transparent',
+                        background: t.hecho ? 'var(--accent-3)' : 'transparent',
                         border: t.hecho ? 'none' : '1.5px solid color-mix(in oklab, var(--text-tertiary) 40%, transparent)',
                       }}
                     >
-                      {t.hecho && <Check size={13} strokeWidth={3} color="var(--bg)" aria-hidden="true" />}
+                      {t.hecho && <Check size={13} strokeWidth={3} color="var(--text-primary)" aria-hidden="true" />}
                     </motion.button>
                     <span
                       className={`min-w-0 flex-1 truncate text-[14px] ${
