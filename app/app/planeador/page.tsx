@@ -6,10 +6,34 @@
 // historial del Semáforo), este mira hacia ADELANTE: se llena por anticipado, por eso SÍ deja
 // navegar a semanas futuras sin límite (el "→" nunca se deshabilita). Primera pantalla de este
 // tipo en el proyecto → revisor-visual la evalúa también.
+//
+// Ronda 2 (tras veredicto NO LISTA del revisor-visual, 27/40·12/20): tarjetas colapsables (solo
+// Agua y Tareas abren por defecto — antes eran 6 tarjetas abiertas a la vez, sin una acción
+// primaria reconocible), anillo de respiración en el header (el dispositivo ownable de
+// FICHA-ARTE, ausente en la v1) mostrando % de la semana cumplida, feedback de tap (whileTap) en
+// TODO control de esta pantalla (antes solo el contenedor tenía stagger de entrada), borrar una
+// tarea ahora pide el mismo 2do-toque de confirmación que borrar un hábito (antes era instantáneo
+// e inconsistente), y cada guardado que falla AVISA y revierte el cambio optimista (antes fallaba
+// en silencio — catch(console.error) sin avisar a la usuaria).
 
 import { useEffect, useState, type FormEvent } from 'react';
-import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { Check, ChevronLeft, ChevronRight, Droplet, Flag, Heart, ListChecks, NotebookPen, Plus, Repeat, X } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react';
+import {
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Droplet,
+  Flag,
+  Heart,
+  ListChecks,
+  NotebookPen,
+  Plus,
+  Repeat,
+  WifiOff,
+  X,
+  type LucideIcon,
+} from 'lucide-react';
 import {
   diasDeLaSemana,
   DIAS_SEMANA_LARGO,
@@ -30,7 +54,7 @@ import {
   actualizarTareasSemana,
   obtenerPlanificadorSemana,
 } from '@/lib/supabase/datos';
-import { ErrorCarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
+import { AnilloProgreso, ConteoAnimado, ErrorCarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -45,10 +69,13 @@ function useVariantes(): { contenedor: Variants; item: Variants } {
 
 const ESTILO_INPUT =
   'h-11 w-full rounded-[var(--radius-button)] bg-[var(--surface-2)] px-3 text-[14px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)] focus:ring-2 focus:ring-[var(--accent)]';
+const TAP = { scale: 0.93 };
+const TAP_TRANSICION = { duration: 0.12 };
 
 export default function PlaneadorPage() {
   const [plan, setPlan] = useState<PlanificadorSemana | null>(null);
   const [error, setError] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState(false);
   const [offset, setOffset] = useState(0);
   const [diaTareaIndex, setDiaTareaIndex] = useState<number | null>(null);
   const { contenedor, item } = useVariantes();
@@ -66,6 +93,12 @@ export default function PlaneadorPage() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [semanaInicio]);
+
+  useEffect(() => {
+    if (!errorGuardado) return;
+    const t = setTimeout(() => setErrorGuardado(false), 4000);
+    return () => clearTimeout(t);
+  }, [errorGuardado]);
 
   if (error) {
     return <ErrorCarga />;
@@ -85,47 +118,100 @@ export default function PlaneadorPage() {
   const hoyIndex = fechas.indexOf(hoyISO());
   const diaActivo = diaTareaIndex ?? (hoyIndex >= 0 ? hoyIndex : 0);
 
+  // Alias no-nulo: los `function` declarados abajo son closures que TS no narrowea a partir del
+  // guard `if (!plan) return` de arriba (solo narrowea el scope síncrono), así que necesitan su
+  // propia referencia ya angosta a `PlanificadorSemana` (sin el `| null`) para leer el valor
+  // "anterior" al revertir un guardado fallido.
+  const planActual = plan;
+
+  const totalHabitos = plan.habitos.length * 7;
+  const hechosHabitos = plan.habitos.reduce((acc, h) => acc + h.dias.filter(Boolean).length, 0);
+  const todasTareas = plan.tareas.flat();
+  const hechasTareas = todasTareas.filter((t) => t.hecho).length;
+  const totalPosible = totalHabitos + todasTareas.length;
+  const porcentajeSemana = totalPosible > 0 ? Math.round(((hechosHabitos + hechasTareas) / totalPosible) * 100) : 0;
+
+  function avisarErrorGuardado() {
+    setErrorGuardado(true);
+  }
+
   function guardarObjetivos(objetivos: string[]) {
+    const anterior = planActual.objetivos;
     setPlan((p) => (p ? { ...p, objetivos } : p));
-    actualizarObjetivosSemana(semanaInicio, objetivos).catch(console.error);
+    actualizarObjetivosSemana(semanaInicio, objetivos).catch((e) => {
+      console.error(e);
+      setPlan((p) => (p ? { ...p, objetivos: anterior } : p));
+      avisarErrorGuardado();
+    });
   }
 
   function cambiarAgua(dia: number, vasos: number) {
-    setPlan((p) => {
-      if (!p) return p;
-      const agua = p.agua.map((v, i) => (i === dia ? vasos : v));
-      actualizarAguaSemana(semanaInicio, agua).catch(console.error);
-      return { ...p, agua };
+    const anterior = planActual.agua;
+    const agua = anterior.map((v, i) => (i === dia ? vasos : v));
+    setPlan((p) => (p ? { ...p, agua } : p));
+    actualizarAguaSemana(semanaInicio, agua).catch((e) => {
+      console.error(e);
+      setPlan((p) => (p ? { ...p, agua: anterior } : p));
+      avisarErrorGuardado();
     });
   }
 
   function guardarHabitos(habitos: HabitoSemanal[]) {
+    const anterior = planActual.habitos;
     setPlan((p) => (p ? { ...p, habitos } : p));
-    actualizarHabitosSemana(semanaInicio, habitos).catch(console.error);
+    actualizarHabitosSemana(semanaInicio, habitos).catch((e) => {
+      console.error(e);
+      setPlan((p) => (p ? { ...p, habitos: anterior } : p));
+      avisarErrorGuardado();
+    });
   }
 
   function guardarTareas(tareas: TareaDia[][]) {
+    const anterior = planActual.tareas;
     setPlan((p) => (p ? { ...p, tareas } : p));
-    actualizarTareasSemana(semanaInicio, tareas).catch(console.error);
+    actualizarTareasSemana(semanaInicio, tareas).catch((e) => {
+      console.error(e);
+      setPlan((p) => (p ? { ...p, tareas: anterior } : p));
+      avisarErrorGuardado();
+    });
   }
 
   function guardarNotas(notas: string) {
+    const anterior = planActual.notas;
     setPlan((p) => (p ? { ...p, notas } : p));
-    actualizarNotasSemana(semanaInicio, notas).catch(console.error);
+    actualizarNotasSemana(semanaInicio, notas).catch((e) => {
+      console.error(e);
+      setPlan((p) => (p ? { ...p, notas: anterior } : p));
+      avisarErrorGuardado();
+    });
   }
 
   function guardarGratitud(gratitud: string[]) {
+    const anterior = planActual.gratitud;
     setPlan((p) => (p ? { ...p, gratitud } : p));
-    actualizarGratitudSemana(semanaInicio, gratitud).catch(console.error);
+    actualizarGratitudSemana(semanaInicio, gratitud).catch((e) => {
+      console.error(e);
+      setPlan((p) => (p ? { ...p, gratitud: anterior } : p));
+      avisarErrorGuardado();
+    });
   }
 
   return (
     <motion.main variants={contenedor} initial="hidden" animate="visible" className="flex flex-1 flex-col gap-5 px-4 pb-8 pt-8">
       <motion.header variants={item}>
-        <h1 className="text-[22px] font-bold [font-family:var(--font-display)]">Tu semana</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-[22px] font-bold [font-family:var(--font-display)]">Tu semana</h1>
+          <AnilloProgreso porcentaje={porcentajeSemana} tamano={52} grosor={5}>
+            <span className="text-[13px] font-bold [font-variant-numeric:tabular-nums] [font-family:var(--font-display)]">
+              <ConteoAnimado valor={porcentajeSemana} sufijo="%" />
+            </span>
+          </AnilloProgreso>
+        </div>
         <div className="mt-3 flex items-center justify-between">
-          <button
+          <motion.button
             type="button"
+            whileTap={TAP}
+            transition={TAP_TRANSICION}
             onClick={() => {
               setOffset((o) => o - 1);
               setDiaTareaIndex(null);
@@ -134,10 +220,12 @@ export default function PlaneadorPage() {
             className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] [touch-action:manipulation]"
           >
             <ChevronLeft size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
-          </button>
+          </motion.button>
           <span className="text-[15px] font-semibold text-[var(--text-secondary)]">{formatearRangoSemana(fechas)}</span>
-          <button
+          <motion.button
             type="button"
+            whileTap={TAP}
+            transition={TAP_TRANSICION}
             onClick={() => {
               setOffset((o) => o + 1);
               setDiaTareaIndex(null);
@@ -146,9 +234,24 @@ export default function PlaneadorPage() {
             className="flex size-9 items-center justify-center rounded-[var(--radius-button)] bg-[var(--surface)] [touch-action:manipulation]"
           >
             <ChevronRight size={18} strokeWidth={2} color="var(--text-primary)" aria-hidden="true" />
-          </button>
+          </motion.button>
         </div>
       </motion.header>
+
+      <AnimatePresence>
+        {errorGuardado && (
+          <motion.div
+            initial={{ opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.2 }}
+            className="flex items-center gap-2 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-3)_12%,transparent)] px-3 py-2.5"
+          >
+            <WifiOff size={15} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" />
+            <span className="text-[13px] text-[var(--text-secondary)]">No se pudo guardar. Revisa tu conexión e intenta de nuevo.</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ObjetivosCard
         titulo="Tus 3 objetivos de la semana"
@@ -190,12 +293,78 @@ export default function PlaneadorPage() {
   );
 }
 
+/* ── <Tarjeta> — envoltorio colapsable compartido por las 6 secciones (ronda 2: antes las 6
+   estaban siempre abiertas a la vez, sin una acción primaria clara). El encabezado (ícono +
+   título + resumen + flecha) siempre se ve y es el toggle; el contenido se anima con altura
+   "auto" vía AnimatePresence. Solo Agua y Tareas abren por defecto (abiertaInicial=true) — las
+   dos que se usan día a día; el resto se revisa con menos frecuencia. ── */
+function Tarjeta({
+  titulo,
+  icono: Icono,
+  colorVar,
+  resumen,
+  abiertaInicial = false,
+  item,
+  children,
+}: {
+  titulo: string;
+  icono: LucideIcon;
+  colorVar: string;
+  resumen: string;
+  abiertaInicial?: boolean;
+  item: Variants;
+  children: React.ReactNode;
+}) {
+  const [abierta, setAbierta] = useState(abiertaInicial);
+  return (
+    <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-1)]">
+      <motion.button
+        type="button"
+        whileTap={TAP}
+        transition={TAP_TRANSICION}
+        onClick={() => setAbierta((a) => !a)}
+        aria-expanded={abierta}
+        className="flex w-full items-center justify-between gap-2 [touch-action:manipulation]"
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <Icono size={16} strokeWidth={2} color={colorVar} aria-hidden="true" />
+          <span className="truncate text-[13px] font-semibold text-[var(--text-secondary)]">{titulo}</span>
+        </span>
+        <span className="flex shrink-0 items-center gap-2">
+          <span className="text-[12px] text-[var(--text-tertiary)]">{resumen}</span>
+          <ChevronDown
+            size={16}
+            strokeWidth={2}
+            color="var(--text-tertiary)"
+            aria-hidden="true"
+            className={`transition-transform duration-200 ${abierta ? 'rotate-180' : ''}`}
+          />
+        </span>
+      </motion.button>
+      <AnimatePresence initial={false}>
+        {abierta && (
+          <motion.div
+            key="contenido"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="pt-4">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.section>
+  );
+}
+
 /* ── <ObjetivosCard> — 3 líneas fijas numeradas (objetivos o gratitud, mismo patrón que el
    planeador de papel: siempre 3 espacios, se llenan o se dejan en blanco). Reusada para ambas
    tarjetas con ícono/color distintos. ── */
 function ObjetivosCard({
   titulo,
-  icono: Icono,
+  icono,
   colorVar,
   placeholder,
   valores,
@@ -204,7 +373,7 @@ function ObjetivosCard({
   item,
 }: {
   titulo: string;
-  icono: typeof Flag;
+  icono: LucideIcon;
   colorVar: string;
   placeholder: (i: number) => string;
   valores: string[];
@@ -225,13 +394,11 @@ function ObjetivosCard({
     onGuardar(Array.from({ length: max }, (_, idx) => (idx === i ? valor : valores[idx] ?? '')));
   }
 
+  const llenos = valores.filter((v) => v.trim()).length;
+
   return (
-    <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-1)]">
-      <div className="flex items-center gap-2">
-        <Icono size={16} strokeWidth={2} color={colorVar} aria-hidden="true" />
-        <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">{titulo}</h2>
-      </div>
-      <div className="mt-3 flex flex-col gap-2">
+    <Tarjeta titulo={titulo} icono={icono} colorVar={colorVar} resumen={`${llenos}/${max} escritos`} item={item}>
+      <div className="flex flex-col gap-2">
         {textos.map((texto, i) => (
           <div key={i} className="flex items-center gap-2">
             <span
@@ -253,12 +420,13 @@ function ObjetivosCard({
           </div>
         ))}
       </div>
-    </motion.section>
+    </Tarjeta>
   );
 }
 
 /* ── <AguaCard> — un vaso por día, toca para sumar uno (cicla a 0 al llegar a la meta, así
-   también sirve para corregir sin un botón "-" aparte). ── */
+   también sirve para corregir sin un botón "-" aparte). Abierta por defecto (es la acción más
+   rápida y diaria de la pantalla). ── */
 function AguaCard({
   agua,
   fechas,
@@ -270,23 +438,22 @@ function AguaCard({
   onCambiar: (dia: number, vasos: number) => void;
   item: Variants;
 }) {
+  const totalSemana = agua.reduce((a, b) => a + b, 0);
   return (
-    <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-1)]">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Droplet size={16} strokeWidth={2} color="var(--accent)" aria-hidden="true" />
-          <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Agua</h2>
-        </div>
+    <Tarjeta titulo="Agua" icono={Droplet} colorVar="var(--accent)" resumen={`${totalSemana} vasos`} abiertaInicial item={item}>
+      <div className="flex items-center justify-end">
         <span className="text-[11px] text-[var(--text-tertiary)]">Meta: {VASOS_AGUA_META} vasos/día</span>
       </div>
-      <div className="mt-4 flex justify-between">
+      <div className="mt-3 flex justify-between">
         {fechas.map((iso, i) => {
           const vasos = agua[i] ?? 0;
           const lleno = vasos >= VASOS_AGUA_META;
           return (
-            <button
+            <motion.button
               key={iso}
               type="button"
+              whileTap={TAP}
+              transition={TAP_TRANSICION}
               onClick={() => onCambiar(i, lleno ? 0 : vasos + 1)}
               aria-label={`${DIAS_SEMANA_LARGO[i]}: ${vasos} de ${VASOS_AGUA_META} vasos de agua. Toca para sumar uno.`}
               className="flex flex-col items-center gap-1.5 [touch-action:manipulation]"
@@ -305,11 +472,11 @@ function AguaCard({
                 {vasos}
               </span>
               <span className="text-[11px] font-medium text-[var(--text-tertiary)]">{inicialDia(i)}</span>
-            </button>
+            </motion.button>
           );
         })}
       </div>
-    </motion.section>
+    </Tarjeta>
   );
 }
 
@@ -350,18 +517,19 @@ function HabitosCard({
   }
 
   return (
-    <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-1)]">
-      <div className="flex items-center gap-2">
-        <Repeat size={16} strokeWidth={2} color="var(--accent-2)" aria-hidden="true" />
-        <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Tus hábitos</h2>
-      </div>
-
+    <Tarjeta
+      titulo="Tus hábitos"
+      icono={Repeat}
+      colorVar="var(--accent-2)"
+      resumen={habitos.length === 0 ? 'Ninguno' : `${habitos.length} hábito${habitos.length === 1 ? '' : 's'}`}
+      item={item}
+    >
       {habitos.length === 0 ? (
-        <p className="mt-3 text-[13px] text-[var(--text-tertiary)]">
+        <p className="text-[13px] text-[var(--text-tertiary)]">
           Agrega un hábito que quieras repetir esta semana — lo vas marcando día a día.
         </p>
       ) : (
-        <div className="mt-4 flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           <div className="flex items-center gap-1.5">
             <span className="min-w-0 flex-1" />
             {fechas.map((iso, i) => (
@@ -378,36 +546,44 @@ function HabitosCard({
               >
                 <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--text-secondary)]">¿Borrar &quot;{h.nombre}&quot;?</span>
                 <div className="flex shrink-0 gap-1">
-                  <button
+                  <motion.button
                     type="button"
+                    whileTap={TAP}
+                    transition={TAP_TRANSICION}
                     onClick={() => setConfirmandoId(null)}
                     className="h-7 rounded-[var(--radius-button)] px-2 text-[12px] font-semibold text-[var(--text-secondary)] [touch-action:manipulation]"
                   >
                     Cancelar
-                  </button>
-                  <button
+                  </motion.button>
+                  <motion.button
                     type="button"
+                    whileTap={TAP}
+                    transition={TAP_TRANSICION}
                     onClick={() => borrarHabito(h.id)}
                     className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-2 text-[12px] font-semibold text-[var(--bg)] [touch-action:manipulation]"
                   >
                     Borrar
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             ) : (
               <div key={h.id} className="flex items-center gap-1.5">
-                <button
+                <motion.button
                   type="button"
+                  whileTap={TAP}
+                  transition={TAP_TRANSICION}
                   onClick={() => setConfirmandoId(h.id)}
                   aria-label={`Borrar hábito ${h.nombre}`}
                   className="min-w-0 flex-1 truncate text-left text-[13px] font-medium text-[var(--text-primary)] [touch-action:manipulation]"
                 >
                   {h.nombre}
-                </button>
+                </motion.button>
                 {h.dias.map((hecho, i) => (
-                  <button
+                  <motion.button
                     key={i}
                     type="button"
+                    whileTap={TAP}
+                    transition={TAP_TRANSICION}
                     onClick={() => alternarDia(h.id, i)}
                     aria-pressed={hecho}
                     aria-label={`${h.nombre} — ${DIAS_SEMANA_LARGO[i]}: ${hecho ? 'cumplido' : 'sin marcar'}`}
@@ -415,7 +591,7 @@ function HabitosCard({
                     style={{ background: hecho ? 'var(--accent-2)' : 'var(--surface-2)' }}
                   >
                     {hecho && <Check size={12} strokeWidth={3} color="var(--bg)" aria-hidden="true" />}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             )
@@ -432,21 +608,26 @@ function HabitosCard({
           aria-label="Nombre del hábito nuevo"
           className={ESTILO_INPUT}
         />
-        <button
+        <motion.button
           type="submit"
+          whileTap={nuevoNombre.trim() ? TAP : undefined}
+          transition={TAP_TRANSICION}
           disabled={!nuevoNombre.trim()}
           aria-label="Agregar hábito"
           className="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] disabled:opacity-40 [touch-action:manipulation]"
         >
           <Plus size={20} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
-        </button>
+        </motion.button>
       </form>
-    </motion.section>
+    </Tarjeta>
   );
 }
 
 /* ── <TareasCard> — una lista por día (no una sola lista mezclada de toda la semana), elegida
-   con los mismos chips de fecha que ya usa "Semana" para moverse entre días. ── */
+   con los mismos chips de fecha que ya usa "Semana" para moverse entre días. Borrar pide el mismo
+   2do toque de confirmación que borrar un hábito (antes era instantáneo — inconsistente con la
+   tarjeta de arriba para la misma clase de acción: destructiva e irreversible). Abierta por
+   defecto junto con Agua (las dos acciones del día a día). ── */
 function TareasCard({
   tareas,
   fechas,
@@ -463,7 +644,9 @@ function TareasCard({
   item: Variants;
 }) {
   const [texto, setTexto] = useState('');
+  const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
   const listaDia = tareas[diaIndex] ?? [];
+  const pendientes = tareas.flat().filter((t) => !t.hecho).length;
 
   function agregar(e: FormEvent) {
     e.preventDefault();
@@ -480,22 +663,27 @@ function TareasCard({
 
   function borrar(id: string) {
     onCambiar(tareas.map((lista, i) => (i === diaIndex ? lista.filter((t) => t.id !== id) : lista)));
+    setConfirmandoId(null);
   }
 
   return (
-    <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-1)]">
-      <div className="flex items-center gap-2">
-        <ListChecks size={16} strokeWidth={2} color="var(--accent)" aria-hidden="true" />
-        <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Tus tareas</h2>
-      </div>
-
-      <div role="tablist" aria-label="Elegir día" className="mt-3 flex gap-1.5 overflow-x-auto pb-1">
+    <Tarjeta
+      titulo="Tus tareas"
+      icono={ListChecks}
+      colorVar="var(--accent)"
+      resumen={`${pendientes} pendiente${pendientes === 1 ? '' : 's'}`}
+      abiertaInicial
+      item={item}
+    >
+      <div role="tablist" aria-label="Elegir día" className="flex gap-1.5 overflow-x-auto pb-1">
         {fechas.map((iso, i) => {
           const activo = i === diaIndex;
           return (
-            <button
+            <motion.button
               key={iso}
               type="button"
+              whileTap={TAP}
+              transition={TAP_TRANSICION}
               role="tab"
               aria-selected={activo}
               onClick={() => onCambiarDia(i)}
@@ -503,7 +691,7 @@ function TareasCard({
               style={{ background: activo ? 'var(--accent)' : 'var(--surface-2)', color: activo ? 'var(--bg)' : 'var(--text-secondary)' }}
             >
               {inicialDia(i)} {Number(iso.slice(8, 10))}
-            </button>
+            </motion.button>
           );
         })}
       </div>
@@ -512,38 +700,71 @@ function TareasCard({
         <p className="mt-4 text-[13px] text-[var(--text-tertiary)]">Sin tareas para este día todavía.</p>
       ) : (
         <ul className="mt-4 flex flex-col gap-2">
-          {listaDia.map((t) => (
-            <li key={t.id} className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => alternar(t.id)}
-                aria-pressed={t.hecho}
-                aria-label={t.hecho ? `Marcar "${t.texto}" como pendiente` : `Marcar "${t.texto}" como hecha`}
-                className="flex size-7 shrink-0 items-center justify-center rounded-full [touch-action:manipulation]"
-                style={{
-                  background: t.hecho ? 'var(--accent-2)' : 'transparent',
-                  border: t.hecho ? 'none' : '1.5px solid color-mix(in oklab, var(--text-tertiary) 40%, transparent)',
-                }}
+          {listaDia.map((t) =>
+            confirmandoId === t.id ? (
+              <li
+                key={t.id}
+                className="flex items-center justify-between gap-2 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-3)_10%,transparent)] px-3 py-2"
               >
-                {t.hecho && <Check size={13} strokeWidth={3} color="var(--bg)" aria-hidden="true" />}
-              </button>
-              <span
-                className={`min-w-0 flex-1 truncate text-[14px] ${
-                  t.hecho ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]'
-                }`}
-              >
-                {t.texto}
-              </span>
-              <button
-                type="button"
-                onClick={() => borrar(t.id)}
-                aria-label={`Borrar tarea "${t.texto}"`}
-                className="flex size-7 shrink-0 items-center justify-center [touch-action:manipulation]"
-              >
-                <X size={15} strokeWidth={2} color="var(--text-tertiary)" aria-hidden="true" />
-              </button>
-            </li>
-          ))}
+                <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--text-secondary)]">¿Borrar &quot;{t.texto}&quot;?</span>
+                <div className="flex shrink-0 gap-1">
+                  <motion.button
+                    type="button"
+                    whileTap={TAP}
+                    transition={TAP_TRANSICION}
+                    onClick={() => setConfirmandoId(null)}
+                    className="h-7 rounded-[var(--radius-button)] px-2 text-[12px] font-semibold text-[var(--text-secondary)] [touch-action:manipulation]"
+                  >
+                    Cancelar
+                  </motion.button>
+                  <motion.button
+                    type="button"
+                    whileTap={TAP}
+                    transition={TAP_TRANSICION}
+                    onClick={() => borrar(t.id)}
+                    className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-2 text-[12px] font-semibold text-[var(--bg)] [touch-action:manipulation]"
+                  >
+                    Borrar
+                  </motion.button>
+                </div>
+              </li>
+            ) : (
+              <li key={t.id} className="flex items-center gap-2">
+                <motion.button
+                  type="button"
+                  whileTap={TAP}
+                  transition={TAP_TRANSICION}
+                  onClick={() => alternar(t.id)}
+                  aria-pressed={t.hecho}
+                  aria-label={t.hecho ? `Marcar "${t.texto}" como pendiente` : `Marcar "${t.texto}" como hecha`}
+                  className="flex size-7 shrink-0 items-center justify-center rounded-full [touch-action:manipulation]"
+                  style={{
+                    background: t.hecho ? 'var(--accent-2)' : 'transparent',
+                    border: t.hecho ? 'none' : '1.5px solid color-mix(in oklab, var(--text-tertiary) 40%, transparent)',
+                  }}
+                >
+                  {t.hecho && <Check size={13} strokeWidth={3} color="var(--bg)" aria-hidden="true" />}
+                </motion.button>
+                <span
+                  className={`min-w-0 flex-1 truncate text-[14px] ${
+                    t.hecho ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]'
+                  }`}
+                >
+                  {t.texto}
+                </span>
+                <motion.button
+                  type="button"
+                  whileTap={TAP}
+                  transition={TAP_TRANSICION}
+                  onClick={() => setConfirmandoId(t.id)}
+                  aria-label={`Borrar tarea "${t.texto}"`}
+                  className="flex size-7 shrink-0 items-center justify-center [touch-action:manipulation]"
+                >
+                  <X size={15} strokeWidth={2} color="var(--text-tertiary)" aria-hidden="true" />
+                </motion.button>
+              </li>
+            )
+          )}
         </ul>
       )}
 
@@ -556,16 +777,18 @@ function TareasCard({
           aria-label="Nueva tarea"
           className={ESTILO_INPUT}
         />
-        <button
+        <motion.button
           type="submit"
+          whileTap={texto.trim() ? TAP : undefined}
+          transition={TAP_TRANSICION}
           disabled={!texto.trim()}
           aria-label="Agregar tarea"
           className="flex size-11 shrink-0 items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] disabled:opacity-40 [touch-action:manipulation]"
         >
           <Plus size={20} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
-        </button>
+        </motion.button>
       </form>
-    </motion.section>
+    </Tarjeta>
   );
 }
 
@@ -575,11 +798,7 @@ function NotasCard({ notas, onGuardar, item }: { notas: string; onGuardar: (nota
   useEffect(() => setTexto(notas), [notas]);
 
   return (
-    <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-1)]">
-      <div className="flex items-center gap-2">
-        <NotebookPen size={16} strokeWidth={2} color="var(--text-tertiary)" aria-hidden="true" />
-        <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Notas</h2>
-      </div>
+    <Tarjeta titulo="Notas" icono={NotebookPen} colorVar="var(--text-tertiary)" resumen={notas.trim() ? 'Con nota' : 'Sin nota'} item={item}>
       <textarea
         rows={4}
         value={texto}
@@ -589,8 +808,8 @@ function NotasCard({ notas, onGuardar, item }: { notas: string; onGuardar: (nota
         }}
         placeholder="Lo que quieras apuntar de esta semana..."
         aria-label="Notas de la semana"
-        className="mt-3 w-full resize-none rounded-[var(--radius-button)] bg-[var(--surface-2)] p-3 text-[14px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)] focus:ring-2 focus:ring-[var(--accent)]"
+        className="w-full resize-none rounded-[var(--radius-button)] bg-[var(--surface-2)] p-3 text-[14px] text-[var(--text-primary)] outline-none placeholder:text-[var(--text-tertiary)] focus:ring-2 focus:ring-[var(--accent)]"
       />
-    </motion.section>
+    </Tarjeta>
   );
 }

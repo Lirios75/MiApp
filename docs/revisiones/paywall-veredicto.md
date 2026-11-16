@@ -451,6 +451,16 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Cuadragésima sexta re-verificación (2026-11-16 — ronda 2 del Planeador Semanal)
+
+El hook marcará `app/app/planeador/page.tsx` y `app/app/layout.tsx` como más nuevos otra vez —
+ronda 2 de correcciones tras el veredicto NO LISTA del revisor-visual sobre esa misma pantalla
+nueva (feedback de error en guardados, confirmación consistente al borrar, feedback de tap,
+tarjetas colapsables, anillo de progreso en el header). Mismo caso que la re-verificación
+anterior: `app/paywall/page.tsx` no importa nada de `app/app/planeador` ni de
+`app/app/layout.tsx` (confirmado por grep, sin coincidencias). Cero impacto; la certificación
+LISTA sigue vigente.
+
 ## Cuadragésima quinta re-verificación (2026-11-16 — 5to ícono "Plan" / Planeador Semanal)
 
 El hook marcará `app/app/planeador/page.tsx`, `app/app/layout.tsx` y `components/app/ui.tsx` como
