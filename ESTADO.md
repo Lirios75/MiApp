@@ -26,10 +26,8 @@ onboarding (ver Problemas conocidos). Verificado lo que si se puede verificar si
 tsc ✓ build ✓ · captura real a 375px en `docs/revisiones/planeador-375.png` · veredicto completo
 de las 4 rondas en `docs/revisiones/planeador-veredicto.md`. No re-abrir esta pantalla ni
 relanzar el revisor sobre ella sin que la usuaria lo pida.
-⚠️ PENDIENTE DE LA USUARIA (acción real, no solo aviso): para que esta pantalla funcione en la
-app real necesita ejecutar la migración nueva en el SQL Editor de Supabase (mismo procedimiento
-de siempre) — sin eso, al tocar el ícono "Plan" le va a fallar. Aún no se le ha pedido explícitamente
-en el chat — hacerlo antes de dar la Fase 2 por "lista para usar".
+**MIGRACIÓN YA EJECUTADA POR LA USUARIA (2026-11-16) — "Success. No rows returned", confirmado
+por captura.** La Fase 2 queda 100% lista para usar en la app real.
 
 ⏸️ CHECKPOINT (2026-11-16) — construyendo "Mi año en píxeles" dentro de Semana → pestaña Año. La
 usuaria mostró fotos de un planeador físico de papel ("Mi año en píxeles" + "Planeador Semanal") y
