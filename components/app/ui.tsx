@@ -12,6 +12,7 @@ import {
   CalendarDays,
   Flame,
   Home,
+  NotebookPen,
   Target,
   CircleUserRound,
   RefreshCw,
@@ -45,6 +46,7 @@ const DESTINOS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: '/app', label: 'Hoy', icon: Home },
   { href: '/app/semana', label: 'Semana', icon: CalendarDays },
   { href: '/app/meta', label: 'Meta', icon: Target },
+  { href: '/app/planeador', label: 'Plan', icon: NotebookPen },
   { href: '/app/cuenta', label: 'Cuenta', icon: CircleUserRound },
 ];
 

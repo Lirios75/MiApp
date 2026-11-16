@@ -5,7 +5,19 @@
 // lib/app.ts sin cambios; esto solo lee/escribe las 3 tablas de Supabase
 // (perfiles/checkins/metas — ver supabase/migrations/).
 
-import { calcularRacha, hoyISO, OBJETIVO_HABITO_DIAS, type EstadoApp, type EstadoSemaforo, type Frecuencia, type ModoMeta } from '@/lib/app';
+import {
+  calcularRacha,
+  hoyISO,
+  OBJETIVO_HABITO_DIAS,
+  planificadorVacio,
+  type EstadoApp,
+  type EstadoSemaforo,
+  type Frecuencia,
+  type HabitoSemanal,
+  type ModoMeta,
+  type PlanificadorSemana,
+  type TareaDia,
+} from '@/lib/app';
 import { crearClienteSupabase } from './client';
 
 async function usuarioId(): Promise<string> {
@@ -262,6 +274,65 @@ export async function eliminarMetaSupabase(id: string): Promise<EstadoApp> {
   const { error } = await supabase.from('metas').delete().eq('user_id', uid).eq('id', id);
   if (error) throw error;
   return obtenerEstadoApp();
+}
+
+// ── Planeador Semanal (Sesión 8) — ver lib/app.ts. Una fila por usuaria+semana; cada "actualizar"
+// hace upsert tocando SOLO su columna (mismo patrón que registrarCheckInSupabase): si la fila de
+// esa semana no existe todavía, se crea con los defaults de la tabla para el resto de campos. ──
+
+export async function obtenerPlanificadorSemana(semanaInicio: string): Promise<PlanificadorSemana> {
+  const supabase = crearClienteSupabase();
+  const uid = await usuarioId();
+  const { data, error } = await supabase
+    .from('planificador_semanas')
+    .select('objetivos, agua, habitos, tareas, notas, gratitud')
+    .eq('user_id', uid)
+    .eq('semana_inicio', semanaInicio)
+    .maybeSingle();
+  if (error) throw error;
+  if (!data) return planificadorVacio(semanaInicio);
+  return {
+    semanaInicio,
+    objetivos: (data.objetivos as string[] | null) ?? [],
+    agua: (data.agua as number[] | null) ?? [0, 0, 0, 0, 0, 0, 0],
+    habitos: (data.habitos as HabitoSemanal[] | null) ?? [],
+    tareas: (data.tareas as TareaDia[][] | null) ?? [[], [], [], [], [], [], []],
+    notas: data.notas ?? '',
+    gratitud: (data.gratitud as string[] | null) ?? [],
+  };
+}
+
+async function upsertCampoPlanificador(semanaInicio: string, campo: string, valor: unknown): Promise<void> {
+  const supabase = crearClienteSupabase();
+  const uid = await usuarioId();
+  const { error } = await supabase
+    .from('planificador_semanas')
+    .upsert({ user_id: uid, semana_inicio: semanaInicio, [campo]: valor }, { onConflict: 'user_id,semana_inicio' });
+  if (error) throw error;
+}
+
+export async function actualizarObjetivosSemana(semanaInicio: string, objetivos: string[]): Promise<void> {
+  await upsertCampoPlanificador(semanaInicio, 'objetivos', objetivos);
+}
+
+export async function actualizarAguaSemana(semanaInicio: string, agua: number[]): Promise<void> {
+  await upsertCampoPlanificador(semanaInicio, 'agua', agua);
+}
+
+export async function actualizarHabitosSemana(semanaInicio: string, habitos: HabitoSemanal[]): Promise<void> {
+  await upsertCampoPlanificador(semanaInicio, 'habitos', habitos);
+}
+
+export async function actualizarTareasSemana(semanaInicio: string, tareas: TareaDia[][]): Promise<void> {
+  await upsertCampoPlanificador(semanaInicio, 'tareas', tareas);
+}
+
+export async function actualizarNotasSemana(semanaInicio: string, notas: string): Promise<void> {
+  await upsertCampoPlanificador(semanaInicio, 'notas', notas.trim() || null);
+}
+
+export async function actualizarGratitudSemana(semanaInicio: string, gratitud: string[]): Promise<void> {
+  await upsertCampoPlanificador(semanaInicio, 'gratitud', gratitud);
 }
 
 export async function cerrarSesionSupabase(): Promise<void> {

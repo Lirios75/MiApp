@@ -219,3 +219,47 @@ export function reflexionDeHoy(): string {
   const diaDelAno = Math.floor((dia.getTime() - inicioAno.getTime()) / 86_400_000);
   return REFLEXIONES_DEL_DIA[diaDelAno % REFLEXIONES_DEL_DIA.length];
 }
+
+// ── Planeador Semanal (Sesión 8) — pedido de la usuaria para cerrar el año: objetivos, agua,
+// hábitos L-D, notas, gratitud y tareas por día, una semana a la vez. Vive en su propio ícono
+// de la barra de abajo, separado del Semáforo de ansiedad-de-gasto (checkins) de arriba. ──
+
+export const DIAS_SEMANA_LARGO: readonly string[] = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+
+export const MAX_OBJETIVOS_SEMANA = 3;
+export const MAX_GRATITUD_SEMANA = 3;
+export const VASOS_AGUA_META = 8;
+
+export interface HabitoSemanal {
+  id: string;
+  nombre: string;
+  dias: boolean[]; // 7 — lunes a domingo
+}
+
+export interface TareaDia {
+  id: string;
+  texto: string;
+  hecho: boolean;
+}
+
+export interface PlanificadorSemana {
+  semanaInicio: string; // ISO del lunes de esa semana
+  objetivos: string[]; // hasta MAX_OBJETIVOS_SEMANA
+  agua: number[]; // 7 — vasos tomados cada día
+  habitos: HabitoSemanal[];
+  tareas: TareaDia[][]; // 7 listas, una por día
+  notas: string;
+  gratitud: string[]; // hasta MAX_GRATITUD_SEMANA
+}
+
+export function planificadorVacio(semanaInicio: string): PlanificadorSemana {
+  return {
+    semanaInicio,
+    objetivos: [],
+    agua: [0, 0, 0, 0, 0, 0, 0],
+    habitos: [],
+    tareas: [[], [], [], [], [], [], []],
+    notas: '',
+    gratitud: [],
+  };
+}
