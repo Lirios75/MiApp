@@ -15,6 +15,15 @@
 // tarea ahora pide el mismo 2do-toque de confirmación que borrar un hábito (antes era instantáneo
 // e inconsistente), y cada guardado que falla AVISA y revierte el cambio optimista (antes fallaba
 // en silencio — catch(console.error) sin avisar a la usuaria).
+//
+// Ronda 3 (tras veredicto NO LISTA #2, 33/40·13/20): el anillo pasó a ser el doble-anillo real
+// de RespiraMark (verde afuera = % hábitos, naranja adentro = % tareas — antes era un círculo de
+// un solo color, genérico), el aviso de guardado fallido ahora es `fixed` arriba de la pantalla
+// (antes quedaba fuera de vista si se editaba una tarjeta del fondo), los títulos de cada tarjeta
+// subieron a 16px (antes 13px, más chicos que su propio contenido), borrar un hábito o tarea
+// ahora ofrece "Deshacer" unos segundos antes de persistir el borrado (antes era definitivo al
+// confirmar), y cambiar de día en "Tus tareas" anima la lista + se celebra al llegar a 100% de
+// la semana.
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react';
@@ -28,6 +37,7 @@ import {
   Heart,
   ListChecks,
   NotebookPen,
+  PartyPopper,
   Plus,
   Repeat,
   WifiOff,
@@ -54,7 +64,7 @@ import {
   actualizarTareasSemana,
   obtenerPlanificadorSemana,
 } from '@/lib/supabase/datos';
-import { AnilloProgreso, ConteoAnimado, ErrorCarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
+import { ConteoAnimado, ErrorCarga, formatearRangoSemana, inicialDia } from '@/components/app/ui';
 
 function useVariantes(): { contenedor: Variants; item: Variants } {
   const reduce = useReducedMotion();
@@ -65,6 +75,75 @@ function useVariantes(): { contenedor: Variants; item: Variants } {
       visible: { opacity: 1, y: 0, transition: { duration: reduce ? 0.2 : 0.35, ease: [0.16, 1, 0.3, 1] } },
     },
   };
+}
+
+/* ── <AnilloSemana> — el dispositivo ownable de FICHA-ARTE (el doble anillo de RespiraMark:
+   verde afuera, naranja adentro) llevado a un indicador de progreso real, no decorativo: el
+   anillo EXTERIOR verde es el % de hábitos marcados esta semana, el INTERIOR naranja el % de
+   tareas hechas — mismos 2 colores y mismo anidado que el logo, ahora cargando datos reales en
+   vez de ser un círculo de progreso genérico de un solo color. ── */
+function AnilloSemana({
+  porcentajeHabitos,
+  porcentajeTareas,
+  porcentajeTotal,
+}: {
+  porcentajeHabitos: number;
+  porcentajeTareas: number;
+  porcentajeTotal: number;
+}) {
+  const reduce = useReducedMotion();
+  const tamano = 52;
+  const centro = tamano / 2;
+  const grosor = 5;
+  const rExterior = centro - grosor / 2 - 1;
+  const rInterior = rExterior - grosor - 2;
+  const circExterior = 2 * Math.PI * rExterior;
+  const circInterior = 2 * Math.PI * rInterior;
+  const avanceExterior = (Math.min(100, Math.max(0, porcentajeHabitos)) / 100) * circExterior;
+  const avanceInterior = (Math.min(100, Math.max(0, porcentajeTareas)) / 100) * circInterior;
+
+  return (
+    <div className="relative shrink-0" style={{ width: tamano, height: tamano }} role="img" aria-label={`${porcentajeTotal}% de tu semana cumplido`}>
+      <svg width={tamano} height={tamano} viewBox={`0 0 ${tamano} ${tamano}`} aria-hidden="true">
+        <circle cx={centro} cy={centro} r={rExterior} stroke="color-mix(in oklab, var(--accent-2) 14%, transparent)" strokeWidth={grosor} fill="none" />
+        <circle cx={centro} cy={centro} r={rInterior} stroke="color-mix(in oklab, var(--accent-3) 14%, transparent)" strokeWidth={grosor} fill="none" />
+        <motion.circle
+          cx={centro}
+          cy={centro}
+          r={rExterior}
+          stroke="var(--accent-2)"
+          strokeWidth={grosor}
+          strokeLinecap="round"
+          fill="none"
+          strokeDasharray={circExterior}
+          transform={`rotate(-90 ${centro} ${centro})`}
+          initial={{ strokeDashoffset: circExterior }}
+          animate={{ strokeDashoffset: circExterior - avanceExterior }}
+          transition={{ duration: reduce ? 0 : 0.7, ease: [0.16, 1, 0.3, 1] }}
+        />
+        <motion.circle
+          cx={centro}
+          cy={centro}
+          r={rInterior}
+          stroke="var(--accent-3)"
+          strokeWidth={grosor}
+          strokeLinecap="round"
+          fill="none"
+          strokeDasharray={circInterior}
+          transform={`rotate(-90 ${centro} ${centro})`}
+          initial={{ strokeDashoffset: circInterior }}
+          animate={{ strokeDashoffset: circInterior - avanceInterior }}
+          transition={{ duration: reduce ? 0 : 0.7, delay: reduce ? 0 : 0.08, ease: [0.16, 1, 0.3, 1] }}
+        />
+      </svg>
+      <span
+        aria-hidden="true"
+        className="absolute inset-0 flex items-center justify-center text-[13px] font-bold [font-variant-numeric:tabular-nums] [font-family:var(--font-display)]"
+      >
+        <ConteoAnimado valor={porcentajeTotal} sufijo="%" />
+      </span>
+    </div>
+  );
 }
 
 const ESTILO_INPUT =
@@ -129,6 +208,8 @@ export default function PlaneadorPage() {
   const todasTareas = plan.tareas.flat();
   const hechasTareas = todasTareas.filter((t) => t.hecho).length;
   const totalPosible = totalHabitos + todasTareas.length;
+  const porcentajeHabitos = totalHabitos > 0 ? Math.round((hechosHabitos / totalHabitos) * 100) : 0;
+  const porcentajeTareas = todasTareas.length > 0 ? Math.round((hechasTareas / todasTareas.length) * 100) : 0;
   const porcentajeSemana = totalPosible > 0 ? Math.round(((hechosHabitos + hechasTareas) / totalPosible) * 100) : 0;
 
   function avisarErrorGuardado() {
@@ -201,12 +282,21 @@ export default function PlaneadorPage() {
       <motion.header variants={item}>
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-[22px] font-bold [font-family:var(--font-display)]">Tu semana</h1>
-          <AnilloProgreso porcentaje={porcentajeSemana} tamano={52} grosor={5}>
-            <span className="text-[13px] font-bold [font-variant-numeric:tabular-nums] [font-family:var(--font-display)]">
-              <ConteoAnimado valor={porcentajeSemana} sufijo="%" />
-            </span>
-          </AnilloProgreso>
+          <AnilloSemana porcentajeHabitos={porcentajeHabitos} porcentajeTareas={porcentajeTareas} porcentajeTotal={porcentajeSemana} />
         </div>
+        <AnimatePresence>
+          {porcentajeSemana === 100 && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8, height: 0 }}
+              animate={{ opacity: 1, scale: 1, height: 'auto' }}
+              transition={{ type: 'spring', duration: 0.5, bounce: 0.4 }}
+              className="mt-2 flex items-center gap-2 overflow-hidden rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-2)_12%,transparent)] px-3 py-2"
+            >
+              <PartyPopper size={15} strokeWidth={2} color="var(--accent-2-text)" aria-hidden="true" />
+              <span className="text-[13px] font-semibold text-[var(--accent-2-text)]">¡Semana completa! Cumpliste todo lo que planeaste.</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="mt-3 flex items-center justify-between">
           <motion.button
             type="button"
@@ -238,23 +328,27 @@ export default function PlaneadorPage() {
         </div>
       </motion.header>
 
-      <AnimatePresence>
-        {errorGuardado && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2 }}
-            className="flex items-center gap-2 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-3)_12%,transparent)] px-3 py-2.5"
-          >
-            <WifiOff size={15} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" />
-            <span className="text-[13px] text-[var(--text-secondary)]">No se pudo guardar. Revisa tu conexión e intenta de nuevo.</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center px-4 pt-4">
+        <div className="w-full max-w-[468px]">
+          <AnimatePresence>
+            {errorGuardado && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="pointer-events-auto flex items-center gap-2 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-3 py-2.5 shadow-[var(--shadow-2)]"
+              >
+                <WifiOff size={15} strokeWidth={2} color="var(--bg)" aria-hidden="true" />
+                <span className="text-[13px] font-semibold text-[var(--bg)]">No se pudo guardar. Revisa tu conexión e intenta de nuevo.</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
 
       <ObjetivosCard
-        titulo="Tus 3 objetivos de la semana"
+        titulo="Objetivos de la semana"
         icono={Flag}
         colorVar="var(--accent)"
         placeholder={(i) => `Objetivo ${i + 1}`}
@@ -328,7 +422,7 @@ function Tarjeta({
       >
         <span className="flex min-w-0 items-center gap-2">
           <Icono size={16} strokeWidth={2} color={colorVar} aria-hidden="true" />
-          <span className="truncate text-[13px] font-semibold text-[var(--text-secondary)]">{titulo}</span>
+          <span className="truncate text-[16px] font-bold text-[var(--text-primary)] [font-family:var(--font-display)]">{titulo}</span>
         </span>
         <span className="flex shrink-0 items-center gap-2">
           <span className="text-[12px] text-[var(--text-tertiary)]">{resumen}</span>
@@ -356,6 +450,32 @@ function Tarjeta({
         )}
       </AnimatePresence>
     </motion.section>
+  );
+}
+
+/* ── <SnackbarDeshacer> — tras confirmar un borrado (hábito o tarea), el ítem desaparece de la
+   vista YA pero el borrado real se demora unos segundos: esta barra ofrece "Deshacer" mientras
+   tanto. Antes el borrado tras el 2do toque era definitivo al instante. ── */
+function SnackbarDeshacer({ texto, onDeshacer }: { texto: string; onDeshacer: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 6 }}
+      transition={{ duration: 0.18 }}
+      className="mt-2 flex items-center justify-between gap-2 rounded-[var(--radius-button)] bg-[var(--text-primary)] px-3 py-2"
+    >
+      <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--bg)]">{texto}</span>
+      <motion.button
+        type="button"
+        whileTap={TAP}
+        transition={TAP_TRANSICION}
+        onClick={onDeshacer}
+        className="shrink-0 text-[13px] font-bold text-[var(--accent-3)] [touch-action:manipulation]"
+      >
+        Deshacer
+      </motion.button>
+    </motion.div>
   );
 }
 
@@ -496,6 +616,15 @@ function HabitosCard({
 }) {
   const [nuevoNombre, setNuevoNombre] = useState('');
   const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
+  const [ocultosId, setOcultosId] = useState<Set<string>>(new Set());
+  const [pendienteBorrar, setPendienteBorrar] = useState<{ id: string; nombre: string; timeout: ReturnType<typeof setTimeout> } | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pendienteBorrar) clearTimeout(pendienteBorrar.timeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function agregarHabito(e: FormEvent) {
     e.preventDefault();
@@ -512,19 +641,39 @@ function HabitosCard({
   }
 
   function borrarHabito(id: string) {
-    onCambiar(habitos.filter((h) => h.id !== id));
     setConfirmandoId(null);
+    const habito = habitos.find((h) => h.id === id);
+    if (!habito) return;
+    setOcultosId((s) => new Set(s).add(id));
+    const timeout = setTimeout(() => {
+      onCambiar(habitos.filter((h) => h.id !== id));
+      setPendienteBorrar(null);
+    }, 4000);
+    setPendienteBorrar({ id, nombre: habito.nombre, timeout });
   }
+
+  function deshacerBorrado() {
+    if (!pendienteBorrar) return;
+    clearTimeout(pendienteBorrar.timeout);
+    setOcultosId((s) => {
+      const copia = new Set(s);
+      copia.delete(pendienteBorrar.id);
+      return copia;
+    });
+    setPendienteBorrar(null);
+  }
+
+  const habitosVisibles = habitos.filter((h) => !ocultosId.has(h.id));
 
   return (
     <Tarjeta
       titulo="Tus hábitos"
       icono={Repeat}
       colorVar="var(--accent-2)"
-      resumen={habitos.length === 0 ? 'Ninguno' : `${habitos.length} hábito${habitos.length === 1 ? '' : 's'}`}
+      resumen={habitosVisibles.length === 0 ? 'Ninguno' : `${habitosVisibles.length} hábito${habitosVisibles.length === 1 ? '' : 's'}`}
       item={item}
     >
-      {habitos.length === 0 ? (
+      {habitosVisibles.length === 0 ? (
         <p className="text-[13px] text-[var(--text-tertiary)]">
           Agrega un hábito que quieras repetir esta semana — lo vas marcando día a día.
         </p>
@@ -538,7 +687,7 @@ function HabitosCard({
               </span>
             ))}
           </div>
-          {habitos.map((h) =>
+          {habitosVisibles.map((h) =>
             confirmandoId === h.id ? (
               <div
                 key={h.id}
@@ -619,6 +768,10 @@ function HabitosCard({
           <Plus size={20} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
         </motion.button>
       </form>
+
+      <AnimatePresence>
+        {pendienteBorrar && <SnackbarDeshacer texto={`"${pendienteBorrar.nombre}" borrado`} onDeshacer={deshacerBorrado} />}
+      </AnimatePresence>
     </Tarjeta>
   );
 }
@@ -645,8 +798,17 @@ function TareasCard({
 }) {
   const [texto, setTexto] = useState('');
   const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
-  const listaDia = tareas[diaIndex] ?? [];
+  const [ocultosId, setOcultosId] = useState<Set<string>>(new Set());
+  const [pendienteBorrar, setPendienteBorrar] = useState<{ id: string; texto: string; timeout: ReturnType<typeof setTimeout> } | null>(null);
+  const listaDia = (tareas[diaIndex] ?? []).filter((t) => !ocultosId.has(t.id));
   const pendientes = tareas.flat().filter((t) => !t.hecho).length;
+
+  useEffect(() => {
+    return () => {
+      if (pendienteBorrar) clearTimeout(pendienteBorrar.timeout);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function agregar(e: FormEvent) {
     e.preventDefault();
@@ -662,8 +824,26 @@ function TareasCard({
   }
 
   function borrar(id: string) {
-    onCambiar(tareas.map((lista, i) => (i === diaIndex ? lista.filter((t) => t.id !== id) : lista)));
     setConfirmandoId(null);
+    const tarea = (tareas[diaIndex] ?? []).find((t) => t.id === id);
+    if (!tarea) return;
+    setOcultosId((s) => new Set(s).add(id));
+    const timeout = setTimeout(() => {
+      onCambiar(tareas.map((lista, i) => (i === diaIndex ? lista.filter((t) => t.id !== id) : lista)));
+      setPendienteBorrar(null);
+    }, 4000);
+    setPendienteBorrar({ id, texto: tarea.texto, timeout });
+  }
+
+  function deshacerBorrado() {
+    if (!pendienteBorrar) return;
+    clearTimeout(pendienteBorrar.timeout);
+    setOcultosId((s) => {
+      const copia = new Set(s);
+      copia.delete(pendienteBorrar.id);
+      return copia;
+    });
+    setPendienteBorrar(null);
   }
 
   return (
@@ -696,77 +876,87 @@ function TareasCard({
         })}
       </div>
 
-      {listaDia.length === 0 ? (
-        <p className="mt-4 text-[13px] text-[var(--text-tertiary)]">Sin tareas para este día todavía.</p>
-      ) : (
-        <ul className="mt-4 flex flex-col gap-2">
-          {listaDia.map((t) =>
-            confirmandoId === t.id ? (
-              <li
-                key={t.id}
-                className="flex items-center justify-between gap-2 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-3)_10%,transparent)] px-3 py-2"
-              >
-                <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--text-secondary)]">¿Borrar &quot;{t.texto}&quot;?</span>
-                <div className="flex shrink-0 gap-1">
-                  <motion.button
-                    type="button"
-                    whileTap={TAP}
-                    transition={TAP_TRANSICION}
-                    onClick={() => setConfirmandoId(null)}
-                    className="h-7 rounded-[var(--radius-button)] px-2 text-[12px] font-semibold text-[var(--text-secondary)] [touch-action:manipulation]"
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={diaIndex}
+          initial={{ opacity: 0, x: 8 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -8 }}
+          transition={{ duration: 0.18 }}
+        >
+          {listaDia.length === 0 ? (
+            <p className="mt-4 text-[13px] text-[var(--text-tertiary)]">Sin tareas para este día todavía.</p>
+          ) : (
+            <ul className="mt-4 flex flex-col gap-2">
+              {listaDia.map((t) =>
+                confirmandoId === t.id ? (
+                  <li
+                    key={t.id}
+                    className="flex items-center justify-between gap-2 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-3)_10%,transparent)] px-3 py-2"
                   >
-                    Cancelar
-                  </motion.button>
-                  <motion.button
-                    type="button"
-                    whileTap={TAP}
-                    transition={TAP_TRANSICION}
-                    onClick={() => borrar(t.id)}
-                    className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-2 text-[12px] font-semibold text-[var(--bg)] [touch-action:manipulation]"
-                  >
-                    Borrar
-                  </motion.button>
-                </div>
-              </li>
-            ) : (
-              <li key={t.id} className="flex items-center gap-2">
-                <motion.button
-                  type="button"
-                  whileTap={TAP}
-                  transition={TAP_TRANSICION}
-                  onClick={() => alternar(t.id)}
-                  aria-pressed={t.hecho}
-                  aria-label={t.hecho ? `Marcar "${t.texto}" como pendiente` : `Marcar "${t.texto}" como hecha`}
-                  className="flex size-7 shrink-0 items-center justify-center rounded-full [touch-action:manipulation]"
-                  style={{
-                    background: t.hecho ? 'var(--accent-2)' : 'transparent',
-                    border: t.hecho ? 'none' : '1.5px solid color-mix(in oklab, var(--text-tertiary) 40%, transparent)',
-                  }}
-                >
-                  {t.hecho && <Check size={13} strokeWidth={3} color="var(--bg)" aria-hidden="true" />}
-                </motion.button>
-                <span
-                  className={`min-w-0 flex-1 truncate text-[14px] ${
-                    t.hecho ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]'
-                  }`}
-                >
-                  {t.texto}
-                </span>
-                <motion.button
-                  type="button"
-                  whileTap={TAP}
-                  transition={TAP_TRANSICION}
-                  onClick={() => setConfirmandoId(t.id)}
-                  aria-label={`Borrar tarea "${t.texto}"`}
-                  className="flex size-7 shrink-0 items-center justify-center [touch-action:manipulation]"
-                >
-                  <X size={15} strokeWidth={2} color="var(--text-tertiary)" aria-hidden="true" />
-                </motion.button>
-              </li>
-            )
+                    <span className="min-w-0 flex-1 truncate text-[13px] text-[var(--text-secondary)]">¿Borrar &quot;{t.texto}&quot;?</span>
+                    <div className="flex shrink-0 gap-1">
+                      <motion.button
+                        type="button"
+                        whileTap={TAP}
+                        transition={TAP_TRANSICION}
+                        onClick={() => setConfirmandoId(null)}
+                        className="h-7 rounded-[var(--radius-button)] px-2 text-[12px] font-semibold text-[var(--text-secondary)] [touch-action:manipulation]"
+                      >
+                        Cancelar
+                      </motion.button>
+                      <motion.button
+                        type="button"
+                        whileTap={TAP}
+                        transition={TAP_TRANSICION}
+                        onClick={() => borrar(t.id)}
+                        className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-3)] px-2 text-[12px] font-semibold text-[var(--bg)] [touch-action:manipulation]"
+                      >
+                        Borrar
+                      </motion.button>
+                    </div>
+                  </li>
+                ) : (
+                  <li key={t.id} className="flex items-center gap-2">
+                    <motion.button
+                      type="button"
+                      whileTap={TAP}
+                      transition={TAP_TRANSICION}
+                      onClick={() => alternar(t.id)}
+                      aria-pressed={t.hecho}
+                      aria-label={t.hecho ? `Marcar "${t.texto}" como pendiente` : `Marcar "${t.texto}" como hecha`}
+                      className="flex size-7 shrink-0 items-center justify-center rounded-full [touch-action:manipulation]"
+                      style={{
+                        background: t.hecho ? 'var(--accent-2)' : 'transparent',
+                        border: t.hecho ? 'none' : '1.5px solid color-mix(in oklab, var(--text-tertiary) 40%, transparent)',
+                      }}
+                    >
+                      {t.hecho && <Check size={13} strokeWidth={3} color="var(--bg)" aria-hidden="true" />}
+                    </motion.button>
+                    <span
+                      className={`min-w-0 flex-1 truncate text-[14px] ${
+                        t.hecho ? 'text-[var(--text-tertiary)] line-through' : 'text-[var(--text-primary)]'
+                      }`}
+                    >
+                      {t.texto}
+                    </span>
+                    <motion.button
+                      type="button"
+                      whileTap={TAP}
+                      transition={TAP_TRANSICION}
+                      onClick={() => setConfirmandoId(t.id)}
+                      aria-label={`Borrar tarea "${t.texto}"`}
+                      className="flex size-7 shrink-0 items-center justify-center [touch-action:manipulation]"
+                    >
+                      <X size={15} strokeWidth={2} color="var(--text-tertiary)" aria-hidden="true" />
+                    </motion.button>
+                  </li>
+                )
+              )}
+            </ul>
           )}
-        </ul>
-      )}
+        </motion.div>
+      </AnimatePresence>
 
       <form onSubmit={agregar} className="mt-4 flex gap-2">
         <input
@@ -788,6 +978,10 @@ function TareasCard({
           <Plus size={20} strokeWidth={2.5} color="var(--bg)" aria-hidden="true" />
         </motion.button>
       </form>
+
+      <AnimatePresence>
+        {pendienteBorrar && <SnackbarDeshacer texto={`"${pendienteBorrar.texto}" borrada`} onDeshacer={deshacerBorrado} />}
+      </AnimatePresence>
     </Tarjeta>
   );
 }
