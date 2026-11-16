@@ -257,6 +257,8 @@ export default function Semana() {
         </>
       ) : vista === 'año' ? (
         <>
+          <AnioEnPixeles anio={anioVista} checkins={estado.checkins} item={item} />
+
           <ComoTeFue
             item={item}
             marcados={marcadosAno}
@@ -495,6 +497,65 @@ function TendenciaSemanas({ estado }: { estado: EstadoApp }) {
         </div>
       )}
     </>
+  );
+}
+
+/* ── <AnioEnPixeles> — pedido de la usuaria (Sesión 8, cierre de año): la vieja técnica de
+   diario "Mi año en píxeles" (un cuadrito por día, coloreado según cómo te fue) aplicada a los
+   datos reales que la app ya guarda — nada que registrar aparte, el Semáforo de cada día YA es
+   el color del píxel. Un cuadrito por día posible (hasta 31), agrupados por mes (fila). Solo
+   informativo — a esta densidad (8px) tocar un píxel individual no es realista en el dedo. ── */
+function AnioEnPixeles({ anio, checkins, item }: { anio: number; checkins: EstadoApp['checkins']; item: Variants }) {
+  const hoy = hoyISO();
+  const mapaCheckins = new Map(checkins.map((c) => [c.fecha, c]));
+
+  return (
+    <motion.section variants={item} className="rounded-[var(--radius-card)] bg-[var(--surface)] p-4 shadow-[var(--shadow-2)]">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-[13px] font-semibold text-[var(--text-secondary)]">Mi año en píxeles</h2>
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="flex items-center gap-1 text-[11px] text-[var(--text-tertiary)]">
+            <span aria-hidden="true" className="size-2 rounded-[2px]" style={{ background: 'var(--accent-2)' }} />
+            Tranquilo
+          </span>
+          <span className="flex items-center gap-1 text-[11px] text-[var(--text-tertiary)]">
+            <span aria-hidden="true" className="size-2 rounded-[2px]" style={{ background: 'var(--accent-3)' }} />
+            Alerta
+          </span>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-col gap-1 overflow-x-auto">
+        {MESES_LARGO.map((nombreMes, mesIdx) => {
+          const diasEnMes = new Date(anio, mesIdx + 1, 0).getDate();
+          return (
+            <div key={nombreMes} className="flex items-center gap-1.5">
+              <span className="w-8 shrink-0 text-[10px] font-medium uppercase text-[var(--text-tertiary)]">
+                {nombreMes.slice(0, 3)}
+              </span>
+              <div className="flex gap-px">
+                {Array.from({ length: 31 }, (_, i) => i + 1).map((dia) => {
+                  if (dia > diasEnMes) {
+                    return <span key={dia} aria-hidden="true" className="size-2" />;
+                  }
+                  const iso = `${anio}-${String(mesIdx + 1).padStart(2, '0')}-${String(dia).padStart(2, '0')}`;
+                  if (iso > hoy) {
+                    return <span key={dia} aria-hidden="true" className="size-2" />;
+                  }
+                  const checkin = mapaCheckins.get(iso);
+                  const color =
+                    checkin?.estado === 'tranquilo'
+                      ? 'var(--accent-2)'
+                      : checkin?.estado === 'alerta'
+                        ? 'var(--accent-3)'
+                        : 'color-mix(in oklab, var(--text-tertiary) 14%, transparent)';
+                  return <span key={dia} aria-hidden="true" className="size-2 rounded-[2px]" style={{ background: color }} />;
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </motion.section>
   );
 }
 

@@ -451,6 +451,14 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Cuadragésima cuarta re-verificación (2026-11-16 — "Mi año en píxeles" en Semana)
+
+El hook marcará `app/app/semana/page.tsx` como más nuevo que este veredicto. Verificado por grep:
+`app/paywall/page.tsx` no importa nada de `app/app/semana/page.tsx` (páginas de rutas distintas,
+sin relación de import). El cambio (nuevo componente `AnioEnPixeles` dentro de la pestaña "Año" de
+Semana — visualización de los check-ins ya existentes, sin tabla nueva) vive solo en la app interna.
+Cero impacto; la certificación LISTA sigue vigente.
+
 ## Cuadragésima tercera re-verificación (2026-11-04, noche — aviso de instalar el ícono en Hoy)
 
 El hook marcará `app/app/page.tsx`, `app/app/layout.tsx` y `components/app/ui.tsx` como más

@@ -1,5 +1,24 @@
 # ESTADO — Respira
-Última actualización: 2026-11-04 | Sesión actual: 7
+Última actualización: 2026-11-16 | Sesión actual: 8
+
+⏸️ CHECKPOINT (2026-11-16) — construyendo "Mi año en píxeles" dentro de Semana → pestaña Año. La
+usuaria mostró fotos de un planeador físico de papel ("Mi año en píxeles" + "Planeador Semanal") y
+pidió adaptar eso a la app, ya cerrando el año. Se le presentó el filtro de feature: "Mi año en
+píxeles" encaja perfecto (visualiza datos que la app YA guarda — el Semáforo de cada día — sin
+pedir nada nuevo); "Planeador Semanal" (objetivos/agua/hábitos/gratitud/tareas) es ajeno a la
+promesa central (dejar de gastar por ansiedad). **Decisión de la usuaria: quiere LAS DOS cosas**
+("sería un buen completo... para el inicio del año") — override informado y explícito, se respeta.
+Se dividió en 2 fases: Fase 1 = Año en píxeles (ahora, sin tabla nueva) — Fase 2 = Planeador
+Semanal (más grande, necesita tabla nueva en Supabase + decidir dónde vive en la navegación).
+Fase 1: agregado componente `AnioEnPixeles` en `app/app/semana/page.tsx` (pestaña "Año", debajo
+del toggle, antes de "Cómo te fue") — una fila por mes, un cuadrito de 8px por día posible, verde
+si tranquilo, naranja si alerta, gris si no marcado, invisible si el día aún no llega o el mes no
+tiene ese día. Solo informativo (a 8px no es tappable). Verificado: tsc ✓ build ✓ · captura real a
+375px en `docs/revisiones/ano-pixeles-375.png` (se ve bien: 12 filas ENE-NOV con datos, DIC vacío
+por ser futuro, leyenda Tranquilo/Alerta clara). Pantalla secundaria (ampliación aditiva de Semana,
+ya certificada) — no amerita relanzar el revisor-visual completo.
+**Pendiente de la usuaria**: responder si el Planeador Semanal (Fase 2) va como un 5to ícono en la
+barra de abajo o dentro de una pestaña que ya existe — antes de diseñar su tabla y pantalla.
 
 ✅ CHECKPOINT (2026-11-04, noche) — aviso de "instala el ícono en tu pantalla de inicio" dentro de
 la app. La usuaria notó un riesgo real: su hija supo instalar el ícono porque ella la ayudó a mano
