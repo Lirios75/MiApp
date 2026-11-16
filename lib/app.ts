@@ -242,20 +242,25 @@ export interface TareaDia {
   hecho: boolean;
 }
 
+export interface ObjetivoSemanal {
+  texto: string;
+  hecho: boolean; // objetivos SÍ se marcan como cumplidos (pedido de la usuaria) — gratitud no, no aplica
+}
+
 export interface PlanificadorSemana {
   semanaInicio: string; // ISO del lunes de esa semana
-  objetivos: string[]; // hasta MAX_OBJETIVOS_SEMANA
+  objetivos: ObjetivoSemanal[]; // hasta MAX_OBJETIVOS_SEMANA
   agua: number[]; // 7 — vasos tomados cada día
   habitos: HabitoSemanal[];
   tareas: TareaDia[][]; // 7 listas, una por día
   notas: string;
-  gratitud: string[]; // hasta MAX_GRATITUD_SEMANA
+  gratitud: string[]; // hasta MAX_GRATITUD_SEMANA — solo texto, no se "cumple"
 }
 
 export function planificadorVacio(semanaInicio: string): PlanificadorSemana {
   return {
     semanaInicio,
-    objetivos: [],
+    objetivos: [] as ObjetivoSemanal[],
     agua: [0, 0, 0, 0, 0, 0, 0],
     habitos: [],
     tareas: [[], [], [], [], [], [], []],

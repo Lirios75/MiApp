@@ -52,6 +52,7 @@ import {
   MAX_OBJETIVOS_SEMANA,
   VASOS_AGUA_META,
   type HabitoSemanal,
+  type ObjetivoSemanal,
   type PlanificadorSemana,
   type TareaDia,
 } from '@/lib/app';
@@ -245,7 +246,7 @@ export default function PlaneadorPage() {
     setErrorGuardado(true);
   }
 
-  function guardarObjetivos(objetivos: string[]) {
+  function guardarObjetivos(objetivos: ObjetivoSemanal[]) {
     const anterior = planActual.objetivos;
     setPlan((p) => (p ? { ...p, objetivos } : p));
     actualizarObjetivosSemana(semanaInicio, objetivos).catch((e) => {
@@ -388,16 +389,7 @@ export default function PlaneadorPage() {
         </div>
       </div>
 
-      <ObjetivosCard
-        titulo="Objetivos"
-        icono={Flag}
-        colorVar="var(--accent)"
-        placeholder={(i) => `Objetivo ${i + 1}`}
-        valores={plan.objetivos}
-        max={MAX_OBJETIVOS_SEMANA}
-        onGuardar={guardarObjetivos}
-        item={item}
-      />
+      <ObjetivosSemanaCard objetivos={plan.objetivos} onGuardar={guardarObjetivos} item={item} />
 
       <AguaCard agua={plan.agua} fechas={fechas} onCambiar={cambiarAgua} item={item} />
 
@@ -517,6 +509,100 @@ function SnackbarDeshacer({ texto, onDeshacer }: { texto: string; onDeshacer: ()
         Deshacer
       </motion.button>
     </motion.div>
+  );
+}
+
+/* ── <ObjetivosSemanaCard> — los 3 objetivos reales de la semana, los ÚNICOS que SÍ se marcan
+   como cumplidos (pedido explícito de la usuaria) — a diferencia de Gratitud (que es solo texto,
+   nunca "se cumple"), por eso es un componente aparte y no un caso más de <ObjetivosCard>. El
+   mismo círculo numerado (1/2/3) es el botón para marcar: toca y se convierte en un check, el
+   texto queda tachado — mismo lenguaje visual que el check de "tarea hecha". No se puede marcar
+   un objetivo vacío. ── */
+function ObjetivosSemanaCard({
+  objetivos,
+  onGuardar,
+  item,
+}: {
+  objetivos: ObjetivoSemanal[];
+  onGuardar: (objetivos: ObjetivoSemanal[]) => void;
+  item: Variants;
+}) {
+  const [textos, setTextos] = useState<string[]>(() =>
+    Array.from({ length: MAX_OBJETIVOS_SEMANA }, (_, i) => objetivos[i]?.texto ?? '')
+  );
+
+  useEffect(() => {
+    setTextos(Array.from({ length: MAX_OBJETIVOS_SEMANA }, (_, i) => objetivos[i]?.texto ?? ''));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [objetivos.map((o) => `${o.texto}|${o.hecho}`).join(',')]);
+
+  function alSalirTexto(i: number) {
+    const valor = (textos[i] ?? '').trim();
+    if (valor === (objetivos[i]?.texto ?? '')) return;
+    onGuardar(
+      Array.from({ length: MAX_OBJETIVOS_SEMANA }, (_, idx) =>
+        idx === i ? { texto: valor, hecho: valor ? (objetivos[idx]?.hecho ?? false) : false } : objetivos[idx] ?? { texto: '', hecho: false }
+      )
+    );
+  }
+
+  function alternarHecho(i: number) {
+    onGuardar(
+      Array.from({ length: MAX_OBJETIVOS_SEMANA }, (_, idx) =>
+        idx === i
+          ? { texto: objetivos[idx]?.texto ?? '', hecho: !(objetivos[idx]?.hecho ?? false) }
+          : objetivos[idx] ?? { texto: '', hecho: false }
+      )
+    );
+  }
+
+  const llenos = objetivos.filter((o) => o.texto.trim()).length;
+  const cumplidos = objetivos.filter((o) => o.texto.trim() && o.hecho).length;
+
+  return (
+    <Tarjeta titulo="Objetivos" icono={Flag} colorVar="var(--accent)" resumen={`${cumplidos}/${llenos || MAX_OBJETIVOS_SEMANA} cumplidos`} item={item}>
+      <div className="flex flex-col gap-2">
+        {textos.map((texto, i) => {
+          const hecho = objetivos[i]?.hecho ?? false;
+          const tieneTexto = texto.trim().length > 0;
+          return (
+            <div key={i} className="flex items-center gap-2">
+              <motion.button
+                type="button"
+                whileTap={tieneTexto ? TAP : undefined}
+                transition={TAP_TRANSICION}
+                onClick={() => tieneTexto && alternarHecho(i)}
+                disabled={!tieneTexto}
+                aria-pressed={hecho}
+                aria-label={
+                  tieneTexto
+                    ? hecho
+                      ? `Marcar "${texto}" como pendiente`
+                      : `Marcar "${texto}" como cumplido`
+                    : `Objetivo ${i + 1} vacío`
+                }
+                className="flex size-6 shrink-0 items-center justify-center rounded-full text-[12px] font-bold disabled:opacity-60 [touch-action:manipulation]"
+                style={{
+                  background: hecho ? 'var(--accent)' : 'color-mix(in oklab, var(--accent) 14%, transparent)',
+                  color: hecho ? 'var(--bg)' : 'var(--accent)',
+                }}
+              >
+                {hecho ? <Check size={12} strokeWidth={3} aria-hidden="true" /> : i + 1}
+              </motion.button>
+              <input
+                type="text"
+                value={texto}
+                placeholder={`Objetivo ${i + 1}`}
+                onChange={(e) => setTextos((t) => t.map((v, idx) => (idx === i ? e.target.value : v)))}
+                onBlur={() => alSalirTexto(i)}
+                aria-label={`Objetivo ${i + 1}`}
+                className={`${ESTILO_INPUT} ${hecho ? 'text-[var(--text-tertiary)] line-through' : ''}`}
+              />
+            </div>
+          );
+        })}
+      </div>
+    </Tarjeta>
   );
 }
 

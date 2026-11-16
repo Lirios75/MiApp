@@ -15,6 +15,7 @@ import {
   type Frecuencia,
   type HabitoSemanal,
   type ModoMeta,
+  type ObjetivoSemanal,
   type PlanificadorSemana,
   type TareaDia,
 } from '@/lib/app';
@@ -293,7 +294,11 @@ export async function obtenerPlanificadorSemana(semanaInicio: string): Promise<P
   if (!data) return planificadorVacio(semanaInicio);
   return {
     semanaInicio,
-    objetivos: (data.objetivos as string[] | null) ?? [],
+    // compatibilidad hacia atrás: los objetivos se guardaban como string[] antes de que la
+    // usuaria pidiera poder marcarlos como cumplidos — un string suelto se trata como "sin marcar".
+    objetivos: ((data.objetivos as (string | ObjetivoSemanal)[] | null) ?? []).map((o) =>
+      typeof o === 'string' ? { texto: o, hecho: false } : o
+    ),
     agua: (data.agua as number[] | null) ?? [0, 0, 0, 0, 0, 0, 0],
     habitos: (data.habitos as HabitoSemanal[] | null) ?? [],
     tareas: (data.tareas as TareaDia[][] | null) ?? [[], [], [], [], [], [], []],
@@ -311,7 +316,7 @@ async function upsertCampoPlanificador(semanaInicio: string, campo: string, valo
   if (error) throw error;
 }
 
-export async function actualizarObjetivosSemana(semanaInicio: string, objetivos: string[]): Promise<void> {
+export async function actualizarObjetivosSemana(semanaInicio: string, objetivos: ObjetivoSemanal[]): Promise<void> {
   await upsertCampoPlanificador(semanaInicio, 'objetivos', objetivos);
 }
 

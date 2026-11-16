@@ -29,6 +29,23 @@ relanzar el revisor sobre ella sin que la usuaria lo pida.
 **MIGRACIÓN YA EJECUTADA POR LA USUARIA (2026-11-16) — "Success. No rows returned", confirmado
 por captura.** La Fase 2 queda 100% lista para usar en la app real.
 
+⏸️ CHECKPOINT (2026-11-16, tarde) — pedido de la usuaria: "Los objetivos no se miden?". Los
+objetivos de la semana eran solo texto (sin marcar cumplido), a diferencia de hábitos/tareas.
+Agregado: cada objetivo ahora tiene su propio check — el mismo círculo numerado (1/2/3) es el
+botón; al tocarlo se convierte en un ✓ y el texto queda tachado (mismo lenguaje visual que el
+check de "tarea hecha"). No se puede marcar un objetivo vacío. Gratitud NO cambió — sigue siendo
+solo texto, no se "cumple" (decisión de diseño: gratitud no es una meta). Cambiado en: `lib/app.ts`
+(nuevo tipo `ObjetivoSemanal = {texto, hecho}`, `PlanificadorSemana.objetivos` pasa de `string[]` a
+`ObjetivoSemanal[]`), `lib/supabase/datos.ts` (`obtenerPlanificadorSemana` lee con compatibilidad
+hacia atrás — si encuentra un string suelto de antes del cambio, lo trata como "sin marcar", no
+revienta; `actualizarObjetivosSemana` ahora guarda objetos), `app/app/planeador/page.tsx` (nuevo
+componente `ObjetivosSemanaCard`, separado de `ObjetivosCard` que sigue sirviendo solo para
+Gratitud). El anillo del header NO se tocó — sigue siendo solo hábitos/tareas, sin mezclar un
+tercer color. Verificado: tsc ✓ build ✓ · captura real a 375px con el objetivo 1 marcado
+(tachado + check azul, resumen "1/3 cumplidos") en `docs/revisiones/planeador-375.png`. Cambio
+aditivo sobre una pantalla ya aceptada sin certificación formal — no amerita relanzar el
+revisor-visual completo. Pendiente: que la usuaria pruebe marcar un objetivo en la app real.
+
 ⏸️ CHECKPOINT (2026-11-16) — construyendo "Mi año en píxeles" dentro de Semana → pestaña Año. La
 usuaria mostró fotos de un planeador físico de papel ("Mi año en píxeles" + "Planeador Semanal") y
 pidió adaptar eso a la app, ya cerrando el año. Se le presentó el filtro de feature: "Mi año en
