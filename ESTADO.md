@@ -1,5 +1,23 @@
 # ESTADO — Respira
-Última actualización: 2026-11-16 | Sesión actual: 8
+Última actualización: 2026-11-19 | Sesión actual: 8
+
+⏸️ CHECKPOINT (2026-11-19) — la usuaria preguntó "¿cómo hago para que la app me aparezca en Play
+Store y Safari?". Se le explicó la diferencia: hoy la app YA se instala gratis desde el navegador
+(Chrome/Safari → "Agregar a pantalla de inicio") en cualquier celular; entrar a las TIENDAS
+oficiales (Play Store/App Store) es un trámite aparte, con costo (Google $25 una vez, Apple $99/
+año) y revisión de ellos. **La usuaria eligió la opción gratuita/recomendada** — no tiendas por
+ahora. Hecho: antes el único aviso de instalación era `InstalarAppAviso` en "Hoy", que aparecía
+UNA sola vez y desaparecía para siempre al cerrarlo (localStorage) — si la clienta no instalaba
+ahí mismo, no había otra forma de encontrar las instrucciones. Agregada una fila PERMANENTE
+"Instalar en tu celular" dentro de Ajustes en `app/app/cuenta/page.tsx` — siempre visible, se
+expande al tocarla y muestra las instrucciones correctas según el celular (detecta iOS/Android
+por user-agent; si ya está instalada, dice "Ya la tienes instalada ✓"; en computador, explica que
+hay que abrir el enlace desde el celular). No se tocó `InstalarAppAviso` (el aviso de una vez
+sigue igual, esto es un refuerzo permanente, no un reemplazo). Verificado: tsc ✓ build ✓ ·
+capturas reales a 375px simulando Android e iPhone (user-agent real de cada uno, no solo visual)
+en `docs/revisiones/cuenta-instalar-android-375.png` y `cuenta-instalar-ios-375.png` — ambas
+muestran el texto correcto para su plataforma. Pantalla secundaria (Cuenta, sin revisor-visual obligatorio) — cambio aditivo simple,
+no amerita relanzar el revisor. Pendiente: que la usuaria lo revise en su celular real.
 
 ✅ CHECKPOINT (2026-11-16) — Fase 2 (Planeador Semanal, 5to ícono "Plan") CERRADA — la usuaria
 decidió dejarla así tras 4 rondas de revisor-visual: "Ya déjala así y continúa". Construida:

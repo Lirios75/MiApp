@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'motion/react';
-import { Bell, Camera, Globe, LogOut, Mail, ShieldCheck, User } from 'lucide-react';
+import { Bell, Camera, Check, ChevronDown, Globe, LogOut, Mail, MoreVertical, Share, ShieldCheck, Smartphone, User } from 'lucide-react';
 import { PLAN_ANUAL, PLAN_MENSUAL, TRIAL_DIAS } from '@/lib/pricing';
 import { cerrarSesionSupabase, obtenerEstadoApp, subirFotoPerfilSupabase } from '@/lib/supabase/datos';
 import type { EstadoMembresiaApp } from '@/lib/app';
@@ -62,6 +62,19 @@ export default function Cuenta() {
     accesoHasta: string | null;
   }>({ estado: null, planHotmart: null, trialTerminaEl: null, accesoHasta: null });
   const inputFotoRef = useRef<HTMLInputElement>(null);
+  const [mostrarInstalar, setMostrarInstalar] = useState(false);
+  const [plataforma, setPlataforma] = useState<'ios' | 'android' | 'otro'>('otro');
+  const [yaInstalada, setYaInstalada] = useState(false);
+
+  useEffect(() => {
+    const ua = window.navigator.userAgent;
+    if (/iPhone|iPad|iPod/.test(ua)) setPlataforma('ios');
+    else if (/Android/.test(ua)) setPlataforma('android');
+    setYaInstalada(
+      window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as Navigator & { standalone?: boolean }).standalone === true
+    );
+  }, []);
 
   useEffect(() => {
     const guardado = window.localStorage.getItem('respira_plan');
@@ -205,6 +218,46 @@ export default function Cuenta() {
           <span className="flex-1">Idioma</span>
           <span className="text-[13px] text-[var(--text-tertiary)]">Español</span>
         </div>
+        <button
+          type="button"
+          onClick={() => setMostrarInstalar((v) => !v)}
+          aria-expanded={mostrarInstalar}
+          className="flex h-12 w-full items-center gap-3 rounded-[var(--radius-button)] px-3 text-left text-[15px] font-medium text-[var(--text-primary)] [touch-action:manipulation]"
+        >
+          <Smartphone size={18} strokeWidth={2} color="var(--text-secondary)" aria-hidden="true" />
+          <span className="flex-1">Instalar en tu celular</span>
+          <ChevronDown
+            size={16}
+            strokeWidth={2}
+            color="var(--text-tertiary)"
+            aria-hidden="true"
+            className={`transition-transform duration-200 ${mostrarInstalar ? 'rotate-180' : ''}`}
+          />
+        </button>
+        {mostrarInstalar && (
+          <div className="px-3 pb-3 pt-1">
+            {yaInstalada ? (
+              <p className="flex items-center gap-1.5 text-[13px] text-[var(--accent-2-text)]">
+                <Check size={14} strokeWidth={2.5} aria-hidden="true" /> Ya la tienes instalada en este celular.
+              </p>
+            ) : plataforma === 'ios' ? (
+              <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                Desde Safari, toca <Share size={14} strokeWidth={2} className="inline-block align-middle" aria-hidden="true" />{' '}
+                (compartir) y elige &quot;Agregar a inicio&quot;.
+              </p>
+            ) : plataforma === 'android' ? (
+              <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                Desde Chrome, toca <MoreVertical size={14} strokeWidth={2} className="inline-block align-middle" aria-hidden="true" />{' '}
+                (arriba a la derecha) y elige &quot;Agregar a pantalla de inicio&quot;.
+              </p>
+            ) : (
+              <p className="text-[13px] leading-relaxed text-[var(--text-secondary)]">
+                Abre este enlace desde tu celular (Chrome en Android o Safari en iPhone) y busca la opción &quot;Agregar a pantalla de
+                inicio&quot;.
+              </p>
+            )}
+          </div>
+        )}
         <a
           href={`mailto:${SOPORTE_EMAIL}`}
           className="flex h-12 w-full items-center gap-3 rounded-[var(--radius-button)] px-3 text-[15px] font-medium text-[var(--text-primary)] [touch-action:manipulation]"

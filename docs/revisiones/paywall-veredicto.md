@@ -451,6 +451,16 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Quincuagésima re-verificación (2026-11-19 — "Instalar en tu celular" permanente en Cuenta)
+
+El hook marcará `app/app/cuenta/page.tsx`, `app/app/layout.tsx` y `lib/supabase/datos.ts` como
+más nuevos — pedido de la usuaria ("¿cómo hago para que la app me aparezca en Play Store y
+Safari?"): se le explicó que ya se instala gratis desde el navegador y se eligió esa opción (no
+tiendas oficiales). Se agregó una fila permanente "Instalar en tu celular" en Ajustes de Cuenta
+(antes solo existía un aviso de una sola vez en Hoy, que desaparecía para siempre al cerrarlo).
+`app/paywall/page.tsx` no importa nada de `app/app/cuenta`, `app/app/layout` ni
+`lib/supabase/datos` (confirmado por grep). Cero impacto; la certificación LISTA sigue vigente.
+
 ## Cuadragésima novena re-verificación (2026-11-16 — check de "cumplido" en Objetivos)
 
 El hook marcará `app/app/planeador/page.tsx`, `app/app/layout.tsx` y `lib/supabase/datos.ts`
