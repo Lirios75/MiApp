@@ -13,7 +13,9 @@ YEAR = 2026
 F = "Arial"
 NAVY, TEAL, ORANGE, GREEN, RED = "1F3A5F", "1A8C7C", "E0782E", "4E9A4E", "C0392B"
 LIGHT, INPUT, GRAYL = "EAF4F1", "FFF8E1", "F4F6F8"
-MONEY = '"$"#,##0.00;[Red]-"$"#,##0.00;"-"'
+MONEY = '"$"#,##0;[Red]-"$"#,##0;"-"'          # pesos colombianos
+NATIVE = '#,##0.00;[Red]-#,##0.00;"-"'           # monto en la moneda de la cuenta
+TRM0 = 4000
 PCT = '0%;[Red]-0%;"-"'
 thin = Side(style="thin", color="D0D7DE")
 BOX = Border(left=thin, right=thin, top=thin, bottom=thin)
@@ -23,7 +25,7 @@ MCORTO = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic
 TIPOS = ["Ingresos","Gastos básicos","Suscripciones","Gastos personales","Ahorro e inversión","Deudas"]
 TCOLOR = [NAVY, ORANGE, ORANGE, ORANGE, GREEN, RED]
 NCAT = 20
-GCOLS = ["E","H","K","N","Q","T"]          # category column per group in Configuración
+GCOLS = ["F","I","L","O","R","U"]          # category column per group in Configuración
 
 def fill(c): return PatternFill("solid", start_color=c, end_color=c)
 def font(**k):
@@ -98,6 +100,18 @@ tdc = ["1. En Configuración agrega la tarjeta como una cuenta más (ej. 'Tarjet
 for t in tdc:
     rd.merge_cells(f"B{r}:J{r}"); cell(rd, f"B{r}", t, al=LEFTW); rd.row_dimensions[r].height = 30; r += 1
 r += 1
+cell(rd, f"B{r}", "Pesos y dólares", bold=True, size=13, color=NAVY); r += 1
+mon = ["1. En Configuración cada cuenta tiene su moneda (COP o USD). Escribe la TRM del día en la celda verde de arriba.",
+       "2. En Registro escribe el monto en la moneda de la cuenta: si pagas con la cuenta en dólares, pones 20 (USD), no los pesos.",
+       "3. Presupuesto, resúmenes y reportes están en pesos: los dólares se convierten solos con la TRM.",
+       "4. Cambio de dólares a pesos: es una transferencia (categoría vacía). Cuenta = la de dólares, destino = la de pesos, y en 'Monto recibido' los pesos que te llegaron de verdad."]
+for t in mon:
+    rd.merge_cells(f"B{r}:J{r}"); cell(rd, f"B{r}", t, al=LEFTW); rd.row_dimensions[r].height = 30; r += 1
+r += 1
+cell(rd, f"B{r}", "Transferencias entre tus cuentas", bold=True, size=13, color=NAVY); r += 1
+rd.merge_cells(f"B{r}:J{r+1}")
+cell(rd, f"B{r}", "Cuando mueves dinero de una cuenta tuya a otra (de la cuenta de ahorros a la principal, retiro de cajero, pago de la tarjeta, cambio de dólares) deja la CATEGORÍA VACÍA y llena Cuenta (de dónde sale) y Cuenta destino (a dónde llega). El tipo dirá 'Transferencia': mueve el saldo de las dos cuentas, pero no cuenta como ingreso ni gasto.", al=LEFTW)
+rd.row_dimensions[r].height = 30; rd.row_dimensions[r+1].height = 30; r += 3
 cell(rd, f"B{r}", "Datos de ejemplo", bold=True, size=13, color=NAVY); r += 1
 rd.merge_cells(f"B{r}:J{r+1}")
 cell(rd, f"B{r}", "La plantilla trae datos de ejemplo para que veas cómo se llena. Para empezar con lo tuyo: en 'Registro' selecciona las filas con movimientos y bórralas (tecla Supr), y reemplaza las categorías, cuentas, montos del 'Presupuesto' y metas por los tuyos. Las fórmulas se mantienen.", al=LEFTW)
@@ -105,12 +119,14 @@ rd.row_dimensions[r].height = 30; rd.row_dimensions[r+1].height = 30
 
 # ---------------------------------------------------------------- CONFIGURACIÓN
 cf = wb.create_sheet("Configuración"); cf.sheet_properties.tabColor = TEAL
-band(cf, "Configuración", "Escribe aquí tus cuentas con su saldo al iniciar el año y las categorías de cada grupo. Todo lo demás se alimenta de esta pestaña. El día de pago es opcional (día del mes).", 21, 8, "C")
-cell(cf, "E2", None, bg=NAVY)
-cell(cf, "E3", "Año", bold=True, color="FFFFFF", bg=ORANGE, al=CENTER)
-cell(cf, "F3", YEAR, bold=True, color="0000FF", bg=INPUT, al=CENTER, size=12)
-cf["F3"].comment = Comment("Año del presupuesto. Cámbialo y todas las pestañas filtran por ese año.", "Plantilla")
-widths = {"A":2,"B":20,"C":14,"D":2,"G":2,"J":2,"M":2,"P":2,"S":2,"V":2}
+band(cf, "Configuración", "Escribe aquí tus cuentas con su saldo al iniciar el año y las categorías de cada grupo. Cada cuenta lleva su moneda (COP o USD). La TRM convierte los dólares a pesos en los reportes: actualízala cuando quieras.", 22, 12, "C")
+cell(cf, "F3", "Año", bold=True, color="FFFFFF", bg=ORANGE, al=CENTER)
+cell(cf, "G3", YEAR, bold=True, color="0000FF", bg=INPUT, al=CENTER, size=12)
+cf["G3"].comment = Comment("Año del presupuesto. Cámbialo y todas las pestañas filtran por ese año.", "Plantilla")
+cell(cf, "I3", "TRM (pesos por 1 USD)", bold=True, color="FFFFFF", bg=GREEN, al=CENTER)
+cell(cf, "J3", TRM0, bold=True, color="0000FF", bg=INPUT, al=CENTER, size=12, fmt='"$"#,##0')
+cf["J3"].comment = Comment("Valor de ejemplo. Escribe la TRM del día (Banco de la República) para convertir tus dólares a pesos en los reportes.", "Plantilla")
+widths = {"A":2,"B":20,"C":9,"D":14,"E":2,"H":2,"K":2,"N":2,"Q":2,"T":2,"W":2}
 for c, w in widths.items(): cf.column_dimensions[c].width = w
 for g, col in enumerate(GCOLS):
     c2 = L(cf[col+"1"].column + 1)
@@ -120,28 +136,32 @@ for g, col in enumerate(GCOLS):
     for i in range(NCAT):
         cell(cf, f"{col}{8+i}", bg=INPUT, border=True)
         cell(cf, f"{c2}{8+i}", bg=INPUT, border=True, al=CENTER)
-cf.merge_cells("B6:C6"); header(cf, "B6", "Cuentas", TEAL)
-header(cf, "B7", "Nombre de cuenta", "DDE3EA", "222222"); header(cf, "C7", "Saldo inicial", "DDE3EA", "222222")
+cf.merge_cells("B6:D6"); header(cf, "B6", "Cuentas", TEAL)
+header(cf, "B7", "Nombre de cuenta", "DDE3EA", "222222"); header(cf, "C7", "Moneda", "DDE3EA", "222222"); header(cf, "D7", "Saldo inicial", "DDE3EA", "222222")
+dv_cur = DataValidation(type="list", formula1='"COP,USD"', allow_blank=True); cf.add_data_validation(dv_cur); dv_cur.add("C8:C17")
 for i in range(10):
-    cell(cf, f"B{8+i}", bg=INPUT, border=True); cell(cf, f"C{8+i}", bg=INPUT, border=True, fmt=MONEY)
-cf.merge_cells("B20:C20"); header(cf, "B20", "Meses", TEAL)
+    cell(cf, f"B{8+i}", bg=INPUT, border=True); cell(cf, f"C{8+i}", bg=INPUT, border=True, al=CENTER); cell(cf, f"D{8+i}", bg=INPUT, border=True, fmt=NATIVE)
+cf.merge_cells("B20:D20"); header(cf, "B20", "Meses", TEAL)
 for i, m in enumerate(MESES):
-    cf.merge_cells(f"B{21+i}:C{21+i}"); cell(cf, f"B{21+i}", m, al=CENTER, border=True)
+    cf.merge_cells(f"B{21+i}:D{21+i}"); cell(cf, f"B{21+i}", m, al=CENTER, border=True)
 
-cuentas = [("Cuenta principal", 2500), ("Cuenta de ahorros", 4000), ("Efectivo", 300), ("Billetera digital", 150), ("Tarjeta de crédito", 0)]
-for i, (n, s) in enumerate(cuentas):
-    cf[f"B{8+i}"].value = n; cf[f"C{8+i}"].value = s
+cuentas = [("Cuenta principal", "COP", 5000000), ("Cuenta de ahorros", "COP", 12000000), ("Efectivo", "COP", 300000),
+           ("Cuenta en dólares", "USD", 1200), ("Tarjeta de crédito", "COP", 0)]
+CUR = {n: c for n, c, _ in cuentas}
+for i, (n, c, sv) in enumerate(cuentas):
+    cf[f"B{8+i}"].value = n; cf[f"C{8+i}"].value = c; cf[f"D{8+i}"].value = sv
 # categoria, dia, presupuesto mensual, cuenta
 CATS = [
-    [("Salario", 30, 3500, "Cuenta principal"), ("Negocio extra", None, 800, "Cuenta principal")],
-    [("Supermercado", None, 600, "Cuenta principal"), ("Alquiler", 5, 1000, "Cuenta principal"),
-     ("Transporte", None, 200, "Efectivo"), ("Luz, agua e internet", 15, 180, "Cuenta principal"),
-     ("Seguro médico", 10, 150, "Cuenta principal")],
-    [("Netflix", 10, 15, "Tarjeta de crédito"), ("Spotify", 12, 10, "Tarjeta de crédito"), ("Gimnasio", 1, 40, "Cuenta principal")],
-    [("Restaurantes", None, 200, "Tarjeta de crédito"), ("Ropa", None, 120, "Tarjeta de crédito"),
-     ("Salidas y ocio", None, 150, "Efectivo"), ("Cuidado personal", None, 80, "Cuenta principal")],
-    [("Fondo de emergencia", 30, 500, "Cuenta principal"), ("Viaje", 30, 250, "Cuenta principal"), ("Jubilación", 30, 300, "Cuenta principal")],
-    [("Préstamo personal", 5, 300, "Cuenta principal"), ("Préstamo del auto", 15, 205, "Cuenta principal")],
+    [("Salario", 30, 6500000, "Cuenta principal"), ("Ingresos en dólares", None, 2000000, "Cuenta en dólares")],
+    [("Mercado", None, 1200000, "Cuenta principal"), ("Arriendo", 5, 2000000, "Cuenta principal"),
+     ("Transporte", None, 400000, "Efectivo"), ("Servicios e internet", 15, 450000, "Cuenta principal"),
+     ("Medicina prepagada", 10, 350000, "Cuenta principal")],
+    [("Netflix", 10, 45000, "Tarjeta de crédito"), ("Spotify", 12, 27000, "Tarjeta de crédito"),
+     ("Gimnasio", 1, 120000, "Cuenta principal"), ("Software (en USD)", 20, 80000, "Cuenta en dólares")],
+    [("Restaurantes", None, 500000, "Tarjeta de crédito"), ("Ropa", None, 300000, "Tarjeta de crédito"),
+     ("Salidas y ocio", None, 300000, "Efectivo"), ("Cuidado personal", None, 200000, "Cuenta principal")],
+    [("Fondo de emergencia", 30, 800000, "Cuenta principal"), ("Viaje", 30, 400000, "Cuenta principal"), ("Pensión voluntaria", 30, 500000, "Cuenta principal")],
+    [("Préstamo personal", 5, 500000, "Cuenta principal"), ("Crédito del carro", 15, 328000, "Cuenta principal")],
 ]
 for g, lst in enumerate(CATS):
     col = GCOLS[g]; c2 = L(cf[col+"1"].column + 1)
@@ -149,20 +169,21 @@ for g, lst in enumerate(CATS):
         cf[f"{col}{8+i}"].value = n
         if d: cf[f"{c2}{8+i}"].value = d
 # helper (hidden): all categories + type
-cell(cf, "W7", "Todas las categorías", bold=True); cell(cf, "X7", "Tipo", bold=True)
+cell(cf, "X7", "Todas las categorías", bold=True); cell(cf, "Y7", "Tipo", bold=True)
 for g, col in enumerate(GCOLS):
     for i in range(NCAT):
         rr = 8 + g*NCAT + i
-        cf[f"W{rr}"] = f'=IF({col}{8+i}="","",{col}{8+i})'
-        cf[f"X{rr}"] = f'=IF(W{rr}="","","{TIPOS[g]}")'
-cf.column_dimensions["W"].hidden = True; cf.column_dimensions["X"].hidden = True
+        cf[f"X{rr}"] = f'=IF({col}{8+i}="","",{col}{8+i})'
+        cf[f"Y{rr}"] = f'=IF(X{rr}="","","{TIPOS[g]}")'
+cf.column_dimensions["X"].hidden = True; cf.column_dimensions["Y"].hidden = True
 cf.freeze_panes = "A8"
-ALLCAT = f"{CFG}!$W$8:$W${8+6*NCAT-1}"; ALLTIPO = f"{CFG}!$X$8:$X${8+6*NCAT-1}"
-ACCTS = f"{CFG}!$B$8:$B$17"; MONTHS = f"{CFG}!$B$21:$B$32"; YR = f"{CFG}!$F$3"
+ALLCAT = f"{CFG}!$X$8:$X${8+6*NCAT-1}"; ALLTIPO = f"{CFG}!$Y$8:$Y${8+6*NCAT-1}"
+ACCTS = f"{CFG}!$B$8:$B$17"; MONTHS = f"{CFG}!$B$21:$B$32"; YR = f"{CFG}!$G$3"
+ACUR = f"{CFG}!$C$8:$C$17"; TRM = f"{CFG}!$J$3"
 
 # ---------------------------------------------------------------- PRESUPUESTO
 pr = wb.create_sheet("Presupuesto"); pr.sheet_properties.tabColor = ORANGE
-band(pr, "Planificador de Presupuesto", "Planea cada mes: cuánto entra y a dónde va cada peso. El resultado mensual debe quedar en $0 (presupuesto base cero). Las categorías vienen de Configuración.", 17, 9)
+band(pr, "Planificador de Presupuesto", "Planea cada mes: cuánto entra y a dónde va cada peso. Todo en pesos colombianos (COP): lo que se paga en dólares, planéalo convertido. El resultado mensual debe quedar en $0. Las categorías vienen de Configuración.", 17, 9)
 pr.column_dimensions["A"].width = 2; pr.column_dimensions["B"].width = 24
 pr.column_dimensions["C"].width = 18; pr.column_dimensions["D"].width = 8
 for i in range(12): pr.column_dimensions[L(5+i)].width = 11
@@ -208,10 +229,12 @@ PLAST = TITLE[5] + NCAT
 
 # ---------------------------------------------------------------- REGISTRO
 rg = wb.create_sheet("Registro"); rg.sheet_properties.tabColor = TEAL
-band(rg, "Registro de Movimientos", "Anota cada movimiento con monto en positivo; el tipo se llena solo. Compras con tarjeta: Cuenta = la tarjeta. Pago de la tarjeta, retiro de cajero o ahorro: usa Cuenta destino (en pagos y retiros deja la categoría vacía).", 10, 7)
-for c, w in {"A":2,"B":12,"C":24,"D":18,"E":20,"F":20,"G":28,"H":13,"I":7,"J":7}.items(): rg.column_dimensions[c].width = w
-heads = ["Fecha", "Categoría", "Tipo (automático)", "Cuenta", "Cuenta destino (opcional)", "Descripción", "Monto", "Mes", "Año"]
+band(rg, "Registro de Movimientos", "Monto en positivo y en la moneda de la cuenta (pesos o dólares); el tipo, la moneda y el valor en pesos se llenan solos. Transferencia entre tus cuentas (retiro, pago de tarjeta, cambio de dólares): categoría vacía + cuenta destino.", 15, 9)
+for c, w in {"A":2,"B":12,"C":22,"D":17,"E":19,"F":19,"G":28,"H":13,"I":8,"J":14,"K":14,"L":14,"M":6,"N":6}.items(): rg.column_dimensions[c].width = w
+heads = ["Fecha", "Categoría", "Tipo (automático)", "Cuenta", "Cuenta destino (opcional)", "Descripción", "Monto", "Moneda", "Monto recibido (si cambias moneda)", "Valor en pesos", "Llega a destino", "Mes", "Año"]
 for i, h in enumerate(heads): header(rg, f"{L(2+i)}5", h)
+rg.row_dimensions[5].height = 42
+rg["J5"].comment = Comment("Solo para transferencias entre cuentas de distinta moneda (ej. vendes 300 USD y te llegan 1.230.000 COP). Si la dejas vacía se usa la TRM de Configuración.", "Plantilla")
 NREG = 1000; R0, R1 = 6, 6 + NREG - 1
 dv_cat = DataValidation(type="list", formula1=f"={ALLCAT}", allow_blank=True, showErrorMessage=True,
                         errorTitle="Categoría no encontrada", error="Elige una categoría de la lista (se crean en Configuración).")
@@ -221,50 +244,59 @@ dv_date = DataValidation(type="date", operator="greaterThan", formula1="36526", 
 for d in (dv_cat, dv_acc2, dv_date): rg.add_data_validation(d)
 dv_cat.add(f"C{R0}:C{R1}"); dv_acc2.add(f"E{R0}:F{R1}"); dv_date.add(f"B{R0}:B{R1}")
 for r in range(R0, R1 + 1):
-    for c in "BCEFGH": rg[f"{c}{r}"].fill = fill(INPUT); rg[f"{c}{r}"].border = BOX; rg[f"{c}{r}"].font = font()
-    rg[f"B{r}"].number_format = "dd/mm/yyyy"; rg[f"H{r}"].number_format = MONEY
+    for c in "BCEFGHJ": rg[f"{c}{r}"].fill = fill(INPUT); rg[f"{c}{r}"].border = BOX; rg[f"{c}{r}"].font = font()
+    rg[f"B{r}"].number_format = "dd/mm/yyyy"; rg[f"H{r}"].number_format = NATIVE; rg[f"J{r}"].number_format = NATIVE
     rg[f"D{r}"] = f'=IF(C{r}="",IF(AND(B{r}<>"",F{r}<>""),"Transferencia",""),IFERROR(INDEX({ALLTIPO},MATCH(C{r},{ALLCAT},0)),"Revisa categoría"))'
-    rg[f"I{r}"] = f'=IF(B{r}="","",MONTH(B{r}))'
-    rg[f"J{r}"] = f'=IF(B{r}="","",YEAR(B{r}))'
-    for c in "DIJ": rg[f"{c}{r}"].font = font(color="555555"); rg[f"{c}{r}"].border = BOX
-    rg[f"I{r}"].alignment = rg[f"J{r}"].alignment = Alignment(horizontal="center")
-rg.freeze_panes = "B6"; rg.auto_filter.ref = f"B5:J{R1}"
+    rg[f"I{r}"] = f'=IF(E{r}="","",IFERROR(INDEX({ACUR},MATCH(E{r},{ACCTS},0)),"COP"))'
+    rg[f"K{r}"] = f'=IF(H{r}="","",IF(I{r}="USD",H{r}*{TRM},H{r}))'
+    rg[f"L{r}"] = (f'=IF(OR(F{r}="",H{r}=""),"",IF(J{r}<>"",J{r},IF(IFERROR(INDEX({ACUR},MATCH(F{r},{ACCTS},0)),"COP")=I{r},H{r},'
+                   f'IF(I{r}="USD",H{r}*{TRM},H{r}/{TRM}))))')
+    rg[f"M{r}"] = f'=IF(B{r}="","",MONTH(B{r}))'
+    rg[f"N{r}"] = f'=IF(B{r}="","",YEAR(B{r}))'
+    for c in "DIKLMN": rg[f"{c}{r}"].font = font(color="555555"); rg[f"{c}{r}"].border = BOX
+    rg[f"K{r}"].number_format = MONEY; rg[f"L{r}"].number_format = NATIVE
+    for c in "IMN": rg[f"{c}{r}"].alignment = Alignment(horizontal="center")
+rg.freeze_panes = "B6"; rg.auto_filter.ref = f"B5:N{R1}"
 
 # example transactions Jan..Nov
 random.seed(7)
 tx = []
-desc = {"Salario": "Pago de nómina", "Negocio extra": "Venta de servicios", "Supermercado": "Compra semanal",
-        "Alquiler": "Renta del mes", "Transporte": "Gasolina / pasajes", "Luz, agua e internet": "Servicios del hogar",
-        "Seguro médico": "Póliza mensual", "Netflix": "Suscripción", "Spotify": "Suscripción", "Gimnasio": "Mensualidad",
+desc = {"Salario": "Pago de nómina", "Ingresos en dólares": "Pago cliente del exterior", "Mercado": "Mercado de la semana",
+        "Arriendo": "Arriendo del mes", "Transporte": "Gasolina / transporte", "Servicios e internet": "Servicios públicos e internet",
+        "Medicina prepagada": "Cuota mensual", "Software (en USD)": "Suscripción de software", "Netflix": "Suscripción", "Spotify": "Suscripción", "Gimnasio": "Mensualidad",
         "Restaurantes": "Comida fuera", "Ropa": "Compra de ropa", "Salidas y ocio": "Cine / salidas",
         "Cuidado personal": "Peluquería / farmacia", "Fondo de emergencia": "Transferencia a ahorro",
-        "Viaje": "Ahorro para viaje", "Jubilación": "Aporte voluntario", "Préstamo personal": "Cuota mensual",
-        "Préstamo del auto": "Cuota mensual"}
+        "Viaje": "Ahorro para viaje", "Pensión voluntaria": "Aporte voluntario", "Préstamo personal": "Cuota mensual",
+        "Crédito del carro": "Cuota mensual"}
 for m in range(1, 12):
     for g, lst in enumerate(CATS):
         for (n, d, amt, acc) in lst:
-            if n == "Supermercado":
+            if n == "Mercado":
                 for wk in (3, 10, 17, 24):
-                    tx.append((datetime.date(YEAR, m, wk), n, acc, desc[n], round(amt/4*random.uniform(0.85, 1.2), 2)))
+                    tx.append((datetime.date(YEAR, m, wk), n, acc, desc[n], round(amt/4*random.uniform(0.85, 1.2), -2)))
                 continue
             if g in (0, 1, 2, 5) and n not in ("Transporte",):
-                v = amt if g != 0 or n == "Salario" else round(amt*random.uniform(0.5, 1.4), 2)
+                v = amt if g != 0 or n == "Salario" else round(amt*random.uniform(0.6, 1.4), -3)
             elif g == 4:
-                v = amt if random.random() > 0.15 else round(amt*0.5, 2)
+                v = amt if random.random() > 0.15 else round(amt*0.5, -3)
             else:
-                v = round(amt*random.uniform(0.6, 1.35), 2)
+                v = round(amt*random.uniform(0.6, 1.35), -2)
             day = min(d or random.randint(2, 27), 28)
+            if CUR[acc] == "USD": v = round(v / TRM0, 2)
             if g == 4: tx.append((datetime.date(YEAR, m, day), n, acc, desc[n], v, "Cuenta de ahorros"))
             else: tx.append((datetime.date(YEAR, m, day), n, acc, desc[n], v))
-    tx.append((datetime.date(YEAR, m, 1), None, "Cuenta principal", "Retiro de efectivo del cajero", 400, "Efectivo"))
+    tx.append((datetime.date(YEAR, m, 1), None, "Cuenta principal", "Retiro de efectivo del cajero", 700000, "Efectivo"))
+    if m % 3 == 0:
+        tx.append((datetime.date(YEAR, m, 20), None, "Cuenta en dólares", "Cambio de dólares a pesos", 1200, "Cuenta principal", round(1200 * random.uniform(3900, 4150), -3)))
     if m > 1:
-        deuda = round(sum(t[4] for t in tx if t[2] == "Tarjeta de crédito" and t[1] and t[0].month == m - 1), 2)
+        deuda = round(sum(t[4] for t in tx if t[2] == "Tarjeta de crédito" and t[1] and t[0].month == m - 1), 0)
         tx.append((datetime.date(YEAR, m, 6), None, "Cuenta principal", "Pago total de la tarjeta (mes anterior)", deuda, "Tarjeta de crédito"))
 tx.sort(key=lambda x: (x[0], x[2]))
 for i, (dte, n, acc, ds, v, *dst) in enumerate(tx):
     r = R0 + i
     rg[f"B{r}"].value = dte; rg[f"C{r}"].value = n; rg[f"E{r}"].value = acc; rg[f"G{r}"].value = ds; rg[f"H{r}"].value = v
     if dst: rg[f"F{r}"].value = dst[0]
+    if len(dst) > 1: rg[f"J{r}"].value = dst[1]
 RG = lambda c: f"Registro!${c}${R0}:${c}${R1}"
 
 # ---------------------------------------------------------------- RESUMEN MENSUAL
@@ -284,7 +316,7 @@ for g in range(6):
     r = 12 + g; t = TITLE[g]
     cell(rs, f"B{r}", TIPOS[g], bold=True, color=TCOLOR[g], border=True)
     cell(rs, f"C{r}", f"=INDEX(Presupuesto!$E${t}:$P${t},{MES})", border=True, fmt=MONEY)
-    cell(rs, f"D{r}", f'=SUMIFS({RG("H")},{RG("D")},B{r},{RG("I")},{MES},{RG("J")},{YR})', border=True, fmt=MONEY)
+    cell(rs, f"D{r}", f'=SUMIFS({RG("K")},{RG("D")},B{r},{RG("M")},{MES},{RG("N")},{YR})', border=True, fmt=MONEY)
     diff = f"=D{r}-C{r}" if g == 0 else f"=C{r}-D{r}"
     cell(rs, f"E{r}", diff, bold=True, border=True, fmt=MONEY)
     cell(rs, f"F{r}", f'=IF(C{r}=0,"",D{r}/C{r})', border=True, fmt=PCT, al=CENTER)
@@ -318,7 +350,7 @@ for g in range(6):
             rs.row_dimensions[r].outlineLevel = 1; rs.row_dimensions[r].hidden = True
         cell(rs, f"B{r}", f"=Presupuesto!B{pr_r}", border=True)
         cell(rs, f"C{r}", f'=IF(B{r}="","",INDEX(Presupuesto!$E${pr_r}:$P${pr_r},{MES}))', border=True, fmt=MONEY)
-        cell(rs, f"D{r}", f'=IF(B{r}="","",SUMIFS({RG("H")},{RG("C")},B{r},{RG("I")},{MES},{RG("J")},{YR}))', border=True, fmt=MONEY)
+        cell(rs, f"D{r}", f'=IF(B{r}="","",SUMIFS({RG("K")},{RG("C")},B{r},{RG("M")},{MES},{RG("N")},{YR}))', border=True, fmt=MONEY)
         diff = f'=IF(B{r}="","",D{r}-C{r})' if g == 0 else f'=IF(B{r}="","",C{r}-D{r})'
         cell(rs, f"E{r}", diff, border=True, fmt=MONEY)
         cell(rs, f"F{r}", f'=IF(OR(B{r}="",N(C{r})=0),"",D{r}/C{r})', border=True, fmt=PCT, al=CENTER)
@@ -342,16 +374,16 @@ for c, w in {"A":2,"B":22,"C":13,"D":13,"E":13,"F":13,"G":13,"H":13,"I":9,"J":24
 heads = ["Meta", "Monto meta", "Ahorro inicial", "Fecha objetivo", "Aportado (registro)", "Ahorrado total", "Faltante", "Progreso", "", "Meses restantes", "Apartar al mes"]
 for i, h in enumerate(heads): header(mt, f"{L(2+i)}11", h, GREEN)
 mt.merge_cells("I11:J11")
-dv_goal = DataValidation(type="list", formula1=f"={CFG}!$Q$8:$Q$27", allow_blank=True); mt.add_data_validation(dv_goal)
-goals = [("Fondo de emergencia", 8000, 1500, datetime.date(2027, 12, 31)),
-         ("Viaje", 3000, 200, datetime.date(2027, 7, 31)),
-         ("Jubilación", 25000, 3000, datetime.date(2035, 12, 31))]
+dv_goal = DataValidation(type="list", formula1=f"={CFG}!$R$8:$R$27", allow_blank=True); mt.add_data_validation(dv_goal)
+goals = [("Fondo de emergencia", 15000000, 3000000, datetime.date(2027, 12, 31)),
+         ("Viaje", 6000000, 500000, datetime.date(2027, 7, 31)),
+         ("Pensión voluntaria", 80000000, 10000000, datetime.date(2035, 12, 31))]
 G0, G1 = 12, 21
 for r in range(G0, G1 + 1):
     for c in "BCDE": cell(mt, f"{c}{r}", bg=INPUT, border=True)
     dv_goal.add(f"B{r}")
     mt[f"C{r}"].number_format = mt[f"D{r}"].number_format = MONEY; mt[f"E{r}"].number_format = "dd/mm/yyyy"
-    cell(mt, f"F{r}", f'=IF(B{r}="","",SUMIFS({RG("H")},{RG("C")},B{r}))', border=True, fmt=MONEY)
+    cell(mt, f"F{r}", f'=IF(B{r}="","",SUMIFS({RG("K")},{RG("C")},B{r}))', border=True, fmt=MONEY)
     cell(mt, f"G{r}", f'=IF(B{r}="","",N(D{r})+F{r})', bold=True, border=True, fmt=MONEY)
     cell(mt, f"H{r}", f'=IF(B{r}="","",MAX(0,N(C{r})-G{r}))', border=True, fmt=MONEY)
     cell(mt, f"I{r}", f'=IF(OR(B{r}="",N(C{r})=0),"",MIN(1,G{r}/C{r}))', bold=True, color=GREEN, border=True, fmt="0%", al=CENTER)
@@ -393,42 +425,50 @@ cell(mt, "B23", "Para que el gráfico muestre más metas, amplía su rango de da
 # ---------------------------------------------------------------- BALANCE DE CUENTAS
 bc = wb.create_sheet("Balance de Cuentas"); bc.sheet_properties.tabColor = TEAL
 band(bc, "Balance de Cuentas", "Saldo actual de cada cuenta (saldo inicial + entradas - salidas del año). Una tarjeta de crédito en negativo = lo que debes en ella. Abajo: lo planeado vs. lo real del mes que elijas.", 12, 7)
-for c, w in {"A":2,"B":22,"C":13,"D":13,"E":13,"F":14,"G":2,"H":13,"I":13,"J":13,"K":13,"L":14}.items(): bc.column_dimensions[c].width = w
+for c, w in {"A":2,"B":22,"C":8,"D":14,"E":14,"F":14,"G":14,"H":15,"I":2,"J":14,"K":14,"L":14,"M":14,"N":14}.items(): bc.column_dimensions[c].width = w
 cell(bc, "B5", "Selecciona el mes", bold=True, color="FFFFFF", bg=NAVY, al=CENTER)
 cell(bc, "C5", "Noviembre", bold=True, bg="FFE58F", al=CENTER, border=True)
+bc.merge_cells("C5:D5")
 dv_m2 = DataValidation(type="list", formula1=f"={MONTHS}"); bc.add_data_validation(dv_m2); dv_m2.add("C5")
-cell(bc, "D5", f"=MATCH(C5,{MONTHS},0)", color="888888", fmt='"mes "0', al=CENTER)
-bc.merge_cells("B7:F7"); header(bc, "B7", "Saldo de tus cuentas en el año", TEAL)
-bc.merge_cells("H7:L7"); header(bc, "H7", "Mes elegido: planeado vs. real (sin transferencias)", NAVY)
-for i, h in enumerate(["Cuenta", "Saldo inicial", "Entradas", "Salidas", "Saldo actual"]): header(bc, f"{L(2+i)}8", h, "DDE3EA", "222222")
-for i, h in enumerate(["Entradas plan", "Entradas reales", "Salidas plan", "Salidas reales", "Diferencia neta"]): header(bc, f"{L(8+i)}8", h, "DDE3EA", "222222")
-PI = f"INDEX(Presupuesto!$E${TITLE[0]+1}:$P${TITLE[0]+NCAT},0,$D$5)"
-PA = f"INDEX(Presupuesto!$E${TITLE[0]+1}:$P${PLAST},0,$D$5)"
+cell(bc, "E5", f"=MATCH(C5,{MONTHS},0)", color="888888", fmt='"mes "0', al=CENTER)
+cell(bc, "F5", f'="TRM: $"&TEXT({TRM},"#,##0")', color="888888", al=CENTER)
+MSEL = "$E$5"
+bc.merge_cells("B7:H7"); header(bc, "B7", "Saldo de tus cuentas en el año (cada una en su moneda)", TEAL)
+bc.merge_cells("J7:N7"); header(bc, "J7", "Mes elegido en pesos: planeado vs. real (sin transferencias)", NAVY)
+for i, h in enumerate(["Cuenta", "Moneda", "Saldo inicial", "Entradas", "Salidas", "Saldo actual", "Saldo en pesos"]): header(bc, f"{L(2+i)}8", h, "DDE3EA", "222222")
+for i, h in enumerate(["Entradas plan", "Entradas reales", "Salidas plan", "Salidas reales", "Diferencia neta"]): header(bc, f"{L(10+i)}8", h, "DDE3EA", "222222")
+PI = f"INDEX(Presupuesto!$E${TITLE[0]+1}:$P${TITLE[0]+NCAT},0,{MSEL})"
+PA = f"INDEX(Presupuesto!$E${TITLE[0]+1}:$P${PLAST},0,{MSEL})"
 for i in range(10):
     r = 9 + i; cr = 8 + i
     cell(bc, f"B{r}", f'=IF({CFG}!B{cr}="","",{CFG}!B{cr})', bold=True, border=True)
-    cell(bc, f"C{r}", f'=IF(B{r}="","",N({CFG}!C{cr}))', border=True, fmt=MONEY)
-    cell(bc, f"D{r}", f'=IF(B{r}="","",SUMIFS({RG("H")},{RG("E")},B{r},{RG("D")},"Ingresos",{RG("J")},{YR})+SUMIFS({RG("H")},{RG("F")},B{r},{RG("J")},{YR}))', border=True, fmt=MONEY)
-    cell(bc, f"E{r}", f'=IF(B{r}="","",SUMIFS({RG("H")},{RG("E")},B{r},{RG("J")},{YR})-SUMIFS({RG("H")},{RG("E")},B{r},{RG("D")},"Ingresos",{RG("J")},{YR}))', border=True, fmt=MONEY)
-    cell(bc, f"F{r}", f'=IF(B{r}="","",C{r}+D{r}-E{r})', bold=True, bg=LIGHT, border=True, fmt=MONEY)
-    cell(bc, f"H{r}", f'=IF(B{r}="","",SUMIFS({PI},Presupuesto!$C${TITLE[0]+1}:$C${TITLE[0]+NCAT},B{r}))', border=True, fmt=MONEY)
-    cell(bc, f"I{r}", f'=IF(B{r}="","",SUMIFS({RG("H")},{RG("E")},B{r},{RG("D")},"Ingresos",{RG("I")},$D$5,{RG("J")},{YR}))', border=True, fmt=MONEY)
-    cell(bc, f"J{r}", f'=IF(B{r}="","",SUMIFS({PA},Presupuesto!$C${TITLE[0]+1}:$C${PLAST},B{r})-H{r})', border=True, fmt=MONEY)
-    cell(bc, f"K{r}", f'=IF(B{r}="","",SUMIFS({RG("H")},{RG("E")},B{r},{RG("D")},"<>Transferencia",{RG("I")},$D$5,{RG("J")},{YR})-SUMIFS({RG("H")},{RG("E")},B{r},{RG("D")},"Ingresos",{RG("I")},$D$5,{RG("J")},{YR}))', border=True, fmt=MONEY)
-    cell(bc, f"L{r}", f'=IF(B{r}="","",(I{r}-K{r})-(H{r}-J{r}))', bold=True, border=True, fmt=MONEY)
-cell(bc, "B19", "Total", bold=True, color="FFFFFF", bg=NAVY, border=True)
-for c in "CDEFHIJKL":
-    cell(bc, f"{c}19", f"=SUM({c}9:{c}18)", bold=True, color="FFFFFF", bg=NAVY, border=True, fmt=MONEY)
-bc.conditional_formatting.add("F9:F18", CellIsRule(operator="lessThan", formula=["0"], font=Font(name=F, bold=True, color=RED)))
-bc.conditional_formatting.add("L9:L18", CellIsRule(operator="lessThan", formula=["0"], font=Font(name=F, bold=True, color=RED)))
-cell(bc, "B22", "Tarjeta de crédito: regístrala como cuenta con saldo inicial = lo que debes, en negativo (ej. -500). Cada compra con la tarjeta la hace más negativa; cada pago desde tu banco la acerca a $0.", italic=True, size=9, color="777777")
-cell(bc, "B21", "Diferencia neta = (entradas reales - salidas reales) - (entradas plan - salidas plan). Negativo = salió más dinero del planeado de esa cuenta.", italic=True, size=9, color="777777")
-ch = BarChart(); ch.type = "col"; ch.title = "Saldo actual por cuenta"
-ch.add_data(Reference(bc, min_col=6, min_row=8, max_row=8 + len(cuentas)), titles_from_data=True)
+    cell(bc, f"C{r}", f'=IF(B{r}="","",IF({CFG}!C{cr}="","COP",{CFG}!C{cr}))', border=True, al=CENTER)
+    cell(bc, f"D{r}", f'=IF(B{r}="","",N({CFG}!D{cr}))', border=True, fmt=NATIVE)
+    cell(bc, f"E{r}", f'=IF(B{r}="","",SUMIFS({RG("H")},{RG("E")},B{r},{RG("D")},"Ingresos",{RG("N")},{YR})+SUMIFS({RG("L")},{RG("F")},B{r},{RG("N")},{YR}))', border=True, fmt=NATIVE)
+    cell(bc, f"F{r}", f'=IF(B{r}="","",SUMIFS({RG("H")},{RG("E")},B{r},{RG("N")},{YR})-SUMIFS({RG("H")},{RG("E")},B{r},{RG("D")},"Ingresos",{RG("N")},{YR}))', border=True, fmt=NATIVE)
+    cell(bc, f"G{r}", f'=IF(B{r}="","",D{r}+E{r}-F{r})', bold=True, bg=LIGHT, border=True, fmt=NATIVE)
+    cell(bc, f"H{r}", f'=IF(B{r}="","",IF(C{r}="USD",G{r}*{TRM},G{r}))', bold=True, bg=LIGHT, border=True, fmt=MONEY)
+    cell(bc, f"J{r}", f'=IF(B{r}="","",SUMIFS({PI},Presupuesto!$C${TITLE[0]+1}:$C${TITLE[0]+NCAT},B{r}))', border=True, fmt=MONEY)
+    cell(bc, f"K{r}", f'=IF(B{r}="","",SUMIFS({RG("K")},{RG("E")},B{r},{RG("D")},"Ingresos",{RG("M")},{MSEL},{RG("N")},{YR}))', border=True, fmt=MONEY)
+    cell(bc, f"L{r}", f'=IF(B{r}="","",SUMIFS({PA},Presupuesto!$C${TITLE[0]+1}:$C${PLAST},B{r})-J{r})', border=True, fmt=MONEY)
+    cell(bc, f"M{r}", f'=IF(B{r}="","",SUMIFS({RG("K")},{RG("E")},B{r},{RG("D")},"<>Transferencia",{RG("M")},{MSEL},{RG("N")},{YR})-K{r})', border=True, fmt=MONEY)
+    cell(bc, f"N{r}", f'=IF(B{r}="","",(K{r}-M{r})-(J{r}-L{r}))', bold=True, border=True, fmt=MONEY)
+cell(bc, "B19", "Total en pesos", bold=True, color="FFFFFF", bg=NAVY, border=True)
+for c in "CDEFG": cell(bc, f"{c}19", "", bg=NAVY, border=True)
+for c in "HJKLMN":
+    cell(bc, f"{c}19", f"=SUM({c}9:{c}18)", bold=True, color="FFFFFF", bg=NAVY, border=True, fmt='"$"#,##0;-"$"#,##0;"-"')
+bc.conditional_formatting.add("G9:H18", CellIsRule(operator="lessThan", formula=["0"], font=Font(name=F, bold=True, color=RED)))
+bc.conditional_formatting.add("N9:N18", CellIsRule(operator="lessThan", formula=["0"], font=Font(name=F, bold=True, color=RED)))
+notas = ["Diferencia neta = (entradas reales - salidas reales) - (entradas plan - salidas plan). Negativo = salió más dinero del planeado de esa cuenta.",
+         "Tarjeta de crédito: regístrala como cuenta con saldo inicial = lo que debes, en negativo. Cada compra la hace más negativa; cada pago desde tu banco la acerca a $0.",
+         "Transferencias entre tus cuentas (retiro de cajero, pago de tarjeta, cambio de dólares) mueven el saldo de ambas cuentas, pero no cuentan como ingreso ni gasto."]
+for k, t in enumerate(notas): cell(bc, f"B{21+k}", t, italic=True, size=9, color="777777")
+ch = BarChart(); ch.type = "col"; ch.title = "Saldo actual por cuenta (en pesos)"
+ch.add_data(Reference(bc, min_col=8, min_row=8, max_row=8 + len(cuentas)), titles_from_data=True)
 ch.set_categories(Reference(bc, min_col=2, min_row=9, max_row=8 + len(cuentas)))
 ch.series[0].graphicalProperties.solidFill = TEAL; ch.legend = None
-ch.y_axis.numFmt = '"$"#,##0'; ch.height = 7; ch.width = 16
-bc.add_chart(ch, "B24")
+ch.y_axis.numFmt = '"$"#,##0'; ch.height = 7; ch.width = 18
+bc.add_chart(ch, "B25")
 
 # ---------------------------------------------------------------- REPORTE ANUAL
 ra = wb.create_sheet("Reporte Anual"); ra.sheet_properties.tabColor = RED
@@ -445,7 +485,7 @@ for g in range(6):
     r = 7 + g
     cell(ra, f"B{r}", TIPOS[g], bold=True, color=TCOLOR[g], border=True)
     for j in range(12):
-        cell(ra, f"{L(3+j)}{r}", f'=SUMIFS({RG("H")},{RG("D")},$B{r},{RG("I")},{j+1},{RG("J")},{YR})', border=True, fmt=MONEY)
+        cell(ra, f"{L(3+j)}{r}", f'=SUMIFS({RG("K")},{RG("D")},$B{r},{RG("M")},{j+1},{RG("N")},{YR})', border=True, fmt=MONEY)
     cell(ra, f"O{r}", f"=SUM(C{r}:N{r})", bold=True, bg=LIGHT, border=True, fmt=MONEY)
     cell(ra, f"P{r}", f'=IF(COUNTIF(C{r}:N{r},">0")=0,0,O{r}/COUNTIF(C{r}:N{r},">0"))', bg=LIGHT, border=True, fmt=MONEY)
 rows_extra = [("Total salidas", "=SUM({c}8:{c}12)"), ("Balance (entra - sale)", "={c}7-{c}13"),
@@ -501,7 +541,7 @@ for g in range(6):
             ra.row_dimensions[r].outlineLevel = 1; ra.row_dimensions[r].hidden = True
         cell(ra, f"B{r}", f"=Presupuesto!B{t+1+i}", border=True)
         for j in range(12):
-            cell(ra, f"{L(3+j)}{r}", f'=IF($B{r}="","",SUMIFS({RG("H")},{RG("C")},$B{r},{RG("I")},{j+1},{RG("J")},{YR}))', border=True, fmt=MONEY)
+            cell(ra, f"{L(3+j)}{r}", f'=IF($B{r}="","",SUMIFS({RG("K")},{RG("C")},$B{r},{RG("M")},{j+1},{RG("N")},{YR}))', border=True, fmt=MONEY)
         cell(ra, f"O{r}", f'=IF($B{r}="","",SUM(C{r}:N{r}))', bold=True, bg=LIGHT, border=True, fmt=MONEY)
         cell(ra, f"P{r}", f'=IF($B{r}="","",O{r}/12)', bg=LIGHT, border=True, fmt=MONEY)
         r += 1
