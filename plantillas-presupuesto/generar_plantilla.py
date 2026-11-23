@@ -150,7 +150,13 @@ for i, m in enumerate(MESES):
 cuentas = [("Cuenta principal", "COP", 5000000), ("Cuenta de ahorros", "COP", 12000000), ("Efectivo", "COP", 300000),
            ("Cuenta en dólares", "USD", 1200), ("Tarjeta de crédito", "COP", 0)]
 CUR = {n: c for n, c, _ in cuentas}
-if BLANK: cuentas = []
+MIAS = None
+if BLANK:
+    import json, os
+    _f = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mis_cuentas.json")
+    MIAS = json.load(open(_f)) if os.path.exists(_f) else None
+    cuentas = [tuple(c) for c in MIAS["cuentas"]] if MIAS else []
+    if MIAS: cf["J3"].value = MIAS["trm"]
 for i, (n, c, sv) in enumerate(cuentas):
     cf[f"B{8+i}"].value = n; cf[f"C{8+i}"].value = c; cf[f"D{8+i}"].value = sv
 # categoria, dia, presupuesto mensual, cuenta
