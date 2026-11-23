@@ -8,7 +8,9 @@ from openpyxl.chart.label import DataLabelList
 from openpyxl.comments import Comment
 from openpyxl.utils import get_column_letter as L
 
-OUT = "/home/user/MiApp/plantillas-presupuesto/Plantilla-Presupuesto-Personal.xlsx"
+import sys
+BLANK = "--blanco" in sys.argv
+OUT = "/home/user/MiApp/plantillas-presupuesto/" + ("Mi-Presupuesto-2026.xlsx" if BLANK else "Plantilla-Presupuesto-EJEMPLO.xlsx")
 YEAR = 2026
 F = "Arial"
 NAVY, TEAL, ORANGE, GREEN, RED = "1F3A5F", "1A8C7C", "E0782E", "4E9A4E", "C0392B"
@@ -112,9 +114,9 @@ cell(rd, f"B{r}", "Transferencias entre tus cuentas", bold=True, size=13, color=
 rd.merge_cells(f"B{r}:J{r+1}")
 cell(rd, f"B{r}", "Cuando mueves dinero de una cuenta tuya a otra (de la cuenta de ahorros a la principal, retiro de cajero, pago de la tarjeta, cambio de dólares) deja la CATEGORÍA VACÍA y llena Cuenta (de dónde sale) y Cuenta destino (a dónde llega). El tipo dirá 'Transferencia': mueve el saldo de las dos cuentas, pero no cuenta como ingreso ni gasto.", al=LEFTW)
 rd.row_dimensions[r].height = 30; rd.row_dimensions[r+1].height = 30; r += 3
-cell(rd, f"B{r}", "Datos de ejemplo", bold=True, size=13, color=NAVY); r += 1
+cell(rd, f"B{r}", "Cómo empezar hoy" if BLANK else "Datos de ejemplo", bold=True, size=13, color=NAVY); r += 1
 rd.merge_cells(f"B{r}:J{r+1}")
-cell(rd, f"B{r}", "La plantilla trae datos de ejemplo para que veas cómo se llena. Para empezar con lo tuyo: en 'Registro' selecciona las filas con movimientos y bórralas (tecla Supr), y reemplaza las categorías, cuentas, montos del 'Presupuesto' y metas por los tuyos. Las fórmulas se mantienen.", al=LEFTW)
+cell(rd, f"B{r}", "Plantilla en blanco. Saldo inicial = lo que tienes en cada cuenta el día que empiezas (las deudas de tarjeta en negativo). Registra tus movimientos desde ese día. Para el año siguiente: haz una copia del archivo, cambia el año y usa como saldo inicial el 'Saldo actual' de Balance de Cuentas al 31 de diciembre; luego borra los movimientos del Registro." if BLANK else "La plantilla trae datos de ejemplo para que veas cómo se llena. Para empezar con lo tuyo: en 'Registro' selecciona las filas con movimientos y bórralas (tecla Supr), y reemplaza las categorías, cuentas, montos del 'Presupuesto' y metas por los tuyos. Las fórmulas se mantienen.", al=LEFTW)
 rd.row_dimensions[r].height = 30; rd.row_dimensions[r+1].height = 30
 
 # ---------------------------------------------------------------- CONFIGURACIÓN
@@ -124,7 +126,7 @@ cell(cf, "F3", "Año", bold=True, color="FFFFFF", bg=ORANGE, al=CENTER)
 cell(cf, "G3", YEAR, bold=True, color="0000FF", bg=INPUT, al=CENTER, size=12)
 cf["G3"].comment = Comment("Año del presupuesto. Cámbialo y todas las pestañas filtran por ese año.", "Plantilla")
 cell(cf, "I3", "TRM (pesos por 1 USD)", bold=True, color="FFFFFF", bg=GREEN, al=CENTER)
-cell(cf, "J3", TRM0, bold=True, color="0000FF", bg=INPUT, al=CENTER, size=12, fmt='"$"#,##0')
+cell(cf, "J3", None if BLANK else TRM0, bold=True, color="0000FF", bg=INPUT, al=CENTER, size=12, fmt='"$"#,##0')
 cf["J3"].comment = Comment("Valor de ejemplo. Escribe la TRM del día (Banco de la República) para convertir tus dólares a pesos en los reportes.", "Plantilla")
 widths = {"A":2,"B":20,"C":9,"D":14,"E":2,"H":2,"K":2,"N":2,"Q":2,"T":2,"W":2}
 for c, w in widths.items(): cf.column_dimensions[c].width = w
@@ -148,6 +150,7 @@ for i, m in enumerate(MESES):
 cuentas = [("Cuenta principal", "COP", 5000000), ("Cuenta de ahorros", "COP", 12000000), ("Efectivo", "COP", 300000),
            ("Cuenta en dólares", "USD", 1200), ("Tarjeta de crédito", "COP", 0)]
 CUR = {n: c for n, c, _ in cuentas}
+if BLANK: cuentas = []
 for i, (n, c, sv) in enumerate(cuentas):
     cf[f"B{8+i}"].value = n; cf[f"C{8+i}"].value = c; cf[f"D{8+i}"].value = sv
 # categoria, dia, presupuesto mensual, cuenta
@@ -163,6 +166,7 @@ CATS = [
     [("Fondo de emergencia", 30, 800000, "Cuenta principal"), ("Viaje", 30, 400000, "Cuenta principal"), ("Pensión voluntaria", 30, 500000, "Cuenta principal")],
     [("Préstamo personal", 5, 500000, "Cuenta principal"), ("Crédito del carro", 15, 328000, "Cuenta principal")],
 ]
+if BLANK: CATS = [[] for _ in range(6)]
 for g, lst in enumerate(CATS):
     col = GCOLS[g]; c2 = L(cf[col+"1"].column + 1)
     for i, (n, d, _, _) in enumerate(lst):
@@ -250,7 +254,7 @@ for r in range(R0, R1 + 1):
     rg[f"I{r}"] = f'=IF(E{r}="","",IFERROR(INDEX({ACUR},MATCH(E{r},{ACCTS},0)),"COP"))'
     rg[f"K{r}"] = f'=IF(H{r}="","",IF(I{r}="USD",H{r}*{TRM},H{r}))'
     rg[f"L{r}"] = (f'=IF(OR(F{r}="",H{r}=""),"",IF(J{r}<>"",J{r},IF(IFERROR(INDEX({ACUR},MATCH(F{r},{ACCTS},0)),"COP")=I{r},H{r},'
-                   f'IF(I{r}="USD",H{r}*{TRM},H{r}/{TRM}))))')
+                   f'IFERROR(IF(I{r}="USD",H{r}*{TRM},H{r}/{TRM}),"Falta TRM"))))')
     rg[f"M{r}"] = f'=IF(B{r}="","",MONTH(B{r}))'
     rg[f"N{r}"] = f'=IF(B{r}="","",YEAR(B{r}))'
     for c in "DIKLMN": rg[f"{c}{r}"].font = font(color="555555"); rg[f"{c}{r}"].border = BOX
@@ -291,6 +295,7 @@ for m in range(1, 12):
     if m > 1:
         deuda = round(sum(t[4] for t in tx if t[2] == "Tarjeta de crédito" and t[1] and t[0].month == m - 1), 0)
         tx.append((datetime.date(YEAR, m, 6), None, "Cuenta principal", "Pago total de la tarjeta (mes anterior)", deuda, "Tarjeta de crédito"))
+if BLANK: tx = []
 tx.sort(key=lambda x: (x[0], x[2]))
 for i, (dte, n, acc, ds, v, *dst) in enumerate(tx):
     r = R0 + i
@@ -345,7 +350,7 @@ for g in range(6):
     r += 1
     for i in range(NCAT):
         pr_r = t + 1 + i
-        if i >= max(len(CATS[g]) + 3, 6):
+        if i >= max(len(CATS[g]) + 3, 10 if BLANK else 6):
             # keep table shorter: still linked rows, but grouped (collapsible)
             rs.row_dimensions[r].outlineLevel = 1; rs.row_dimensions[r].hidden = True
         cell(rs, f"B{r}", f"=Presupuesto!B{pr_r}", border=True)
@@ -378,6 +383,8 @@ dv_goal = DataValidation(type="list", formula1=f"={CFG}!$R$8:$R$27", allow_blank
 goals = [("Fondo de emergencia", 15000000, 3000000, datetime.date(2027, 12, 31)),
          ("Viaje", 6000000, 500000, datetime.date(2027, 7, 31)),
          ("Pensión voluntaria", 80000000, 10000000, datetime.date(2035, 12, 31))]
+if BLANK: goals = []
+NG = len(goals) or 10
 G0, G1 = 12, 21
 for r in range(G0, G1 + 1):
     for c in "BCDE": cell(mt, f"{c}{r}", bg=INPUT, border=True)
@@ -409,14 +416,14 @@ for rr in (7, 8):
     for cc in (11, 12): mt.cell(rr, cc).fill = fill(LIGHT)
 ch = BarChart(); ch.type = "col"; ch.grouping = "percentStacked"; ch.overlap = 100
 ch.title = "Progreso de cada meta"
-ch.add_data(Reference(mt, min_col=7, max_col=8, min_row=11, max_row=G0 + len(goals) - 1), titles_from_data=True)
-ch.set_categories(Reference(mt, min_col=2, min_row=G0, max_row=G0 + len(goals) - 1))
+ch.add_data(Reference(mt, min_col=7, max_col=8, min_row=11, max_row=G0 + NG - 1), titles_from_data=True)
+ch.set_categories(Reference(mt, min_col=2, min_row=G0, max_row=G0 + NG - 1))
 ch.series[0].graphicalProperties.solidFill = GREEN; ch.series[1].graphicalProperties.solidFill = "D5DEE7"
 ch.y_axis.numFmt = "0%"; ch.height = 7.5; ch.width = 16
 mt.add_chart(ch, "B24")
 pc = PieChart(); pc.title = "Distribución de lo ahorrado"
-pc.add_data(Reference(mt, min_col=7, min_row=11, max_row=G0 + len(goals) - 1), titles_from_data=True)
-pc.set_categories(Reference(mt, min_col=2, min_row=G0, max_row=G0 + len(goals) - 1))
+pc.add_data(Reference(mt, min_col=7, min_row=11, max_row=G0 + NG - 1), titles_from_data=True)
+pc.set_categories(Reference(mt, min_col=2, min_row=G0, max_row=G0 + NG - 1))
 pc.dataLabels = DataLabelList(); pc.dataLabels.showPercent = True; pc.dataLabels.showVal = False; pc.dataLabels.showSerName = False; pc.dataLabels.showCatName = False; pc.dataLabels.showLegendKey = False
 pc.height = 7.5; pc.width = 11
 mt.add_chart(pc, "I24")
@@ -464,8 +471,8 @@ notas = ["Diferencia neta = (entradas reales - salidas reales) - (entradas plan 
          "Transferencias entre tus cuentas (retiro de cajero, pago de tarjeta, cambio de dólares) mueven el saldo de ambas cuentas, pero no cuentan como ingreso ni gasto."]
 for k, t in enumerate(notas): cell(bc, f"B{21+k}", t, italic=True, size=9, color="777777")
 ch = BarChart(); ch.type = "col"; ch.title = "Saldo actual por cuenta (en pesos)"
-ch.add_data(Reference(bc, min_col=8, min_row=8, max_row=8 + len(cuentas)), titles_from_data=True)
-ch.set_categories(Reference(bc, min_col=2, min_row=9, max_row=8 + len(cuentas)))
+ch.add_data(Reference(bc, min_col=8, min_row=8, max_row=8 + (len(cuentas) or 10)), titles_from_data=True)
+ch.set_categories(Reference(bc, min_col=2, min_row=9, max_row=8 + (len(cuentas) or 10)))
 ch.series[0].graphicalProperties.solidFill = TEAL; ch.legend = None
 ch.y_axis.numFmt = '"$"#,##0'; ch.height = 7; ch.width = 18
 bc.add_chart(ch, "B25")
@@ -537,7 +544,7 @@ for g in range(6):
     header(ra, f"O{r}", "Total", TCOLOR[g]); header(ra, f"P{r}", "Promedio", TCOLOR[g])
     r += 1; first = r
     for i in range(NCAT):
-        if i >= max(len(CATS[g]) + 3, 6):
+        if i >= max(len(CATS[g]) + 3, 10 if BLANK else 6):
             ra.row_dimensions[r].outlineLevel = 1; ra.row_dimensions[r].hidden = True
         cell(ra, f"B{r}", f"=Presupuesto!B{t+1+i}", border=True)
         for j in range(12):
