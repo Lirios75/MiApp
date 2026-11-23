@@ -1188,6 +1188,10 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 6: servicios externos (GitHub ya está, falta Supabase real, IA si aplica, Vercel, Resend, dominio, Hotmart) — ahí se reemplazan los placeholders del carrusel de la landing por screenshots reales de la app.
 
 ## Problemas conocidos ⚠️
+- veredicto:landing y veredicto:onboarding — POSPUESTOS (sin "Veredicto: LISTA"), aceptados por
+  decisión explícita de la usuaria (ver "Puertas de etapa"). No se tocaron en la sesión
+  2026-11-23 (tarea ajena a la app: plantilla de presupuesto personal en Excel/Sheets en
+  `plantillas-presupuesto/`, no es pantalla de la app y no pasa por el revisor-visual).
 - planeador (Planeador Semanal, 5to ícono "Plan"): SIN veredicto "LISTA" del revisor-visual —
   4 rondas (27/40·12/20 → 33/40·13/20 → 30/40·15/20 → ronda 4 con fixes de contraste/identidad
   aplicados pero sin re-puntuar, el contenedor se reinició a mitad de esa pasada). La usuaria
