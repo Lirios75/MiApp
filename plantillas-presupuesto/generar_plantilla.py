@@ -172,7 +172,13 @@ CATS = [
     [("Fondo de emergencia", 30, 800000, "Cuenta principal"), ("Viaje", 30, 400000, "Cuenta principal"), ("Pensión voluntaria", 30, 500000, "Cuenta principal")],
     [("Préstamo personal", 5, 500000, "Cuenta principal"), ("Crédito del carro", 15, 328000, "Cuenta principal")],
 ]
-if BLANK: CATS = [[] for _ in range(6)]
+PLAN = {}
+if BLANK:
+    CATS = [[] for _ in range(6)]
+    for g_, lst_ in ((MIAS or {}).get("categorias") or {}).items():
+        for name_, day_, acc_, plan_ in lst_:
+            g_ = int(g_); CATS[g_].append((name_, day_, None, acc_))
+            for mes_, monto_ in plan_.items(): PLAN[(g_, len(CATS[g_]) - 1, int(mes_) - 1)] = monto_
 for g, lst in enumerate(CATS):
     col = GCOLS[g]; c2 = L(cf[col+"1"].column + 1)
     for i, (n, d, _, _) in enumerate(lst):
@@ -225,9 +231,8 @@ for g in range(6):
         r = t + 1 + i
         pr[f"C{r}"].value = acc
         for j in range(12):
-            v = amt
-            if CATS[g][i][0] == "Salario" and j == 11: v = amt  # keep simple
-            pr[f"{L(5+j)}{r}"].value = v
+            v = PLAN.get((g, i, j)) if BLANK else amt
+            if v is not None: pr[f"{L(5+j)}{r}"].value = v
 for j in range(13):
     cl = L(5+j)
     f_ = f"={cl}{TITLE[0]}-(" + "+".join(f"{cl}{TITLE[g]}" for g in range(1, 6)) + ")"
@@ -278,7 +283,7 @@ desc = {"Salario": "Pago de nómina", "Ingresos en dólares": "Pago cliente del 
         "Cuidado personal": "Peluquería / farmacia", "Fondo de emergencia": "Transferencia a ahorro",
         "Viaje": "Ahorro para viaje", "Pensión voluntaria": "Aporte voluntario", "Préstamo personal": "Cuota mensual",
         "Crédito del carro": "Cuota mensual"}
-for m in range(1, 12):
+for m in ([] if BLANK else range(1, 12)):
     for g, lst in enumerate(CATS):
         for (n, d, amt, acc) in lst:
             if n == "Mercado":
@@ -292,7 +297,7 @@ for m in range(1, 12):
             else:
                 v = round(amt*random.uniform(0.6, 1.35), -2)
             day = min(d or random.randint(2, 27), 28)
-            if CUR[acc] == "USD": v = round(v / TRM0, 2)
+            if CUR.get(acc) == "USD": v = round(v / TRM0, 2)
             if g == 4: tx.append((datetime.date(YEAR, m, day), n, acc, desc[n], v, "Cuenta de ahorros"))
             else: tx.append((datetime.date(YEAR, m, day), n, acc, desc[n], v))
     tx.append((datetime.date(YEAR, m, 1), None, "Cuenta principal", "Retiro de efectivo del cajero", 700000, "Efectivo"))
