@@ -378,7 +378,7 @@ for g in range(6):
     r += 1
     for i in range(NCAT):
         pr_r = t + 1 + i
-        if i >= max(len(CATS[g]) + 3, 10 if BLANK else 6):
+        if not BLANK and i >= max(len(CATS[g]) + 3, 6):
             # keep table shorter: still linked rows, but grouped (collapsible)
             rs.row_dimensions[r].outlineLevel = 1; rs.row_dimensions[r].hidden = True
         cell(rs, f"B{r}", f"=Presupuesto!B{pr_r}", border=True)
@@ -561,7 +561,14 @@ ch = BarChart(); ch.type = "col"; ch.title = "Saldo actual por cuenta (en pesos)
 ch.add_data(Reference(bc, min_col=8, min_row=8, max_row=8 + (len(cuentas) or 10)), titles_from_data=True)
 ch.set_categories(Reference(bc, min_col=2, min_row=9, max_row=8 + (len(cuentas) or 10)))
 ch.series[0].graphicalProperties.solidFill = TEAL; ch.legend = None
-ch.y_axis.numFmt = '"$"#,##0'; ch.height = 7; ch.width = 18
+from openpyxl.chart.marker import DataPoint
+PAL = ["1A8C7C", "E0782E", "3B6FB6", "8E5BB5", "D4A017", "4E9A4E", "C0392B", "2F4858", "D16BA5", "6B8E23"]
+for k in range(len(cuentas) or 10):
+    dp = DataPoint(idx=k); dp.graphicalProperties.solidFill = PAL[k % len(PAL)]; dp.graphicalProperties.line.solidFill = PAL[k % len(PAL)]
+    ch.series[0].dPt.append(dp)
+ch.series[0].invertIfNegative = False
+ch.x_axis.tickLblPos = "low"
+ch.y_axis.numFmt = '"$"#,##0'; ch.height = 9; ch.width = 20
 bc.add_chart(ch, "B25")
 
 # ---------------------------------------------------------------- REPORTE ANUAL
@@ -631,7 +638,7 @@ for g in range(6):
     header(ra, f"O{r}", "Total", TCOLOR[g]); header(ra, f"P{r}", "Promedio", TCOLOR[g])
     r += 1; first = r
     for i in range(NCAT):
-        if i >= max(len(CATS[g]) + 3, 10 if BLANK else 6):
+        if not BLANK and i >= max(len(CATS[g]) + 3, 6):
             ra.row_dimensions[r].outlineLevel = 1; ra.row_dimensions[r].hidden = True
         cell(ra, f"B{r}", f"=Presupuesto!B{t+1+i}", border=True)
         for j in range(12):
