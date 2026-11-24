@@ -394,7 +394,7 @@ dv_goal = DataValidation(type="list", formula1=f"={CFG}!$R$8:$R$27", allow_blank
 goals = [("Fondo de emergencia", 15000000, 3000000, datetime.date(2027, 12, 31)),
          ("Viaje", 6000000, 500000, datetime.date(2027, 7, 31)),
          ("Pensión voluntaria", 80000000, 10000000, datetime.date(2035, 12, 31))]
-if BLANK: goals = []
+if BLANK: goals = [(m[0], m[1], m[2], datetime.date.fromisoformat(m[3])) for m in (MIAS or {}).get("metas", [])]
 NG = len(goals) or 10
 G0, G1 = 12, 21
 for r in range(G0, G1 + 1):
