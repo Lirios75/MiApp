@@ -194,6 +194,22 @@ for g, col in enumerate(GCOLS):
         cf[f"Y{rr}"] = f'=IF(X{rr}="","","{TIPOS[g]}")'
 cf.column_dimensions["X"].hidden = True; cf.column_dimensions["Y"].hidden = True
 cf.freeze_panes = "A8"
+IDEAS = [
+    ["Salario", "Honorarios / freelance", "Ventas", "Prima", "Arriendos recibidos", "Rendimientos", "Reembolsos"],
+    ["Arriendo o administración", "Mercado", "Gasolina y parqueadero", "SOAT y seguro del carro", "Salud (EPS / prepagada)", "Colegio y útiles", "Bancos (4x1000, cuota de manejo)", "Mascotas"],
+    ["Netflix", "Spotify", "Disney+", "YouTube Premium", "iCloud / Google One", "Amazon Prime", "Apps de trabajo"],
+    ["Restaurantes y domicilios", "Ropa", "Salidas", "Regalos y Navidad", "Gimnasio", "Cursos", "Mantenimiento del carro", "Imprevistos"],
+    ["Fondo de emergencia", "Vacaciones", "Educación de los hijos", "Inversión (CDT)", "Pensión voluntaria", "Regalos de fin de año"],
+    ["Tarjeta de crédito", "Crédito de vehículo", "Crédito de libre inversión", "Préstamo familiar", "Avances"],
+]
+for g, col in enumerate(GCOLS):
+    c2 = L(cf[col+"1"].column + 1)
+    cf.merge_cells(f"{col}30:{c2}30")
+    cell(cf, f"{col}30", "Ideas (copia las que te sirvan)", bold=True, color=TCOLOR[g], bg=GRAYL, al=CENTER)
+    for i, idea in enumerate(IDEAS[g]):
+        cf.merge_cells(f"{col}{31+i}:{c2}{31+i}")
+        cell(cf, f"{col}{31+i}", idea, italic=True, color="6B7280", bg=GRAYL, size=9)
+cell(cf, "F29", "No se usan en ningún cálculo: escríbelas arriba, en la tabla de su grupo, si quieres usarlas.", italic=True, size=9, color="6B7280")
 ALLCAT = f"{CFG}!$X$8:$X${8+6*NCAT-1}"; ALLTIPO = f"{CFG}!$Y$8:$Y${8+6*NCAT-1}"
 ACCTS = f"{CFG}!$B$8:$B$17"; MONTHS = f"{CFG}!$B$21:$B$32"; YR = f"{CFG}!$G$3"
 ACUR = f"{CFG}!$C$8:$C$17"; TRM = f"{CFG}!$J$3"
