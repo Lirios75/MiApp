@@ -73,11 +73,12 @@ pasos = [
     ("3", "Registro", "Anota cada movimiento real: fecha, categoría, cuenta y monto en positivo (el tipo se llena solo). Si apartas ahorro, en 'Cuenta destino' pon la cuenta donde queda. Para mover dinero entre tus cuentas (retiro de cajero, pago de la tarjeta) deja la categoría vacía y llena cuenta y cuenta destino."),
     ("4", "Resumen Mensual", "Elige el mes en la celda amarilla y compara lo planeado con lo real. En rojo verás donde te pasaste."),
     ("5", "Metas de Ahorro", "Define tus metas (deben ser categorías del grupo Ahorro e inversión). Lo que registres en esa categoría suma a la meta automáticamente y verás cuánto apartar al mes."),
-    ("6", "Balance de Cuentas", "Saldo actual de cada cuenta y lo planeado vs. lo real del mes elegido."),
-    ("7", "Reporte Anual", "Tu año completo: ingresos, gastos, ahorro y tasa de ahorro por mes, con gráficos."),
+    ("6", "Deudas", "Tus deudas ordenadas por bola de nieve: cuánto debes, intereses del mes, en cuántos meses terminas y cuál atacar primero. Actualiza el saldo cada mes con el extracto y registra los pagos con la categoría de la deuda."),
+    ("7", "Balance de Cuentas", "Saldo actual de cada cuenta y lo planeado vs. lo real del mes elegido."),
+    ("8", "Reporte Anual", "Tu año completo: ingresos, gastos, ahorro y tasa de ahorro por mes, con gráficos."),
 ]
 r = 6
-cell(rd, "B6", "Cómo usarla (7 pasos)", bold=True, size=13, color=NAVY); r = 8
+cell(rd, "B6", "Cómo usarla (8 pasos)", bold=True, size=13, color=NAVY); r = 8
 for n, t, d in pasos:
     cell(rd, f"B{r}", n, bold=True, color="FFFFFF", bg=TEAL, size=12, al=CENTER)
     cell(rd, f"C{r}", t, bold=True, size=11, color=NAVY, al=Alignment(vertical="center"))
@@ -439,6 +440,65 @@ pc.dataLabels = DataLabelList(); pc.dataLabels.showPercent = True; pc.dataLabels
 pc.height = 7.5; pc.width = 11
 mt.add_chart(pc, "I24")
 cell(mt, "B23", "Para que el gráfico muestre más metas, amplía su rango de datos (clic derecho > editar).", italic=True, size=9, color="777777")
+
+# ---------------------------------------------------------------- DEUDAS (bola de nieve)
+dd = wb.create_sheet("Deudas"); dd.sheet_properties.tabColor = RED
+band(dd, "Mis Deudas — Bola de Nieve", "Escribe cada deuda con el mismo nombre que su categoría del grupo Deudas. Cada mes actualiza el 'Saldo actual' con tu extracto. Los pagos se registran en Registro con la categoría de la deuda. La deuda #1 (la de menor saldo) es la que atacas con todo extra.", 13, 7)
+for c, w in {"A":2,"B":26,"C":15,"D":15,"E":10,"F":14,"G":13,"H":14,"I":15,"J":11,"K":9,"L":16,"M":2}.items(): dd.column_dimensions[c].width = w
+DEUDAS = []
+if BLANK and MIAS: DEUDAS = MIAS.get("deudas", [])
+elif not BLANK: DEUDAS = [["Préstamo personal", 8000000, 5200000, 0.015, 500000], ["Crédito del carro", 15000000, 9800000, 0.012, 328000]]
+D0, D1 = 12, 26
+heads = ["Deuda (categoría)", "Saldo original", "Saldo actual", "Tasa mensual", "Cuota mensual", "Interés del mes", "Abono a capital", "Pagado (registro)", "Meses para terminar", "Orden", "Estado"]
+for i, h in enumerate(heads): header(dd, f"{L(2+i)}11", h, RED)
+dd.row_dimensions[11].height = 32
+dv_debt = DataValidation(type="list", formula1=f"={CFG}!$U$8:$U$27", allow_blank=True); dd.add_data_validation(dv_debt)
+SA = f"$D${D0}:$D${D1}"
+for r in range(D0, D1 + 1):
+    for c in "BCDEF": cell(dd, f"{c}{r}", bg=INPUT, border=True)
+    dv_debt.add(f"B{r}")
+    for c in "CDF": dd[f"{c}{r}"].number_format = MONEY
+    dd[f"E{r}"].number_format = "0.00%"
+    cell(dd, f"G{r}", f'=IF(B{r}="","",N(D{r})*N(E{r}))', border=True, fmt=MONEY)
+    cell(dd, f"H{r}", f'=IF(B{r}="","",N(F{r})-G{r})', border=True, fmt=MONEY)
+    cell(dd, f"I{r}", f'=IF(B{r}="","",SUMIFS({RG("K")},{RG("C")},B{r}))', border=True, fmt=MONEY)
+    cell(dd, f"J{r}", f'=IF(OR(B{r}="",N(D{r})<=0),"",IF(N(F{r})<=G{r},"No alcanza",ROUNDUP(IF(N(E{r})=0,D{r}/F{r},NPER(E{r},-F{r},D{r})),0)))', border=True, al=CENTER)
+    cell(dd, f"K{r}", f'=IF(OR(B{r}="",N(D{r})<=0),"",COUNTIFS({SA},">0",{SA},"<"&D{r})+1)', bold=True, border=True, al=CENTER)
+    cell(dd, f"L{r}", f'=IF(B{r}="","",IF(N(D{r})<=0,"Pagada",IF(K{r}=1,"¡Ataca esta!","En progreso")))', bold=True, border=True, al=CENTER)
+for i, (n, orig, sal, tasa, cuota) in enumerate(DEUDAS):
+    r = D0 + i
+    dd[f"B{r}"].value = n; dd[f"C{r}"].value = orig; dd[f"D{r}"].value = sal; dd[f"E{r}"].value = tasa; dd[f"F{r}"].value = cuota
+dd.conditional_formatting.add(f"B{D0}:L{D1}", FormulaRule(formula=[f'$K{D0}=1'], fill=fill("FFF1B8"), font=Font(name=F, bold=True, color="7A4B00")))
+dd.conditional_formatting.add(f"B{D0}:L{D1}", FormulaRule(formula=[f'AND($B{D0}<>"",N($D{D0})<=0)'], fill=fill("DFF0E3"), font=Font(name=F, color="5B7F65", strike=True)))
+dd.conditional_formatting.add(f"J{D0}:J{D1}", CellIsRule(operator="equal", formula=['"No alcanza"'], font=Font(name=F, bold=True, color=RED)))
+kd = [("B", "C", "Deuda total hoy", f"=SUM(D{D0}:D{D1})", RED),
+      ("D", "E", "Cuotas al mes", f"=SUM(F{D0}:F{D1})", ORANGE),
+      ("F", "G", "Intereses del mes", f"=SUM(G{D0}:G{D1})", RED),
+      ("H", "I", "Ataca esta deuda", f'=IFERROR(INDEX(B{D0}:B{D1},MATCH(1,K{D0}:K{D1},0)),"¡Sin deudas!")', NAVY),
+      ("J", "L", "Patrimonio neto", f"='Balance de Cuentas'!$H$19-SUM(D{D0}:D{D1})", TEAL)]
+for a, b, lab, fml, col in kd:
+    dd.merge_cells(f"{a}6:{b}6"); dd.merge_cells(f"{a}7:{b}8")
+    cell(dd, f"{a}6", lab, bold=True, color="FFFFFF", bg=col, al=CENTER)
+    cell(dd, f"{a}7", fml, bold=True, size=14, color=col, fmt=MONEY, al=CENTER)
+    for rr in (7, 8):
+        for cc in range(dd[a+"1"].column, dd[b+"1"].column + 1): dd.cell(rr, cc).fill = fill(LIGHT)
+dd.conditional_formatting.add("J7", CellIsRule(operator="lessThan", formula=["0"], font=Font(name=F, bold=True, size=14, color=RED)))
+notas = ["Cómo funciona la bola de nieve: pagas la cuota mínima de TODAS y todo dinero extra va a la deuda #1 (la de menor saldo). Cuando la terminas, su cuota se suma a la siguiente.",
+         "Cada mes: actualiza 'Saldo actual' con el extracto de cada deuda. 'Pagado (registro)' suma solo lo que anotas en Registro con la categoría de la deuda.",
+         "Interés del mes = saldo actual x tasa mensual (aproximado). Si la cuota no cubre el interés verás 'No alcanza': esa deuda crece aunque pagues.",
+         "Patrimonio neto = lo que tienes en tus cuentas (Balance de Cuentas, en pesos, ya restada la TC Nu) menos estas deudas."]
+for k, t in enumerate(notas):
+    dd.merge_cells(f"B{D1+2+k}:L{D1+2+k}"); cell(dd, f"B{D1+2+k}", t, italic=True, size=9, color="555555", al=LEFTW)
+    dd.row_dimensions[D1+2+k].height = 26
+ch = BarChart(); ch.type = "bar"; ch.title = "Saldo actual de cada deuda"
+ND = len(DEUDAS) or 10
+ch.add_data(Reference(dd, min_col=4, min_row=11, max_row=11 + ND), titles_from_data=True)
+ch.set_categories(Reference(dd, min_col=2, min_row=D0, max_row=D0 + ND - 1))
+ch.series[0].graphicalProperties.solidFill = RED; ch.legend = None
+ch.x_axis.scaling.orientation = "maxMin"; ch.x_axis.tickLblSkip = 1
+ch.y_axis.numFmt = '"$"#,##0'; ch.height = 8; ch.width = 20
+dd.add_chart(ch, f"B{D1+7}")
+dd.freeze_panes = "A12"
 
 # ---------------------------------------------------------------- BALANCE DE CUENTAS
 bc = wb.create_sheet("Balance de Cuentas"); bc.sheet_properties.tabColor = TEAL
