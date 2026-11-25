@@ -1,6 +1,39 @@
 # ESTADO — Respira
 Última actualización: 2026-11-25 | Sesión actual: 8
 
+🔒 CHECKPOINT (2026-11-25) — BUG DE SEGURIDAD REAL encontrado y corregido: la app interna
+(`/app/*`) solo revisaba que hubiera una sesión de Supabase — NUNCA volvía a mirar si esa
+sesión tenía una prueba gratis vigente o un pago real. Cualquiera que creara una cuenta en
+`/entrar` (sin pasar por Hotmart ni la landing) tenía acceso completo y gratis PARA SIEMPRE.
+Se descubrió investigando la pregunta de la usuaria sobre dar acceso gratis a 8 personas.
+De paso apareció un 2do bug relacionado: `tieneAccesoCompleto()` (lib/membership-fsm.ts) existía
+pero no la llamaba nada en todo el proyecto, y además trataba el estado `'trialing'` como acceso
+eterno (nunca comparaba contra `trial_ends_at`) — es decir, ni siquiera alguien que SÍ pasó por
+Hotmart con el trial real quedaba protegido una vez pasados los 7 días.
+Fix: `app/app/layout.tsx` ahora lee `perfiles` (status, trial_ends_at, access_until,
+grace_ends_at, fecha_inicio_trial) después de confirmar la sesión, y decide con la nueva función
+`tieneAccesoAhora()` (lib/membership-fsm.ts): si nunca hubo un evento de Hotmart, solo vale la
+prueba gratis LOCAL de 7 días desde el primer ingreso (`fecha_inicio_trial`); si sí hubo un
+evento de Hotmart, se respeta su estado real (`trialing` hasta `trial_ends_at`, `active` siempre,
+`cancelled` hasta `access_until`, `past_due` hasta `grace_ends_at`, cualquier otro estado =
+bloqueado). Sin acceso → directo a `/paywall` (no a una pantalla nueva — el paywall ya funciona
+bien sin datos de onboarding, probado). También corregido `tieneAccesoCompleto()` para que
+`'trialing'` sí venza.
+Verificado: tsc ✓ build ✓ · 9 pruebas unitarias de la lógica pura (compilando el .ts a mano y
+corriéndolo con Node, sin red) cubriendo los 9 casos reales (trial local vigente/vencido, sin
+fila de perfil todavía, active/trialing-vigente/trialing-vencido/cancelled-vigente/
+cancelled-vencido/refunded) — todas pasaron · probado end-to-end con Playwright mockeando
+`crearClienteSupabaseServidor` y `obtenerEstadoApp`: una cuenta con prueba vencida cae en
+`/paywall` y ve los planes reales sin romperse; una cuenta con `active` entra normal a "Hoy".
+**Esto significa que las 8 personas de las que preguntó la usuaria SÍ pueden entrar gratis por
+los primeros 7 días sin tarjeta (mandándoles el link de /entrar directo), pero después de esos 7
+días el gate las manda al paywall como a cualquier otra — si ella quiere que tengan acceso más
+largo, hay que extenderles `access_until`/cambiar su `status` a mano en Supabase (no hay UI
+para esto todavía, sería la próxima mejora si lo pide).**
+⚠️ Pendiente de probar en producción real (este sandbox no tiene red hacia el Supabase real):
+que la usuaria pruebe con una cuenta de prueba cuyo trial ya venció y confirme que cae al
+paywall, y que una cuenta con plan activo siga entrando normal — avisar si algo no cuadra.
+
 ✅ CHECKPOINT (2026-11-25) — re-certificación de la landing CERRADA por decisión de la usuaria
 ("ya no continúes con más vueltas... creo que ya es suficiente"). Pidió revisar la landing;
 se relanzó el revisor-visual 2 veces más sobre la versión actual del código (ya sin los 3

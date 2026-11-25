@@ -1,6 +1,8 @@
 // Máquina de estados de la membresía de Hotmart — docs/sistema/18-VENTA-HOTMART.md §4.
 // Pura (sin I/O): traduce un evento de Hotmart a un estado, y dice si una transición es legal.
 
+import { TRIAL_DIAS } from './pricing';
+
 export type EstadoMembresia =
   | 'trialing'
   | 'active'
@@ -11,7 +13,6 @@ export type EstadoMembresia =
   | 'chargeback';
 
 const TERMINAL_NEGATIVO: readonly EstadoMembresia[] = ['refunded', 'chargeback'];
-const ACCESO_COMPLETO: readonly EstadoMembresia[] = ['trialing', 'active'];
 
 /** ¿Es legal pasar de `desde` a `hacia`? Bloquea el bug clásico: un evento viejo reentregado
  * (ej. un PURCHASE_APPROVED tardío) NO puede reactivar a alguien que ya reembolsó. */
@@ -51,16 +52,50 @@ export function estadoParaEvento(evento: string, valorCobrado: number): EstadoMe
   }
 }
 
-/** ¿Tiene acceso completo HOY? 'trialing'/'active' siempre; 'cancelled' hasta `accessUntil`
- * (lo que ya pagó); 'past_due' hasta `graceEndsAt` (días de gracia del dunning). */
+/** ¿Tiene acceso completo HOY? 'active' siempre; 'trialing' hasta `trialEndsAt` (el trial de
+ * Hotmart SÍ vence — bug corregido: antes esta función nunca se llamaba desde ningún lado y
+ * trataba 'trialing' como acceso eterno); 'cancelled' hasta `accessUntil` (lo que ya pagó);
+ * 'past_due' hasta `graceEndsAt` (días de gracia del dunning). */
 export function tieneAccesoCompleto(
   estado: EstadoMembresia,
   ahora: Date,
-  accessUntil?: Date | null,
-  graceEndsAt?: Date | null
+  opciones: { trialEndsAt?: Date | null; accessUntil?: Date | null; graceEndsAt?: Date | null } = {}
 ): boolean {
-  if (ACCESO_COMPLETO.includes(estado)) return true;
-  if (estado === 'cancelled') return !!accessUntil && ahora < accessUntil;
-  if (estado === 'past_due') return !!graceEndsAt && ahora < graceEndsAt;
+  if (estado === 'active') return true;
+  if (estado === 'trialing') return !opciones.trialEndsAt || ahora < opciones.trialEndsAt;
+  if (estado === 'cancelled') return !!opciones.accessUntil && ahora < opciones.accessUntil;
+  if (estado === 'past_due') return !!opciones.graceEndsAt && ahora < opciones.graceEndsAt;
   return false;
+}
+
+/** Perfil mínimo (tal como se lee de la tabla `perfiles`) necesario para decidir acceso. */
+export interface PerfilParaAcceso {
+  status: EstadoMembresia | null;
+  trialEndsAt: string | null;
+  accessUntil: string | null;
+  graceEndsAt: string | null;
+  /** Fecha del PRIMER ingreso a la app interna — la pone obtenerEstadoApp() sola, sin Hotmart.
+   * Es la única prueba gratis válida para quien nunca pasó por un evento de Hotmart. */
+  fechaInicioTrial: string | null;
+}
+
+/** La función que SÍ se usa en vivo (app/app/layout.tsx) para decidir si alguien entra a la
+ * app interna o se le manda al paywall. Antes del fix de 2026-11-25 NADA llamaba a
+ * tieneAccesoCompleto: cualquiera con sesión de Supabase (ej. entrando directo a /entrar sin
+ * jamás tocar Hotmart) tenía acceso completo gratis para siempre — hueco real de seguridad,
+ * no solo un bug de UI. */
+export function tieneAccesoAhora(perfil: PerfilParaAcceso, ahora: Date): boolean {
+  if (perfil.status) {
+    return tieneAccesoCompleto(perfil.status, ahora, {
+      trialEndsAt: perfil.trialEndsAt ? new Date(perfil.trialEndsAt) : null,
+      accessUntil: perfil.accessUntil ? new Date(perfil.accessUntil) : null,
+      graceEndsAt: perfil.graceEndsAt ? new Date(perfil.graceEndsAt) : null,
+    });
+  }
+  // Nunca llegó un evento de Hotmart para esta cuenta (ni siquiera el de "empezó el trial") —
+  // sin fila de perfil todavía es la usuaria MÁS nueva posible (su primerísimo request, antes
+  // de que el cliente cree la fila): se deja pasar, igual que `transicionValida(null, ...)`.
+  if (!perfil.fechaInicioTrial) return true;
+  const diasTranscurridos = Math.floor((ahora.getTime() - new Date(perfil.fechaInicioTrial).getTime()) / 86_400_000);
+  return diasTranscurridos < TRIAL_DIAS;
 }

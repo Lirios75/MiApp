@@ -451,6 +451,17 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Quincuagésima cuarta re-verificación (2026-11-25 — gate de acceso real en app/app/layout.tsx)
+
+El hook marcará `app/app/layout.tsx` y `lib/membership-fsm.ts` como más nuevos — hueco de
+seguridad real cerrado: hasta hoy cualquier sesión de Supabase entraba a la app interna sin que
+nada volviera a mirar el estado de la membresía (la prueba gratis/el pago nunca se verificaban
+después del login). `app/paywall/page.tsx` no importa nada de `app/app/layout`,
+`lib/membership-fsm` ni `lib/supabase/datos` (confirmado por grep) — de hecho, el gate nuevo
+MANDA a la gente sin acceso precisamente a `/paywall`, así que esta pantalla ahora recibe MÁS
+tráfico real, no cambió su propio código. Cero impacto en su certificación; la LISTA sigue
+vigente.
+
 ## Quincuagésima tercera re-verificación (2026-11-25 — timeout/reintento en CtaButton)
 
 El hook marcará `components/landing/ui.tsx` como más nuevo otra vez — se agregó el timeout de
