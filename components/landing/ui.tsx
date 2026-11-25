@@ -7,8 +7,9 @@
 // no re-estilan. Consume SOLO los tokens de tokens.css.
 
 import { useEffect, useState, type ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react';
-import { Check } from 'lucide-react';
+import { Check, Loader2 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
 /* ── <Accent> — la palabra que vende, en el acento del kit ─────────────────── */
@@ -161,19 +162,37 @@ export function CtaButton({
   /** 'outline' = mismo tamaño/forma, menos peso visual (plan secundario en Oferta). */
   variant?: 'solid' | 'outline';
 }) {
+  const router = useRouter();
+  const [cargando, setCargando] = useState(false);
   const estilo =
     variant === 'outline'
       ? 'border border-[color-mix(in_oklab,var(--accent)_45%,transparent)] text-[var(--accent)] hover:bg-[var(--chip-bg)]'
       : 'bg-[var(--accent)] text-[var(--bg)] shadow-[0_8px_30px_color-mix(in_oklab,var(--accent)_25%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_88%,var(--text-primary))]';
+
+  // El CTA SIEMPRE apunta a una ruta interna (/onboarding) — se intercepta el click normal
+  // (botón izquierdo, sin Ctrl/Cmd/Shift) para mostrar un estado de "cargando" durante la
+  // transición de página (revisor-visual, heurística 9: antes no había NINGÚN feedback entre
+  // el tap y que /onboarding terminara de cargar). Cmd/Ctrl/Shift/clic-medio se dejan pasar
+  // sin tocar — así "abrir en pestaña nueva" sigue funcionando normal.
+  function alTocar(e: React.MouseEvent<HTMLAnchorElement>) {
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    e.preventDefault();
+    if (cargando) return;
+    setCargando(true);
+    router.push(href);
+  }
+
   return (
     <motion.a
       whileTap={{ scale: 0.97 }}
       href={href}
+      onClick={alTocar}
+      aria-busy={cargando}
       className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-8 text-[17px] font-semibold transition-colors duration-150 [touch-action:manipulation] ${estilo} ${
         alto === 56 ? 'h-14' : 'h-[52px]'
-      } ${fullMobile ? 'w-full sm:w-auto' : ''}`}
+      } ${fullMobile ? 'w-full sm:w-auto' : ''} ${cargando ? 'pointer-events-none opacity-80' : ''}`}
     >
-      {children}
+      {cargando ? <Loader2 size={20} strokeWidth={2.5} className="animate-spin" aria-hidden="true" /> : children}
     </motion.a>
   );
 }

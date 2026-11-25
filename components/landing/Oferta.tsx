@@ -78,6 +78,9 @@ export interface OfertaProps {
   };
   /** default 'oferta' — lo observa StickyCtaMobile. */
   id?: string;
+  /** Salida terciaria para quien ya compró (revisor-visual, heurística 3 — control y libertad):
+   * justo donde se decide pagar es donde más urge no atrapar a alguien que ya tiene cuenta. */
+  loginHref?: string;
 }
 
 function TrialBadge({ dias }: { dias: number }) {
@@ -142,6 +145,7 @@ export function Oferta({
   mensual,
   stack,
   id = 'oferta',
+  loginHref,
 }: OfertaProps) {
   warnCopy('Oferta → título', tituloMarked, 8);
   const { contenedor, item } = useReveal();
@@ -239,6 +243,15 @@ export function Oferta({
             </div>
           </motion.div>
         </div>
+
+        {loginHref && (
+          <motion.p variants={item} className="mt-6 text-center text-[13px] text-[var(--text-tertiary)]">
+            ¿Ya tienes cuenta?{' '}
+            <a href={loginHref} className="font-medium text-[var(--text-secondary)] underline underline-offset-2">
+              Entra aquí
+            </a>
+          </motion.p>
+        )}
       </motion.div>
     </SectionShell>
   );

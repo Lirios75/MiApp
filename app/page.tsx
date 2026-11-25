@@ -111,6 +111,7 @@ export default function LandingRespira() {
       <Oferta
         tituloMarked="Empieza gratis. Sigue por [acento]$0.14 al día[/acento]"
         trialDias={7}
+        loginHref="/entrar"
         stack={{
           lineas: [
             { resultado: "Respira Pro con el Semáforo del Gasto (12 meses)", valor: "$84" },
@@ -160,6 +161,7 @@ export default function LandingRespira() {
 
       {/* 8. FAQ — objeciones de FICHA-AVATAR.md, en orden de fuerza */}
       <Faq
+        id="faq"
         items={[
           {
             pregunta: "¿Necesito conectar mi cuenta bancaria?",
@@ -202,6 +204,7 @@ export default function LandingRespira() {
         ctaHref={CTA_HREF}
         recap="7 días gratis · cancela cuando quieras"
         psMarked="PS: Respira conecta tu emoción con tu gasto con el Semáforo del Gasto. Hoy entras con 7 días gratis y la Garantía de los Primeros 15 Días Sin Culpa."
+        loginHref="/entrar"
       />
 
       {/* 10. FOOTER LEGAL */}

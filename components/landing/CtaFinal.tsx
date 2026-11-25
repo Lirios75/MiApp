@@ -27,6 +27,9 @@ export interface CtaFinalProps {
   psMarked?: string;
   /** default 'cta-final' — lo observa StickyCtaMobile para ocultarse. */
   id?: string;
+  /** Salida terciaria para quien ya compró (revisor-visual, heurística 3): el cierre emocional
+   * es la otra pantalla donde alguien con cuenta puede sentirse "atrapado" sin salida. */
+  loginHref?: string;
 }
 
 export function CtaFinal({
@@ -37,6 +40,7 @@ export function CtaFinal({
   recap,
   psMarked,
   id = 'cta-final',
+  loginHref,
 }: CtaFinalProps) {
   warnCopy('CtaFinal → h2', h2Marked, 8);
   warnCopy('CtaFinal → future pacing', futurePacingMarked, 24);
@@ -97,6 +101,15 @@ export function CtaFinal({
             style={{ color: 'color-mix(in oklab, var(--bg) 65%, transparent)' }}
           >
             {recap}
+          </motion.p>
+        )}
+
+        {loginHref && (
+          <motion.p variants={item} className="mt-3 text-[13px]" style={{ color: 'color-mix(in oklab, var(--bg) 65%, transparent)' }}>
+            ¿Ya tienes cuenta?{' '}
+            <a href={loginHref} className="underline underline-offset-2" style={{ color: 'color-mix(in oklab, var(--bg) 80%, transparent)' }}>
+              Entra aquí
+            </a>
           </motion.p>
         )}
 

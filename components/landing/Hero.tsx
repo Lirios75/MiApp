@@ -107,12 +107,23 @@ export function Hero({
       <EcoAnillo />
 
       <div className="mx-auto w-full max-w-[1140px] px-5">
-        {/* Header 64px: marca a la izquierda, SOLO "Entrar" terciario a la derecha (19) */}
+        {/* Header 64px: marca a la izquierda, SOLO "Entrar" terciario a la derecha (19).
+            Nav de anclas (revisor-visual, heurística 7 — flexibilidad/atajos): SOLO desktop,
+            el mobile real de LATAM se queda con el spec original (StickyCtaMobile ya resuelve
+            el atajo "ver precios" en mobile, no hace falta duplicarlo en un header de 64px). */}
         <header className="flex h-16 items-center justify-between">
           <a href="/" className="flex items-center gap-2 text-[16px] font-semibold text-[var(--text-primary)]">
             {logo ?? <span aria-hidden="true" className="size-6 rounded-[8px] bg-[var(--accent)]" />}
             {appName}
           </a>
+          <nav aria-label="Navegación rápida" className="hidden items-center gap-6 md:flex">
+            <a href="#oferta" className="text-[14px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+              Precios
+            </a>
+            <a href="#faq" className="text-[14px] font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)]">
+              Preguntas
+            </a>
+          </nav>
           {loginHref && (
             <a href={loginHref} className="px-2 py-3 text-[14px] font-medium text-[var(--text-tertiary)]">
               {loginLabel}
