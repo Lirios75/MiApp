@@ -1,4 +1,35 @@
 # VEREDICTO revisor-visual — landing
+Fecha: 2026-11-25 00:00
+Screenshot: docs/revisiones/landing-01-hero-375.png (+ landing-02 a landing-10-375.png, landing-header-desktop.png)
+Usabilidad: 32/40
+Craft: 15/20
+Copy (si vende): 18/20
+Fidelidad (si hubo referencia): N-A
+Veredicto: NO LISTA
+Top defectos: 1) [Proceso de captura — Solución, Problema, CtaFinal] Las capturas por sección siguen sin esperar a que termine el stagger de entrada (whileInView) antes de disparar el screenshot: en Solución (04) solo se ven 2 de los 3 pasos y falta por completo el bloque "Antes/Después" (deja ~1200px de vacío muerto sin explicación visible en el código), en Problema (02) la 4ª pregunta aparece semi-transparente mientras las otras 3 están opacas, y en CtaFinal (09) el PS —"el segundo texto más leído de la página" según el propio comentario de ese componente— no aparece en absoluto. El código confirma que los tres bloques existen y deberían pintarse; no se puede certificar visualmente con certeza porque la captura parece disparada a mitad de la animación → recapturar forzando `prefers-reduced-motion` o esperando ~1.5s tras el scroll a cada sección antes de la próxima certificación. 2) [AppPorDentro, bajo el carrusel] El CTA mid-page "Quiero mi primer registro" queda cortado a la mitad por el borde de la captura de esa sección, con la barra sticky inferior "Ver plan y precios" pegada justo debajo — se ven dos píldoras azules apiladas que parecen botones duplicados o rotos. Mismo origen que el defecto 1 (recorte de sección mal calculado frente a un elemento `position:fixed`) → ajustar el alto de captura para no cortar elementos a la mitad. 3) [Hero, fondo decorativo — EcoAnillo, Hero.tsx L19-48] Con la captura dedicada del Hero a 375px (la que se pidió específicamente para resolver esta duda), el anillo de fondo sigue sin verse NADA — ni un arco es perceptible, pese a la opacidad ya subida a 18% en la pasada anterior. La única identidad visual que SÍ se nota a simple vista es el logo pequeño del header → en mobile (el 90%+ del tráfico), o se sube más la opacidad/grosor y se reposiciona dentro de la franja realmente visible, o se retira: ahora mismo es un dispositivo ownable que nadie en mobile llega a percibir. 4) [CtaFinal, debajo del CTA] El link terciario "¿Ya tienes cuenta? Entra aquí" (el fix de heurística 3 de la ronda anterior) se ve notoriamente más débil/apagado sobre el fondo oscuro invertido de este bloque que su equivalente en Oferta (bien legible sobre fondo claro) — aunque el código usa la misma fórmula de opacidad, verificar el contraste real contra `--text-primary` como fondo antes de dar por resuelta la cobertura de control y libertad en el cierre emocional. 5) [Heurística 9 — todos los CTA] Ningún CTA maneja el caso de que `/onboarding` tarde o falle en cargar: el spinner de `CtaButton` gira sin timeout ni mensaje de reintento. En redes móviles LATAM esto es un escenario cotidiano, no un edge case → agregar un timeout (~5-8s) que revierta el botón con un mensaje breve si la navegación no resolvió.
+
+## Notas de esta recertificación (2026-11-25, segunda ronda)
+Se evaluó con las 10 capturas por sección (≤3100px c/u) + captura del header desktop, resolviendo
+la limitación metodológica del veredicto anterior (PNG full-page de 14314px). De los 5 defectos de
+esa pasada: #1 (metodología de captura) se resolvió a medias — ahora se puede leer el texto fino,
+pero aparece un defecto NUEVO de la misma familia (animaciones a mitad de camino al disparar el
+screenshot, ver defecto 1 arriba). #2 (mini-nav de anclas) RESUELTO y verificado en la captura de
+header desktop (Precios/Preguntas visibles, `components/landing/Hero.tsx` L119-126). #3 (feedback
+en CTA) RESUELTO en código (`CtaButton` en `ui.tsx` L151-198: spinner + bloqueo de doble-tap +
+respeta Cmd/Ctrl/Shift-click), aunque sin manejo de fallo/timeout (ver defecto 5). #4 (salida para
+quien ya tiene cuenta) RESUELTO en Oferta y parcialmente en CtaFinal (contraste a verificar, defecto
+4). #5 (EcoAnillo del Hero) sigue SIN resolverse — confirmado negativo con la captura dedicada que
+se pidió justamente para zanjar la duda (ver defecto 3). Usabilidad sube de 29 a 32/40 (no cruza el
+gate de 36). Craft baja de 16 a 15/20 por la confirmación del EcoAnillo invisible en mobile (Eje 3)
+y la duda de encaje óptico sobre el vacío de Solución (Eje 5) — no cruza el gate de 16. Copy 18/20
+(sin cambios de contenido respecto a la ronda anterior, recalibrado ligeramente a la baja: el eje de
+especificidad/prueba no tiene testimonios ni demo, solo mecanismo + garantía — honesto pero limitado).
+Ningún eje de copy ≤2. Fidelidad N/A (sin referencia del usuario, confirmado en FICHA-ARTE.md).
+
+---
+(Historial previo conservado para auditoría)
+
+# VEREDICTO revisor-visual — landing
 Fecha: 2026-11-25 14:30
 Screenshot: docs/revisiones/landing-375.png
 Usabilidad: 29/40

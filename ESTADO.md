@@ -1,6 +1,32 @@
 # ESTADO — Respira
 Última actualización: 2026-11-25 | Sesión actual: 8
 
+✅ CHECKPOINT (2026-11-25) — re-certificación de la landing CERRADA por decisión de la usuaria
+("ya no continúes con más vueltas... creo que ya es suficiente"). Pidió revisar la landing;
+se relanzó el revisor-visual 2 veces más sobre la versión actual del código (ya sin los 3
+motivos viejos del techo de septiembre — placeholders, "check-in", emojis — los 3 resueltos
+hace semanas, documentado abajo en Problemas conocidos). Resultado real, con ojos frescos:
+29/40·16/20·19/20 (pasada A) → se corrigieron 4 de sus 5 defectos (nav de anclas Precios/
+Preguntas en desktop, feedback de carga + bloqueo de doble-tap en los CTA, salida "¿Ya tienes
+cuenta?" en Oferta y CtaFinal, capturas por sección en vez de un PNG gigante de 14 mil px) →
+32/40·15/20·18/20 (pasada B, NO LISTA todavía — craft bajó 1 punto por un defecto de METODOLOGÍA
+de captura, no del código: las capturas por sección se tomaron a mitad de la animación de
+entrada en 3 secciones, cortando contenido real que el código sí pinta). La usuaria decidió
+parar aquí, con las 4 mejoras reales ya incorporadas. Cambiado en: `components/landing/Hero.tsx`
+(nav de anclas desktop-only), `components/landing/ui.tsx` (`CtaButton` con spinner + router.push
++ bloqueo de doble-tap, respeta Cmd/Ctrl/Shift-click), `components/landing/Oferta.tsx` y
+`CtaFinal.tsx` (link "¿Ya tienes cuenta? Entra aquí", nuevo prop `loginHref`), `app/page.tsx`
+(conecta `loginHref="/entrar"` + `id="faq"` a Faq, antes sin id — #faq no hacía nada). Verificado:
+tsc ✓ build ✓ · probado con Playwright que "Precios" navega a #oferta y que el CTA muestra el
+spinner y llega a /onboarding · 10 capturas por sección + 1 de header desktop en
+`docs/revisiones/landing-0{1-10}-*-375.png` y `landing-header-desktop.png`. Veredicto completo
+de las 2 pasadas en `docs/revisiones/landing-veredicto.md` (historial de todas las rondas
+anteriores conservado debajo). Pendiente SI se retoma en el futuro (NO ahora, por pedido de la
+usuaria): recapturar Solución/Problema/CtaFinal esperando a que termine el stagger de entrada
+antes de la captura, decidir si el EcoAnillo del Hero se sube de opacidad/grosor o se retira (en
+mobile real sigue sin notarse), agregar timeout+reintento al spinner del CTA si /onboarding tarda,
+y revisar el contraste real del link "¿Ya tienes cuenta?" sobre el fondo oscuro de CtaFinal.
+
 ⏸️ CHECKPOINT (2026-11-25) — la usuaria avisó, con captura real de su celular: la gente "casi no
 entiende" el gráfico de barras "Últimas 4 semanas" en Semana (altura y color sin explicación).
 Fix: subtítulo fijo ("Qué parte de cada semana marcaste tranquila"), leyenda de color
@@ -1201,6 +1227,16 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 6: servicios externos (GitHub ya está, falta Supabase real, IA si aplica, Vercel, Resend, dominio, Hotmart) — ahí se reemplazan los placeholders del carrusel de la landing por screenshots reales de la app.
 
 ## Problemas conocidos ⚠️
+- landing: veredicto del 2026-11-25 sigue NO LISTA (32/40·15/20·18/20, gate ≥36/40 Y ≥16/20) —
+  mejoró de 29/40·16/20 tras corregir 4 de 5 defectos (nav de anclas, feedback de carga del CTA,
+  salida "¿Ya tienes cuenta?", capturas por sección). La usuaria pidió PARAR las rondas de
+  revisor-visual aquí ("ya no continúes con más vueltas... creo que ya es suficiente") —
+  ACEPTADA POR DECISIÓN EXPLÍCITA. Quedan 3 pendientes reales si se retoma en el futuro: la
+  metodología de captura cortó contenido real a mitad de animación en Solución/Problema/
+  CtaFinal (no es un bug del código, es de cómo se tomó la foto), el EcoAnillo del Hero sigue
+  sin notarse en mobile real, y el spinner del CTA no tiene timeout/reintento si /onboarding
+  tarda. Detalle completo en docs/revisiones/landing-veredicto.md. No re-abrir ni relanzar el
+  revisor sin que la usuaria lo pida.
 - planeador (Planeador Semanal, 5to ícono "Plan"): SIN veredicto "LISTA" del revisor-visual —
   4 rondas (27/40·12/20 → 33/40·13/20 → 30/40·15/20 → ronda 4 con fixes de contraste/identidad
   aplicados pero sin re-puntuar, el contenedor se reinició a mitad de esa pasada). La usuaria
