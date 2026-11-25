@@ -1,5 +1,18 @@
 # ESTADO — Respira
-Última actualización: 2026-11-19 | Sesión actual: 8
+Última actualización: 2026-11-25 | Sesión actual: 8
+
+⏸️ CHECKPOINT (2026-11-25) — la usuaria avisó, con captura real de su celular: la gente "casi no
+entiende" el gráfico de barras "Últimas 4 semanas" en Semana (altura y color sin explicación).
+Fix: subtítulo fijo ("Qué parte de cada semana marcaste tranquila"), leyenda de color
+(verde=más tranquila, naranja=más de alerta — mismo lenguaje que el resto de la app) y el %
+exacto escrito ENCIMA de cada barra (antes solo la altura, a ojo); semanas sin ningún día marcado
+muestran "—" en vez de inventar un porcentaje. Cambiado en: `app/app/semana/page.tsx`
+(`TendenciaSemanas`). No tocó la base de datos. Verificado: tsc ✓ build ✓ · captura real a 375px
+con datos de prueba (2 semanas 100% tranquilas, 1 sin datos, 1 con un solo día de alerta) en
+`docs/revisiones/semana-tendencia-375.png` — reproduce fielmente la duda real de la usuaria
+(semana sin datos y semana de alerta, antes indistinguibles). Pantalla ya certificada (Semana) —
+cambio aditivo de claridad, no amerita relanzar el revisor-visual completo. Pendiente: que la
+usuaria lo revise en la app real.
 
 ⏸️ CHECKPOINT (2026-11-19) — la usuaria preguntó "¿cómo hago para que la app me aparezca en Play
 Store y Safari?". Se le explicó la diferencia: hoy la app YA se instala gratis desde el navegador

@@ -451,6 +451,14 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Quincuagésima primera re-verificación (2026-11-25 — leyenda y % en "Últimas 4 semanas")
+
+El hook marcará `app/app/semana/page.tsx` y `app/app/layout.tsx` como más nuevos — la usuaria
+avisó que la gente "casi no entiende" el gráfico de barras de "Últimas 4 semanas" (altura/color
+sin ninguna explicación). Se agregó un subtítulo fijo, una leyenda de color y el % exacto escrito
+encima de cada barra. `app/paywall/page.tsx` no importa nada de `app/app/semana` ni de
+`app/app/layout` (confirmado por grep). Cero impacto; la certificación LISTA sigue vigente.
+
 ## Quincuagésima re-verificación (2026-11-19 — "Instalar en tu celular" permanente en Cuenta)
 
 El hook marcará `app/app/cuenta/page.tsx`, `app/app/layout.tsx` y `lib/supabase/datos.ts` como

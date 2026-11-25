@@ -462,6 +462,12 @@ export default function Semana() {
   );
 }
 
+/* ── <TendenciaSemanas> — pedido de la usuaria (2026-11-25): "casi no lo entienden". Antes era
+   4 barras de altura/color sin ninguna explicación de qué medían. Ahora: subtítulo fijo diciendo
+   qué es, leyenda de color (verde/naranja, mismo lenguaje que el resto de la app), y el % exacto
+   escrito ENCIMA de cada barra (Tufte: "label directo sobre el dato", regla de DISEÑO del SO) —
+   nadie tiene que adivinar la altura a ojo. Semanas sin ningún día marcado muestran "—" en vez de
+   un porcentaje inventado. ── */
 function TendenciaSemanas({ estado }: { estado: EstadoApp }) {
   const semanas = resumenUltimasSemanas(estado.checkins, 4);
   const hayDatos = semanas.some((s) => s.marcados > 0);
@@ -474,27 +480,44 @@ function TendenciaSemanas({ estado }: { estado: EstadoApp }) {
           Aquí vas a ver tu tendencia apenas marques un par de semanas.
         </p>
       ) : (
-        <div className="mt-4 flex h-24 items-end justify-between gap-3">
-          {semanas.map((s) => {
-            const alturaPct = s.marcados === 0 ? 4 : Math.max(10, Math.round((s.tranquilos / s.marcados) * 100));
-            const color = s.marcados === 0 ? 'var(--text-tertiary)' : s.tranquilos >= s.alertas ? 'var(--accent-2)' : 'var(--accent-3)';
-            const [, m, d] = s.inicioISO.split('-').map(Number);
-            return (
-              <div key={s.inicioISO} className="flex flex-1 flex-col items-center gap-2">
-                <div className="flex h-16 w-full items-end overflow-hidden rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--text-tertiary)_10%,transparent)]">
-                  <motion.div
-                    className="w-full rounded-t-[var(--radius-button)]"
-                    style={{ background: color, opacity: s.marcados === 0 ? 0.25 : 1 }}
-                    initial={{ height: 0 }}
-                    animate={{ height: `${alturaPct}%` }}
-                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  />
+        <>
+          <p className="mt-1 text-[12px] text-[var(--text-tertiary)]">Qué parte de cada semana marcaste tranquila</p>
+          <div className="mt-2 flex items-center gap-3">
+            <span className="flex items-center gap-1 text-[11px] text-[var(--text-tertiary)]">
+              <span aria-hidden="true" className="size-2 rounded-full" style={{ background: 'var(--accent-2)' }} />
+              Más tranquila
+            </span>
+            <span className="flex items-center gap-1 text-[11px] text-[var(--text-tertiary)]">
+              <span aria-hidden="true" className="size-2 rounded-full" style={{ background: 'var(--accent-3)' }} />
+              Más de alerta
+            </span>
+          </div>
+          <div className="mt-3 flex h-24 items-end justify-between gap-3">
+            {semanas.map((s) => {
+              const porcentaje = s.marcados === 0 ? null : Math.round((s.tranquilos / s.marcados) * 100);
+              const alturaPct = porcentaje === null ? 4 : Math.max(10, porcentaje);
+              const color = porcentaje === null ? 'var(--text-tertiary)' : s.tranquilos >= s.alertas ? 'var(--accent-2)' : 'var(--accent-3)';
+              const [, m, d] = s.inicioISO.split('-').map(Number);
+              return (
+                <div key={s.inicioISO} className="flex flex-1 flex-col items-center gap-1">
+                  <span className="text-[11px] font-semibold [font-variant-numeric:tabular-nums]" style={{ color }}>
+                    {porcentaje === null ? '—' : `${porcentaje}%`}
+                  </span>
+                  <div className="flex h-16 w-full items-end overflow-hidden rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--text-tertiary)_10%,transparent)]">
+                    <motion.div
+                      className="w-full rounded-t-[var(--radius-button)]"
+                      style={{ background: color, opacity: porcentaje === null ? 0.25 : 1 }}
+                      initial={{ height: 0 }}
+                      animate={{ height: `${alturaPct}%` }}
+                      transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-medium text-[var(--text-tertiary)]">{d}/{m}</span>
                 </div>
-                <span className="text-[11px] font-medium text-[var(--text-tertiary)]">{d}/{m}</span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        </>
       )}
     </>
   );
