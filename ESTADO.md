@@ -1233,10 +1233,16 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
   revisor-visual aquí ("ya no continúes con más vueltas... creo que ya es suficiente") —
   ACEPTADA POR DECISIÓN EXPLÍCITA. Quedan 3 pendientes reales si se retoma en el futuro: la
   metodología de captura cortó contenido real a mitad de animación en Solución/Problema/
-  CtaFinal (no es un bug del código, es de cómo se tomó la foto), el EcoAnillo del Hero sigue
-  sin notarse en mobile real, y el spinner del CTA no tiene timeout/reintento si /onboarding
-  tarda. Detalle completo en docs/revisiones/landing-veredicto.md. No re-abrir ni relanzar el
-  revisor sin que la usuaria lo pida.
+  CtaFinal (no es un bug del código, es de cómo se tomó la foto) y el EcoAnillo del Hero sigue
+  sin notarse en mobile real. **RESUELTO (2026-11-25, mismo día): el spinner del CTA ahora SÍ
+  tiene timeout (7s) + mensaje de reintento** — pedido explícito de la usuaria tras ver el
+  veredicto. `CtaButton` (components/landing/ui.tsx): si a los 7s sigue en la misma pantalla
+  (red lenta/caída), se apaga el spinner, vuelve a quedar tocable y aparece "Tardó más de lo
+  normal — revisa tu conexión y toca de nuevo." debajo del botón. Verificado con Playwright
+  interceptando la navegación a /onboarding para que nunca resuelva (simula red muerta): el
+  aviso aparece exactamente a los 7s, captura en `docs/revisiones/landing-cta-tardando-375.png`.
+  tsc ✓ build ✓. Detalle completo en docs/revisiones/landing-veredicto.md. No re-abrir los
+  otros 2 pendientes ni relanzar el revisor sin que la usuaria lo pida.
 - planeador (Planeador Semanal, 5to ícono "Plan"): SIN veredicto "LISTA" del revisor-visual —
   4 rondas (27/40·12/20 → 33/40·13/20 → 30/40·15/20 → ronda 4 con fixes de contraste/identidad
   aplicados pero sin re-puntuar, el contenedor se reinició a mitad de esa pasada). La usuaria

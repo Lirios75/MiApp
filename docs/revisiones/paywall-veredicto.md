@@ -451,6 +451,13 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Quincuagésima tercera re-verificación (2026-11-25 — timeout/reintento en CtaButton)
+
+El hook marcará `components/landing/ui.tsx` como más nuevo otra vez — se agregó el timeout de
+7s + mensaje de reintento al `CtaButton` (pedido de la usuaria tras el último veredicto de
+landing). `app/paywall/page.tsx` sigue sin usar `CtaButton` (confirmado por grep, solo importa
+`CheckCustom`/`Hairline`). Cero impacto; la certificación LISTA sigue vigente.
+
 ## Quincuagésima segunda re-verificación (2026-11-25 — re-certificación de landing)
 
 El hook marcará `components/landing/ui.tsx` (entre otros archivos de landing) como más nuevo.

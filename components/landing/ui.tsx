@@ -6,7 +6,7 @@
 // alternancia base/elevado, reveal con reduced-motion): las secciones componen,
 // no re-estilan. Consume SOLO los tokens de tokens.css.
 
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AnimatePresence, motion, useReducedMotion, type Variants } from 'motion/react';
 import { Check, Loader2 } from 'lucide-react';
@@ -164,36 +164,59 @@ export function CtaButton({
 }) {
   const router = useRouter();
   const [cargando, setCargando] = useState(false);
+  const [tardando, setTardando] = useState(false);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const estilo =
     variant === 'outline'
       ? 'border border-[color-mix(in_oklab,var(--accent)_45%,transparent)] text-[var(--accent)] hover:bg-[var(--chip-bg)]'
       : 'bg-[var(--accent)] text-[var(--bg)] shadow-[0_8px_30px_color-mix(in_oklab,var(--accent)_25%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_88%,var(--text-primary))]';
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   // El CTA SIEMPRE apunta a una ruta interna (/onboarding) — se intercepta el click normal
   // (botón izquierdo, sin Ctrl/Cmd/Shift) para mostrar un estado de "cargando" durante la
   // transición de página (revisor-visual, heurística 9: antes no había NINGÚN feedback entre
   // el tap y que /onboarding terminara de cargar). Cmd/Ctrl/Shift/clic-medio se dejan pasar
   // sin tocar — así "abrir en pestaña nueva" sigue funcionando normal.
+  // Si a los 7s seguimos en esta misma pantalla (red lenta, típico en LATAM móvil — revisor-visual
+  // defecto #5), se avisa y se vuelve a habilitar el botón para reintentar — nunca un spinner
+  // que gira para siempre sin explicación.
   function alTocar(e: React.MouseEvent<HTMLAnchorElement>) {
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
     if (cargando) return;
     setCargando(true);
+    setTardando(false);
+    timeoutRef.current = setTimeout(() => {
+      setCargando(false);
+      setTardando(true);
+    }, 7000);
     router.push(href);
   }
 
   return (
-    <motion.a
-      whileTap={{ scale: 0.97 }}
-      href={href}
-      onClick={alTocar}
-      aria-busy={cargando}
-      className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-8 text-[17px] font-semibold transition-colors duration-150 [touch-action:manipulation] ${estilo} ${
-        alto === 56 ? 'h-14' : 'h-[52px]'
-      } ${fullMobile ? 'w-full sm:w-auto' : ''} ${cargando ? 'pointer-events-none opacity-80' : ''}`}
-    >
-      {cargando ? <Loader2 size={20} strokeWidth={2.5} className="animate-spin" aria-hidden="true" /> : children}
-    </motion.a>
+    <div className={fullMobile ? 'w-full sm:w-auto' : 'inline-block'}>
+      <motion.a
+        whileTap={{ scale: 0.97 }}
+        href={href}
+        onClick={alTocar}
+        aria-busy={cargando}
+        className={`inline-flex items-center justify-center rounded-[var(--radius-button)] px-8 text-[17px] font-semibold transition-colors duration-150 [touch-action:manipulation] ${estilo} ${
+          alto === 56 ? 'h-14' : 'h-[52px]'
+        } ${fullMobile ? 'w-full sm:w-auto' : ''} ${cargando ? 'pointer-events-none opacity-80' : ''}`}
+      >
+        {cargando ? <Loader2 size={20} strokeWidth={2.5} className="animate-spin" aria-hidden="true" /> : children}
+      </motion.a>
+      {tardando && (
+        <p className="mt-2 text-[13px] text-[var(--accent-3-text)]">
+          Tardó más de lo normal — revisa tu conexión y toca de nuevo.
+        </p>
+      )}
+    </div>
   );
 }
 
