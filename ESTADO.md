@@ -1,6 +1,18 @@
 # ESTADO — Respira
 Última actualización: 2026-11-26 | Sesión actual: 8
 
+✅ CHECKPOINT (2026-11-26) — la usuaria comparó la landing con la de un competidor (Penso, app
+financiera chilena) que muestra botones "Descárgala en Google Play/App Store" justo en su página
+de ventas. Se le explicó que no podemos copiar eso literalmente: esos botones implican presencia
+real en las tiendas, que ella decidió NO perseguir (ver checkpoint 2026-11-19, optó por la
+instalación gratis desde el navegador). Se agregó el equivalente honesto: una pregunta nueva en el
+FAQ de la landing (`app/page.tsx`) — "¿Tengo que descargarla de alguna tienda?" → explica que se
+instala gratis desde el navegador en iPhone/Android, sin tiendas. La usuaria pidió sumarlo directo,
+sin relanzar el revisor-visual esta vez — cambio aislado (1 ítem más en el `<Faq>` ya certificado,
+mismo patrón visual), no toca ninguno de los 5 defectos abiertos del veredicto NO LISTA anterior.
+Verificado: tsc ✓ build ✓ · captura a 375px en `docs/revisiones/landing-faq-instalar-375.png`.
+Nota aditiva completa en `docs/revisiones/landing-veredicto.md`.
+
 💡 IDEA GUARDADA PARA MÁS ADELANTE (no es Respira, es otro proyecto futuro): la usuaria quiere
 crear, en otro momento, una app de PRODUCTIVIDAD separada basada en Kaizen + Pomodoro (micro-
 mejoras 1% diarias, "candado" de una mejora a la vez, auditoría de tiempo con 3 etiquetas

@@ -169,6 +169,11 @@ export default function LandingRespira() {
               "No. Todo el registro es manual — [b]tú decides qué anotar[/b], sin dar acceso a tu banco.",
           },
           {
+            pregunta: "¿Tengo que descargarla de alguna tienda?",
+            respuestaMarked:
+              "No. Respira funciona directo desde tu navegador en [b]iPhone y Android[/b] — la agregas gratis a tu pantalla de inicio en segundos, sin ocupar espacio.",
+          },
+          {
             pregunta: "Ya probé un curso, un journal y otra app, ¿por qué esta sí?",
             respuestaMarked:
               "Porque no es otro presupuesto: es un registro de 30 segundos que conecta tu emoción con tu gasto, [b]antes de que se repita[/b].",
