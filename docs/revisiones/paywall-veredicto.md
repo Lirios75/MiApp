@@ -451,6 +451,14 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Quincuagésima sexta re-verificación (2026-11-26 — FAQ nuevo en la landing sobre instalación)
+
+El hook marcará `app/page.tsx` como más nuevo. Cambio: 1 pregunta nueva en el FAQ de la landing
+("¿Tengo que descargarla de alguna tienda?"), pedida por la usuaria tras comparar con un
+competidor. Verificado por grep: `app/paywall/page.tsx` no importa nada de `app/page.tsx` (son
+rutas distintas, `/` y `/paywall`, cero relación de import). Cero impacto; la certificación LISTA
+sigue vigente.
+
 ## Quincuagésima quinta re-verificación (2026-11-26 — racha flexible en Hoy/Meta + candado Kaizen suave en Planeador)
 
 El hook marcará `app/app/page.tsx`, `app/app/planeador/page.tsx` y `lib/app.ts` como más nuevos.
