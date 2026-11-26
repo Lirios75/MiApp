@@ -451,6 +451,17 @@ de 1x1px invisible). Verificado: tsc ✓ build ✓ · probado en producción que
 PageView se dispara limpio. Cero impacto visual — la certificación 37/40·20/20·19/20 sigue
 describiendo correctamente lo que se ve, solo cambió lo que pasa "por detrás" al tocar pagar.
 
+## Quincuagésima quinta re-verificación (2026-11-26 — racha flexible en Hoy/Meta + candado Kaizen suave en Planeador)
+
+El hook marcará `app/app/page.tsx`, `app/app/planeador/page.tsx` y `lib/app.ts` como más nuevos.
+Cambio: `calcularRacha()` (lib/app.ts) ahora perdona un solo día sin marcar antes de resetear a 0
+(nueva `rachaEnPausa()` dispara un aviso en "Hoy"), y `HabitosCard` del Planeador invita a
+consolidar un hábito a la vez al sumar un 2do+ en la semana (nudge saltable, no bloqueo real).
+Verificado por grep: `app/paywall/page.tsx` no importa nada de `app/app/page.tsx`,
+`app/app/planeador/page.tsx` ni `lib/app.ts` (ni siquiera `calcularRacha`/`rachaEnPausa`) — son
+pantallas de rutas distintas sin relación de import. Cero impacto visual ni funcional en el
+paywall; la certificación LISTA sigue vigente.
+
 ## Quincuagésima cuarta re-verificación (2026-11-25 — gate de acceso real en app/app/layout.tsx)
 
 El hook marcará `app/app/layout.tsx` y `lib/membership-fsm.ts` como más nuevos — hueco de
