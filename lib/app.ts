@@ -106,17 +106,46 @@ export function checkInDeHoy(estado: EstadoApp): CheckIn | undefined {
 }
 
 /** Días consecutivos con check-in, terminando hoy (o ayer si hoy aún no se marcó
- * — así la racha no se ve "rota" antes de medianoche). */
+ * — así la racha no se ve "rota" antes de medianoche). RACHA FLEXIBLE (principio Kaizen
+ * "no rompas dos veces seguidas"): un solo día sin marcar no reinicia la racha a cero —
+ * se perdona una vez y se sigue contando hacia atrás; recién DOS días sin marcar
+ * consecutivos la cortan de verdad. Así un tropiezo aislado no destruye semanas de constancia. */
 export function calcularRacha(checkins: readonly CheckIn[]): number {
   const fechas = new Set(checkins.map((c) => c.fecha));
   const cursor = new Date();
   if (!fechas.has(hoyISO())) cursor.setDate(cursor.getDate() - 1);
   let racha = 0;
-  while (fechas.has(isoDeFecha(cursor))) {
-    racha++;
-    cursor.setDate(cursor.getDate() - 1);
+  let perdonUsado = false;
+  for (;;) {
+    if (fechas.has(isoDeFecha(cursor))) {
+      racha++;
+      cursor.setDate(cursor.getDate() - 1);
+      continue;
+    }
+    if (!perdonUsado) {
+      const anterior = new Date(cursor);
+      anterior.setDate(anterior.getDate() - 1);
+      if (fechas.has(isoDeFecha(anterior))) {
+        perdonUsado = true;
+        cursor.setDate(cursor.getDate() - 1);
+        continue;
+      }
+    }
+    break;
   }
   return racha;
+}
+
+/** true cuando hoy y ayer están sin marcar pero la racha (gracias al perdón de un solo
+ * día) sigue viva — el momento exacto para invitar a retomarla hoy, en vez de dejar que
+ * la persona la vea "rota" sin avisarle que todavía puede salvarla. */
+export function rachaEnPausa(checkins: readonly CheckIn[]): boolean {
+  const fechas = new Set(checkins.map((c) => c.fecha));
+  if (fechas.has(hoyISO())) return false;
+  const ayer = new Date();
+  ayer.setDate(ayer.getDate() - 1);
+  if (fechas.has(isoDeFecha(ayer))) return false;
+  return calcularRacha(checkins) > 0;
 }
 
 /** Fechas ISO (lunes a domingo) de la semana actual + un desplazamiento en semanas. */

@@ -745,6 +745,10 @@ function HabitosCard({
   const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
   const [ocultosId, setOcultosId] = useState<Set<string>>(new Set());
   const [pendienteBorrar, setPendienteBorrar] = useState<{ id: string; nombre: string; timeout: ReturnType<typeof setTimeout> } | null>(null);
+  // Candado Kaizen (suave, no bloqueante): sumar un hábito cuando ya hay otro en marcha
+  // pide un segundo toque — "consolida uno a la vez" rinde mejor que sumar varios de golpe —
+  // pero la usuaria SIEMPRE puede seguir igual; es una invitación a pensarlo, no un límite real.
+  const [consolidarPendiente, setConsolidarPendiente] = useState(false);
 
   useEffect(() => {
     return () => {
@@ -757,8 +761,13 @@ function HabitosCard({
     e.preventDefault();
     const nombre = nuevoNombre.trim();
     if (!nombre) return;
+    if (habitos.length >= 1 && !consolidarPendiente) {
+      setConsolidarPendiente(true);
+      return;
+    }
     onCambiar([...habitos, { id: crypto.randomUUID(), nombre, dias: [false, false, false, false, false, false, false] }]);
     setNuevoNombre('');
+    setConsolidarPendiente(false);
   }
 
   function alternarDia(habitoId: string, dia: number) {
@@ -875,7 +884,38 @@ function HabitosCard({
         </div>
       )}
 
-      <form onSubmit={agregarHabito} className="mt-4 flex gap-2">
+      {consolidarPendiente && (
+        <div className="mt-4 flex flex-col gap-2 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-2)_10%,transparent)] px-3 py-3">
+          <span className="text-[13px] leading-snug text-[var(--text-secondary)]">
+            Consolida uno a la vez: suele rendir más que sumar varios de golpe.
+          </span>
+          <div className="flex justify-end gap-1">
+            <motion.button
+              type="button"
+              whileTap={TAP}
+              transition={TAP_TRANSICION}
+              onClick={() => {
+                setConsolidarPendiente(false);
+                setNuevoNombre('');
+              }}
+              className="h-7 rounded-[var(--radius-button)] px-2 text-[12px] font-semibold text-[var(--text-secondary)] [touch-action:manipulation]"
+            >
+              Mejor espero
+            </motion.button>
+            <motion.button
+              type="submit"
+              form="form-agregar-habito"
+              whileTap={TAP}
+              transition={TAP_TRANSICION}
+              className="h-7 rounded-[var(--radius-button)] bg-[var(--accent-2)] px-2 text-[12px] font-semibold text-[var(--text-primary)] [touch-action:manipulation]"
+            >
+              Agregarlo igual
+            </motion.button>
+          </div>
+        </div>
+      )}
+
+      <form id="form-agregar-habito" onSubmit={agregarHabito} className="mt-4 flex gap-2">
         <input
           type="text"
           value={nuevoNombre}

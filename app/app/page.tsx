@@ -7,7 +7,7 @@
 import Link from 'next/link';
 import { useEffect, useState, type FormEvent } from 'react';
 import { motion, useReducedMotion, type Variants } from 'motion/react';
-import { AlertTriangle, ArrowRight, Check, Pencil, Plus, Smile, AlertCircle, Share2, Target, Wallet, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, Check, Flame, Pencil, Plus, Smile, AlertCircle, Share2, Target, Wallet, X } from 'lucide-react';
 import {
   calcularRacha,
   checkInDeHoy,
@@ -16,6 +16,7 @@ import {
   EMOCIONES_TRANQUILO,
   hoyISO,
   metasSincronizadas,
+  rachaEnPausa,
   reflexionDeHoy,
   type EstadoApp,
   type EstadoSemaforo,
@@ -128,6 +129,7 @@ export default function Hoy() {
   const checkin = checkInDeHoy(estado);
   const racha = calcularRacha(estado.checkins);
   const semana = diasEstaSemana(estado);
+  const enPausa = !checkin && rachaEnPausa(estado.checkins);
 
   return (
     <motion.main
@@ -155,6 +157,19 @@ export default function Hoy() {
           <AlertTriangle size={16} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" className="mt-0.5 shrink-0" />
           <p className="text-[13px] leading-snug text-[var(--accent-3-text)]">
             No pudimos guardar tu registro — revisa tu conexión e inténtalo de nuevo.
+          </p>
+        </motion.div>
+      )}
+
+      {enPausa && (
+        <motion.div
+          variants={item}
+          role="status"
+          className="flex items-start gap-2.5 rounded-[var(--radius-button)] bg-[color-mix(in_oklab,var(--accent-3)_14%,transparent)] p-3"
+        >
+          <Flame size={16} strokeWidth={2} color="var(--accent-3)" aria-hidden="true" className="mt-0.5 shrink-0" />
+          <p className="text-[13px] leading-snug text-[var(--accent-3-text)]">
+            Ayer no marcaste, pero tu racha de {racha} {racha === 1 ? 'día' : 'días'} sigue viva — retómala hoy.
           </p>
         </motion.div>
       )}

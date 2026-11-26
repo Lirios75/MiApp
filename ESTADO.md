@@ -1,5 +1,43 @@
 # ESTADO — Respira
-Última actualización: 2026-11-25 | Sesión actual: 8
+Última actualización: 2026-11-26 | Sesión actual: 8
+
+✅ CHECKPOINT (2026-11-26) — la usuaria pegó el contenido completo de un video de Kaizen +
+Pomodoro (productividad/gestión del tiempo) y preguntó cómo implementarlo en Respira. Es un
+sistema de OTRA app (temporizadores, auditoría de tiempo, bóveda de distracciones) — meterlo
+entero habría sido construir una segunda app encima de la primera, pisando la FICHA-MODELO/
+FICHA-AVATAR ya decididas (cosa juzgada). Se le explicó la tensión y se le ofrecieron 2 caminos
+por AskUserQuestion; **eligió el chico: "Solo las 2 ideas que calzan"** — nada de módulo nuevo de
+Enfoque/Pomodoro.
+Implementado (ambas, pequeñas y aditivas, sin pantallas nuevas):
+1. **Racha flexible** ("no rompas la racha dos veces", `lib/app.ts` `calcularRacha`): un solo día
+   sin marcar el Semáforo ya NO resetea la racha a 0 — se perdona una vez (el número no sube ese
+   día pero tampoco se pierde) y recién 2 días seguidos sin marcar la cortan de verdad. Nueva
+   función `rachaEnPausa()` detecta el momento exacto (hoy y ayer sin marcar, pero con racha viva
+   gracias al perdón) y dispara un aviso cálido en "Hoy" (`app/app/page.tsx`): "Ayer no marcaste,
+   pero tu racha de X días sigue viva — retómala hoy." Beneficia también el "actual" de las metas
+   modo hábito (`lib/app.ts`/`meta/page.tsx`), que reusan la misma función — más forgiving, sin
+   tocarlas directamente. Cambio de bajo riesgo: incrementa clemencia, antes solo cortaba en seco.
+2. **Candado Kaizen suave** ("consolida uno a la vez", `app/app/planeador/page.tsx`
+   `HabitosCard`): al intentar sumar un 2º hábito o más en la misma semana, NO se bloquea — se
+   muestra una invitación a pensarlo ("Consolida uno a la vez: suele rendir más que sumar varios
+   de golpe.") con dos botones, "Mejor espero" (cancela) y "Agregarlo igual" (sigue sin fricción
+   real). Deliberadamente blando, no un hard-lock: horas antes se le había confirmado a la usuaria
+   que hábitos/tareas NO tienen límite — un bloqueo real habría contradicho esa respuesta sin
+   avisarle; esto es una sugerencia que ella puede ignorar con un toque.
+Verificado: tsc ✓ build ✓ (en el código real, sin mocks) · 10 pruebas puras de
+`calcularRacha`/`rachaEnPausa` compilando el .ts a mano y corriendo con Node (racha simple, racha
+desde ayer, 1 día perdonado, 2 días consecutivos SÍ resetean, perdón se gasta una sola vez, sin
+checkins, hoy ya marcado desactiva el aviso) — las 10 pasaron · probado con Playwright mockeando
+`crearClienteSupabaseServidor` + `obtenerEstadoApp`/`obtenerPlanificadorSemana` (gate `?mockseed=1`,
+revertido después — el código real no tiene restos del mock, confirmado con `diff` contra backup):
+captura de "Hoy" con el aviso de pausa en `docs/revisiones/hoy-racha-pausa-375.png`, captura del
+candado + flujo completo "agregar 2º hábito → nudge → Agregarlo igual → aparece en la lista" en
+`docs/revisiones/planeador-candado-kaizen-375.png`. Cambio aditivo sobre una pantalla ya cerrada
+(Hoy, certificada) y sobre el Planeador (ya aceptado "tal cual" por decisión explícita de la
+usuaria en la Sesión 8 anterior) — no amerita relanzar el revisor-visual completo, mismo criterio
+que el ajuste de claridad de "Semana". Pendiente: que la usuaria lo use unos días y diga si el
+aviso de pausa se siente útil o sobra, y si el candado debería ser más firme (hoy es 100%
+saltable).
 
 🔒 CHECKPOINT (2026-11-25) — BUG DE SEGURIDAD REAL encontrado y corregido: la app interna
 (`/app/*`) solo revisaba que hubiera una sesión de Supabase — NUNCA volvía a mirar si esa
