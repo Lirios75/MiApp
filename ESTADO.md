@@ -1,6 +1,14 @@
 # ESTADO — Respira
 Última actualización: 2026-11-26 | Sesión actual: 8
 
+💡 IDEA GUARDADA PARA MÁS ADELANTE (no es Respira, es otro proyecto futuro): la usuaria quiere
+crear, en otro momento, una app de PRODUCTIVIDAD separada basada en Kaizen + Pomodoro (micro-
+mejoras 1% diarias, "candado" de una mejora a la vez, auditoría de tiempo con 3 etiquetas
+alto-impacto/operativo/desperdicio, temporizador de enfoque con bóveda de distracciones, revisión
+semanal de amplificación). De ese contenido, SOLO 2 ideas puntuales ya se incorporaron A RESPIRA
+(ver checkpoint de abajo, 2026-11-26) — el resto NO se construye aquí, sería un proyecto nuevo,
+con su propia Constitución del Producto (01-IDEACION.md) cuando ella lo pida.
+
 ✅ CHECKPOINT (2026-11-26) — la usuaria pegó el contenido completo de un video de Kaizen +
 Pomodoro (productividad/gestión del tiempo) y preguntó cómo implementarlo en Respira. Es un
 sistema de OTRA app (temporizadores, auditoría de tiempo, bóveda de distracciones) — meterlo
