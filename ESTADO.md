@@ -1102,7 +1102,7 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 5 — App interna (Hoy, Semana, Tu meta, Cuenta) — cerrada 2026-09-18. "Hoy" hizo 2 rondas del revisor-visual (límite puesto por la usuaria); tras verlas, la usuaria eligió corregir los 5 pendientes concretos en vez de una 3ª ronda automática, y luego decidió avanzar. Menú inferior con relieve ("isla flotante") elegido entre 3 variantes.
 
 ## Sesión en progreso 🔧
-- Sesión 8 — Certificación antes de vender (decidido por la usuaria 2026-11-28: terminar Respira antes de cualquier otra app). Orden: auditoría de seguridad (27) → gates binarios de integridad (61) → rigor de entrega + certificado /100 (48). Ninguno corrido todavía.
+- Ninguna. 2026-11-28: la usuaria confirma que Respira YA está revisada por ella y publicada/vendiéndose en redes. La certificación formal del SO (27 seguridad → 61 integridad → 48 certificado /100) NO se ha corrido; se le ofreció y decidió no hacerla ahora — queda como opcional, no re-proponer salvo que ella lo pida o aparezca un problema real.
 
 ## Próximas sesiones 📋
 - Tras el certificado: lanzamiento (35) y adquisición (34, ya arrancada en etapa 0).
