@@ -1,5 +1,5 @@
 # ESTADO — Respira
-Última actualización: 2026-11-04 | Sesión actual: 7
+Última actualización: 2026-11-28 | Sesión actual: 8 (certificación antes de vender)
 
 ✅ CHECKPOINT (2026-11-04, noche) — aviso de "instala el ícono en tu pantalla de inicio" dentro de
 la app. La usuaria notó un riesgo real: su hija supo instalar el ícono porque ella la ayudó a mano
@@ -1097,13 +1097,16 @@ App de hábito diario que acompaña a mujeres 25-35 LATAM a dejar de gastar por 
 - Sesión 2 — Identidad visual (FICHA-ARTE.md aprobada, dirección B "Respira en calma") — cerrada 2026-09-17.
 - Sesión 3 — Página de ventas (10 secciones) — cerrada 2026-09-17. Nota: tras el cierre, el usuario pidió 5 ajustes (registro/emojis/colores/garantía) que reabrieron 7 pasadas de revisión; el veredicto final quedó NO LISTA por un techo estructural (ver Problemas conocidos) que el usuario decidió aceptar en vez de seguir corrigiendo.
 - Sesión 4 — Onboarding, paywall y login — cerrada 2026-09-18. Paywall CERTIFICADO ✅ por el revisor-visual (37/40 · 20/20 · 19/20). Onboarding APROBADO POR LA USUARIA EN SUSTANCIA tras 16 pasadas (29/40 usabilidad, techo no bloqueante — ver Problemas conocidos) — la usuaria vio capturas reales del estado actual y decidió avanzar sin seguir iterando. Login construido como pantalla secundaria.
+- Sesión 6 — Servicios externos — cerrada en la práctica (2026-11-04): Supabase, Vercel, dominio propio, Resend, Hotmart (compra E2E real confirmada), píxel de Meta, login con código de 8 dígitos.
+- Sesión 7 — Ajustes pedidos por la usuaria tras usar la app real — cerrada 2026-11-04.
 - Sesión 5 — App interna (Hoy, Semana, Tu meta, Cuenta) — cerrada 2026-09-18. "Hoy" hizo 2 rondas del revisor-visual (límite puesto por la usuaria); tras verlas, la usuaria eligió corregir los 5 pendientes concretos en vez de una 3ª ronda automática, y luego decidió avanzar. Menú inferior con relieve ("isla flotante") elegido entre 3 variantes.
 
 ## Sesión en progreso 🔧
-- Ninguna — lista para arrancar Sesión 6.
+- Sesión 8 — Certificación antes de vender (decidido por la usuaria 2026-11-28: terminar Respira antes de cualquier otra app). Orden: auditoría de seguridad (27) → gates binarios de integridad (61) → rigor de entrega + certificado /100 (48). Ninguno corrido todavía.
 
 ## Próximas sesiones 📋
-- Sesión 6: servicios externos (GitHub ya está, falta Supabase real, IA si aplica, Vercel, Resend, dominio, Hotmart) — ahí se reemplazan los placeholders del carrusel de la landing por screenshots reales de la app.
+- Tras el certificado: lanzamiento (35) y adquisición (34, ya arrancada en etapa 0).
+- La usuaria tiene una idea para una segunda app; se retoma SOLO después de vender Respira, empezando por validación con usuarias reales (01/02/44).
 
 ## Problemas conocidos ⚠️
 - onboarding: APROBADO POR LA USUARIA EN SUSTANCIA (ver "Puertas de etapa") tras 16 pasadas del revisor-visual. Quedan 5 pendientes conocidos, NO bloqueantes, aceptados así por la usuaria el 2026-09-18 (detalle completo en docs/revisiones/onboarding-veredicto.md, sección "Decisión de la usuaria"):
